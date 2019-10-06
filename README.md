@@ -21,19 +21,19 @@ The main firmware architecture including:
 
 The FOC algorithm architecure is illustrated in the figure below:
 
-![FOC algorithm](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/FOC_algorithm.png?token=AF5B7SOOBHQ3SIOLSTATHAS5THZLO)
+![FOC algorithm](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FOC_algorithm.png)
 
 In this firmware two control methods are available:
 - Commutation method
 - FOC method
-![Schematic representation of the available control methods](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/01_Matlab/02_Figures/control_methods.png?token=AF5B7SOOBHQ3SIOLSTATHAS5THZLO)
+![Schematic representation of the available control methods](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/01_Matlab/02_Figures/control_methods.png)
 
 
 A short video showing the noise performance of the Commutation method vs advanced control method:
 
 [►Video: Commutation method vs FOC](https://drive.google.com/file/d/1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD/view)
 
-![Hoverboard wheel](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/hoverboard_wheel.JPG?token=AF5B7SOOBHQ3SIOLSTATHAS5THZLO)
+![Hoverboard wheel](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/hoverboard_wheel.JPG)
 
 
 ---
@@ -56,7 +56,7 @@ A short video showing the noise performance of the Commutation method vs advance
  - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EmanuelFeru/FixedPointViewer) tool
  - The parameters data Fixed-ppoint types are given in the following table:
 
-![Parameters table](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/paramTable.png?token=AF5B7SPW4GUSLSRZKCAZ7WC5THY4M)
+![Parameters table](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/paramTable.png)
 
 
 ### Future work
