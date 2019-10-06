@@ -429,3 +429,70 @@ void SystemClock_Config(void) {
   /* SysTick_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
+
+
+// ===========================================================
+  /* Low pass filter fixed-point 16 bits: fixdt(1,16,4)
+  * Max:  2047.9375
+  * Min: -2048
+  * Res:  0.0625
+  * coef: [0,65535U] = fixdt(0,16,16)
+  * 
+  * Call function example: 
+  * If coef = 0.8 (in floating point), then coef = 0.8 * 2^16 = 52429 (in fixed-point)
+  * y = filtLowPass16(u, 52429, y);
+  */
+int16_t filtLowPass16(int16_t u, uint16_t coef, int16_t yPrev)
+{
+  int32_t tmp;
+  int16_t y;
+
+  tmp = (((int16_t)(u << 4) * coef) >> 16) + 
+        (((int32_t)(65535U - coef) * yPrev) >> 16);
+
+  // Overflow protection
+  if (tmp > 32767) {
+    tmp = 32767;
+  } else {
+    if (tmp < -32768) {
+      tmp = -32768;
+    }
+  }
+
+  y = (int16_t)tmp;
+
+  return y;
+}
+
+// ===========================================================
+  /* Low pass filter fixed-point 32 bits: fixdt(1,32,16)
+  * Max:  32767.99998474121
+  * Min: -32768
+  * Res:  1.52587890625e-5
+  * coef: [0,65535U] = fixdt(0,16,16)
+  * 
+  * Call function example: 
+  * If coef = 0.8 (in floating point), then coef = 0.8 * 2^16 = 52429 (in fixed-point)
+  * y = filtLowPass16(u, 52429, y);
+  */
+int32_t filtLowPass32(int32_t u, uint16_t coef, int32_t yPrev)
+{
+  int32_t q0;
+  int32_t q1;
+  int32_t y;
+
+  q0 = (int32_t)(((int64_t)(u << 16) * coef) >> 16);
+  q1 = (int32_t)(((int64_t)(65535U - coef) * yPrev) >> 16);
+
+  // Overflow protection
+  if ((q0 < 0) && (q1 < MIN_int32_T - q0)) {
+    y = MIN_int32_T;
+  } else if ((q0 > 0) && (q1 > MAX_int32_T - q0)) {
+    y = MAX_int32_T;
+  } else {
+    y = q0 + q1;
+  }
+
+  return y;
+}
+// ===========================================================

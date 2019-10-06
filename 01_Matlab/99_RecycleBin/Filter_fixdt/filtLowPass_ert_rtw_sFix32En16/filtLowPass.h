@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'filtLowPass'.
  *
- * Model version                  : 1.1160
+ * Model version                  : 1.1165
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Fri Sep 27 08:08:04 2019
+ * C/C++ source code generated on : Sun Oct  6 22:00:52 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -41,13 +41,13 @@ typedef struct {
 
 /* External inputs (root inport signals with auto storage) */
 typedef struct {
-  int32_T u;                           /* '<Root>/u' */
+  int16_T u;                           /* '<Root>/u' */
   uint16_T coef;                       /* '<Root>/coef' */
 } ExtU;
 
 /* External outputs (root outports fed by signals with auto storage) */
 typedef struct {
-  int16_T y;                           /* '<Root>/y' */
+  int32_T y;                           /* '<Root>/y' */
 } ExtY;
 
 /* Real-time Model Data Structure */
@@ -73,14 +73,14 @@ extern void filtLowPass_step(RT_MODEL *const rtM);
  * MATLAB hilite_system command to trace the generated code back
  * to the parent model.  For example,
  *
- * hilite_system('BLDCmotorControl_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Oriented_Control/filtLowPass')    - opens subsystem BLDCmotorControl_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Oriented_Control/filtLowPass
- * hilite_system('BLDCmotorControl_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Oriented_Control/filtLowPass/Kp') - opens and selects block Kp
+ * hilite_system('BLDCmotorControl_FOC_R2017b_fixdt/filtLowPass')    - opens subsystem BLDCmotorControl_FOC_R2017b_fixdt/filtLowPass
+ * hilite_system('BLDCmotorControl_FOC_R2017b_fixdt/filtLowPass/Kp') - opens and selects block Kp
  *
  * Here is the system hierarchy for this model
  *
- * '<Root>' : 'BLDCmotorControl_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Oriented_Control'
- * '<S1>'   : 'BLDCmotorControl_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Oriented_Control/filtLowPass'
- * '<S2>'   : 'BLDCmotorControl_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Oriented_Control/filtLowPass/Low_Pass_Filter1'
+ * '<Root>' : 'BLDCmotorControl_FOC_R2017b_fixdt'
+ * '<S1>'   : 'BLDCmotorControl_FOC_R2017b_fixdt/filtLowPass'
+ * '<S2>'   : 'BLDCmotorControl_FOC_R2017b_fixdt/filtLowPass/Low_Pass_Filter1'
  */
 #endif                                 /* RTW_HEADER_filtLowPass_h_ */
 

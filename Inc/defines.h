@@ -158,3 +158,7 @@ typedef struct {
   uint16_t temp;
   uint16_t l_rx2;
 } adc_buf_t;
+
+// Define low-pass filter functions. Implementation is in main.c
+int16_t filtLowPass16(int16_t u, uint16_t coef, int16_t yPrev);
+int32_t filtLowPass32(int32_t u, uint16_t coef, int32_t yPrev);

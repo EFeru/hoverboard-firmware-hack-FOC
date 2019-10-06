@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'filtLowPass'.
  *
- * Model version                  : 1.1160
+ * Model version                  : 1.1165
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Fri Sep 27 08:08:04 2019
+ * C/C++ source code generated on : Sun Oct  6 22:00:52 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -81,7 +81,7 @@ preprocessor word size checks.
 #endif
 #endif
 
-extern int16_T filtLowPass_l(int32_T rtu_u, uint16_T rtu_coef, DW_filtLowPass
+extern int32_T filtLowPass_l(int16_T rtu_u, uint16_T rtu_coef, DW_filtLowPass
   *localDW);
 
 /*===========*
@@ -115,9 +115,11 @@ extern int16_T filtLowPass_l(int32_T rtu_u, uint16_T rtu_coef, DW_filtLowPass
 #endif
 
 /* Output and update for atomic system: '<Root>/filtLowPass' */
-int16_T filtLowPass_l(int32_T rtu_u, uint16_T rtu_coef, DW_filtLowPass *localDW)
+int32_T filtLowPass_l(int16_T rtu_u, uint16_T rtu_coef, DW_filtLowPass *localDW)
 {
-  int32_T rtb_Sum1;
+  int32_T q0;
+  int32_T q1;
+  int32_T rty_y_0;
 
   /* Outputs for Atomic SubSystem: '<S1>/Low_Pass_Filter1' */
   /* Sum: '<S2>/Sum1' incorporates:
@@ -127,16 +129,24 @@ int16_T filtLowPass_l(int32_T rtu_u, uint16_T rtu_coef, DW_filtLowPass *localDW)
    *  Sum: '<S2>/Sum5'
    *  UnitDelay: '<S2>/UnitDelay3'
    */
-  rtb_Sum1 = (int32_T)(((int64_T)(rtu_u << 16) * rtu_coef) >> 16) + (int32_T)
-    (((int64_T)(65535U - rtu_coef) * localDW->UnitDelay3_DSTATE) >> 16);
+  q0 = (int32_T)(((int64_T)(rtu_u << 16) * rtu_coef) >> 16);
+  q1 = (int32_T)(((int64_T)(65535U - rtu_coef) * localDW->UnitDelay3_DSTATE) >>
+                 16);
+  if ((q0 < 0) && (q1 < MIN_int32_T - q0)) {
+    rty_y_0 = MIN_int32_T;
+  } else if ((q0 > 0) && (q1 > MAX_int32_T - q0)) {
+    rty_y_0 = MAX_int32_T;
+  } else {
+    rty_y_0 = q0 + q1;
+  }
 
-  /* Update for UnitDelay: '<S2>/UnitDelay3' */
-  localDW->UnitDelay3_DSTATE = rtb_Sum1;
+  /* Update for UnitDelay: '<S2>/UnitDelay3' incorporates:
+   *  Sum: '<S2>/Sum1'
+   */
+  localDW->UnitDelay3_DSTATE = rty_y_0;
 
   /* End of Outputs for SubSystem: '<S1>/Low_Pass_Filter1' */
-
-  /* DataTypeConversion: '<S1>/Data Type Conversion1' */
-  return (int16_T)(rtb_Sum1 >> 16);
+  return rty_y_0;
 }
 
 /* Model step function */
@@ -152,7 +162,7 @@ void filtLowPass_step(RT_MODEL *const rtM)
    *  Inport: '<Root>/coef'
    *  Inport: '<Root>/u'
    */
-  rtY->y = (int16_T) filtLowPass_l(rtU->u, rtU->coef, &rtDW->filtLowPass_l2);
+  rtY->y = filtLowPass_l(rtU->u, rtU->coef, &rtDW->filtLowPass_l2);
 
   /* End of Outputs for SubSystem: '<Root>/filtLowPass' */
 }

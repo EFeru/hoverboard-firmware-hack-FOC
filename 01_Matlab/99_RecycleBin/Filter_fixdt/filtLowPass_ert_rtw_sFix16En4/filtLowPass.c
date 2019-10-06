@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'filtLowPass'.
  *
- * Model version                  : 1.1160
+ * Model version                  : 1.1167
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Fri Sep 27 08:03:25 2019
+ * C/C++ source code generated on : Sun Oct  6 22:11:53 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -117,7 +117,8 @@ extern int16_T filtLowPass_l(int16_T rtu_u, uint16_T rtu_coef, DW_filtLowPass
 /* Output and update for atomic system: '<Root>/filtLowPass' */
 int16_T filtLowPass_l(int16_T rtu_u, uint16_T rtu_coef, DW_filtLowPass *localDW)
 {
-  int16_T rtb_Sum1;
+  int32_T tmp;
+  int16_T rty_y_0;
 
   /* Outputs for Atomic SubSystem: '<S1>/Low_Pass_Filter1' */
   /* Sum: '<S2>/Sum1' incorporates:
@@ -127,16 +128,25 @@ int16_T filtLowPass_l(int16_T rtu_u, uint16_T rtu_coef, DW_filtLowPass *localDW)
    *  Sum: '<S2>/Sum5'
    *  UnitDelay: '<S2>/UnitDelay3'
    */
-  rtb_Sum1 = (int16_T)((((int16_T)(rtu_u << 4) * rtu_coef) >> 16) + (((int32_T)
-    (65535U - rtu_coef) * localDW->UnitDelay3_DSTATE) >> 16));
+  tmp = (((int16_T)(rtu_u << 4) * rtu_coef) >> 16) + (((int32_T)(65535U -
+    rtu_coef) * localDW->UnitDelay3_DSTATE) >> 16);
+  if (tmp > 32767) {
+    tmp = 32767;
+  } else {
+    if (tmp < -32768) {
+      tmp = -32768;
+    }
+  }
 
-  /* Update for UnitDelay: '<S2>/UnitDelay3' */
-  localDW->UnitDelay3_DSTATE = rtb_Sum1;
+  rty_y_0 = (int16_T)tmp;
+
+  /* Update for UnitDelay: '<S2>/UnitDelay3' incorporates:
+   *  Sum: '<S2>/Sum1'
+   */
+  localDW->UnitDelay3_DSTATE = (int16_T)tmp;
 
   /* End of Outputs for SubSystem: '<S1>/Low_Pass_Filter1' */
-
-  /* DataTypeConversion: '<S1>/Data Type Conversion1' */
-  return (int16_T)(rtb_Sum1 >> 4);
+  return rty_y_0;
 }
 
 /* Model step function */

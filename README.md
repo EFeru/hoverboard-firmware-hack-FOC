@@ -127,11 +127,21 @@ Nunchuck or PPM working bad: The i2c bus and PPM signal are very sensitive to em
 Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
 
 ---
-
-
 ## Examples
 
 Have a look at the config.h in the Inc directory. That's where you configure to firmware to match your project.
 Currently supported: Wii Nunchuck, analog potentiometer and PPM-Sum signal from a RC remote.
 A good example of control via UART, eg. from an Arduino or raspberryPi, can be found here:
 https://github.com/p-h-a-i-l/hoverboard-firmware-hack
+
+---
+## Acknowledgements
+
+Last but not least, I would like to acknowledge and thank the following people:
+
+github: @TomTinkering, @ced2c, @btsimonh, @lalalandrus, @p-h-a-i-l , @AntumArk, @juodumas
+
+ST Employee: [cedric H](https://community.st.com/s/question/0D50X0000B28qTDSQY/custom-foc-control-current-measurement-dma-timer-interrupt-needs-review)
+
+for the very useful discussions, code snippets, and good suggestions to make this work possbile.
+
