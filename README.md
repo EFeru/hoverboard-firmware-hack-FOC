@@ -1,6 +1,6 @@
 # hoverboard-firmware-hack-FOC
 ## with Field Oriented Control (FOC)
-[![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack.svg?branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack)
+[![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC)
 
 This repository implements Field Oriented Control (FOC) for stock hoverboards. Compared to the commutation method, this new FOC control methods offers superior performance featuring:
  - reduced noise and vibrations 	
