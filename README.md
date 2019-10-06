@@ -19,7 +19,7 @@ The main firmware architecture including:
 
 ![Firmware architecture](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FW_architecture.png)
 
-The FOC algorithm architecure is illustrated in the figure below:
+The FOC algorithm architecture is illustrated in the figure below:
 
 ![FOC algorithm](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FOC_algorithm.png)
 
@@ -54,7 +54,7 @@ A short video showing the noise performance of the Commutation method vs advance
  - All the calibratable motor parameters can be found in the 'BLDC_controller_data.c'. I provided you with an already calibrated controller, but if you feel like fine tuning it feel free to do so 
  - The parameters are represented in Fixed-point data type for a more efficient code execution
  - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EmanuelFeru/FixedPointViewer) tool
- - The parameters data Fixed-ppoint types are given in the following table:
+ - The parameters data Fixed-point types are given in the following table:
 
 ![Parameters table](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/paramTable.png)
 
