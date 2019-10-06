@@ -17,22 +17,22 @@ The main firmware architecture including:
 - FOC Algorithm: *implements the FOC strategy*
 - Control Type Manager: *Manages the transition between Commutation and FOC Algorithm*
 
---> figure FW architecture
+![Firmware architecture](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/FW_architecture.png?token=AF5B7SJJQKTGBC5O3JSJA3S5THYAC)
 
 The FOC algorithm architecure is illustrated in the figure below:
 
---> figure
+![FOC algorithm](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/FOC_algorithm.png?token=AF5B7SMHSBHOIMKNDO6MI6K5THYDQ)
 
 In this firmware 2 control methods are available:
 - Commutation method
 - FOC method
-![Schematic representation of the available control methods](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack/master/01_Matlab/02_Figures/control_methods.png)
+![Schematic representation of the available control methods](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/01_Matlab/02_Figures/control_methods.png?token=AF5B7SKKAOYGW53BEGBSWBK5THYFU)
 
 
 A short video showing the noise performance of the Commutation method vs advanced control method:
 [►Video: Commutation method vs FOC](https://drive.google.com/file/d/1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD/view)
 
-![Hoverboard wheel](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack/master/docs/pictures/hoverboard_wheel.JPG)
+![Hoverboard wheel](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/hoverboard_wheel.JPG?token=AF5B7SLDXZCN4P2IJ6WWBYC5THYIO)
 
 
 ---
