@@ -1,0 +1,55 @@
+notifications:
+  email: true
+
+sudo: false
+
+matrix:
+  fast_finish: true
+  include:
+
+    - name: make (gcc-arm-none-eabi-7)
+      script: make
+      language: c
+      addons:
+        apt:
+          packages:
+          - libc6-i386
+      install:
+      - pushd .
+      - cd ~
+      - mkdir arm-gcc-toolchain
+      - wget -O $HOME/arm-gcc-toolchain/gcc.tar.bz2 https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2?revision=bc2c96c0-14b5-4bb4-9f18-bceb4050fee7?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,7-2018-q2-update
+      - cd arm-gcc-toolchain
+      - tar -jxf gcc.tar.bz2 --strip=1
+      - popd
+      - export PATH=$HOME/arm-gcc-toolchain/bin:$PATH
+      before_script: arm-none-eabi-gcc --version
+
+    - name: make (gcc-arm-none-eabi-5)
+      script: make
+      language: c
+      addons:
+        apt:
+          packages:
+          - libc6-i386
+      install:
+      - pushd .
+      - cd ~
+      - mkdir arm-gcc-toolchain
+      - wget -O $HOME/arm-gcc-toolchain/gcc.tar.bz2 https://developer.arm.com/-/media/Files/downloads/gnu-rm/5_4-2016q3/gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2?revision=111dee36-f88b-4672-8ac6-48cf41b4d375?product=GNU%20Arm%20Embedded%20Toolchain,32-bit,,Linux,5-2016-q3-update
+      - cd arm-gcc-toolchain
+      - tar -jxf gcc.tar.bz2 --strip=1
+      - popd
+      - export PATH=$HOME/arm-gcc-toolchain/bin:$PATH
+      before_script: arm-none-eabi-gcc --version
+
+    - name: pio genericSTM32F103RC
+      script: platformio run -e genericSTM32F103RC
+      language: python
+      python:
+        - "2.7"
+      install:
+      - pip install -U platformio
+      - platformio update
+      cache:
+      - directories: "~/.platformio"
