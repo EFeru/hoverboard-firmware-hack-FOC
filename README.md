@@ -140,5 +140,6 @@ Last but not least, I would like to acknowledge and thank the following people:
 - Original firmware: [NiklasFauth](https://github.com/NiklasFauth)
 - Github: [@TomTinkering](https://github.com/TomTinkering), [@ced2c](https://github.com/ced2c), [@btsimonh](https://github.com/btsimonh), [@lalalandrus](https://github.com/lalalandrus), [@p-h-a-i-l](https://github.com/p-h-a-i-l) , [@AntumArk](https://github.com/AntumArk), [@juodumas](https://github.com/juodumas)
 - ST Employee: [cedric H](https://community.st.com/s/question/0D50X0000B28qTDSQY/custom-foc-control-current-measurement-dma-timer-interrupt-needs-review)
+
 for the very useful discussions, code snippets, and good suggestions to make this work possbile.
 
