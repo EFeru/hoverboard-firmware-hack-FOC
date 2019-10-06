@@ -11,11 +11,11 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
 ## Firmware architecture
 
 The main firmware architecture including:
-- Estimations: *estimates the rotor position, angle and motor speed based on Hall sensors signal*
-- Diagnostics: *implements error detection such as unconnected Hall sensor, motor blocked, MOSFET defective*
-- Control Manager: *manages the transitions between control modes (Voltage, Speed, Torque)*
-- FOC Algorithm: *implements the FOC strategy*
-- Control Type Manager: *Manages the transition between Commutation and FOC Algorithm*
+- **Estimations**: *estimates the rotor position, angle and motor speed based on Hall sensors signal*
+- **Diagnostics**: *implements error detection such as unconnected Hall sensor, motor blocked, MOSFET defective*
+- **Control Manager**: *manages the transitions between control modes (Voltage, Speed, Torque)*
+- **FOC Algorithm**: *implements the FOC strategy*
+- **Control Type Manager**: *Manages the transition between Commutation and FOC Algorithm*
 
 ![Firmware architecture](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FW_architecture.png)
 
@@ -41,7 +41,7 @@ A short video showing the noise performance of the Commutation method vs advance
  - The C code for the controller was auto-code generated using [Matlab/Simulink](https://nl.mathworks.com/solutions/embedded-code-generation.html) from a model which I developed from scratch specifically for hoverboard control. For more details regarding the working principle of the controller please consult the [Matlab/Simulink model](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab).
  - A [webview](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code
 
-### Field weakening:
+### Field weakening
 
  - By default the Field weakening is disabled. You can enable it in config.h file by setting the FIELD_WEAK_ENA = 1 
  - In BLDC_controller_data.c you can find the field weakening Map as a function of speed: MAP = id_fieldWeak_M1, XAXIS = n_fieldWeak_XA
