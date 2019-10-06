@@ -23,24 +23,25 @@ The FOC algorithm architecure is illustrated in the figure below:
 
 ![FOC algorithm](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/FOC_algorithm.png?token=AF5B7SMHSBHOIMKNDO6MI6K5THYDQ)
 
-In this firmware 2 control methods are available:
+In this firmware two control methods are available:
 - Commutation method
 - FOC method
 ![Schematic representation of the available control methods](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/01_Matlab/02_Figures/control_methods.png?token=AF5B7SKKAOYGW53BEGBSWBK5THYFU)
 
 
 A short video showing the noise performance of the Commutation method vs advanced control method:
+
 [►Video: Commutation method vs FOC](https://drive.google.com/file/d/1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD/view)
 
 ![Hoverboard wheel](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/hoverboard_wheel.JPG?token=AF5B7SLDXZCN4P2IJ6WWBYC5THYIO)
 
 
 ---
-GENERAL NOTES:
+## General Notes
  - The C code for the controller was auto-code generated using [Matlab/Simulink](https://nl.mathworks.com/solutions/embedded-code-generation.html) from a model which I developed from scratch specifically for hoverboard control. For more details regarding the working principle of the controller please consult the [Matlab/Simulink model](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab).
  - A [webview](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code
 
-NOTES Field weakening:
+### Notes Field weakening:
 
  - By default the Field weakening is disabled. You can enable it in config.h file by setting the FIELD_WEAK_ENA = 1 
  - In BLDC_controller_data.c you can find the field weakening Map as a function of speed: MAP = id_fieldWeak_M1, XAXIS = n_fieldWeak_XA
@@ -48,14 +49,15 @@ NOTES Field weakening:
  - If you re-calibrate the field weakening map please take all the safety measures! The motors can spin very fast!
  - During the recalibration make sure the speed values in XAXIS are equally spaced for a correct Map interpolation.
 
----
-## Parameters 
+
+### Parameters 
  - All the calibratable motor parameters can be found in the 'BLDC_controller_data.c'. I provided you with an already calibrated controller, but if you feel like fine tuning it feel free to do so 
  - The parameters are represented in Fixed-point data type for a more efficient code execution
  - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EmanuelFeru/FixedPointViewer) tool
  - The parameters data Fixed-ppoint types are given in the following table:
 
->> Table
+![Parameters table](https://raw.githubusercontent.com/EmanuelFeru/hoverboard-firmware-hack-FOC/master/docs/pictures/paramTable.png?token=AF5B7SPW4GUSLSRZKCAZ7WC5THY4M)
+
 
 ### Future work
  - conversion of the remaining filters (for the battery voltage, current, and temperature) from floating point to fixed-point. This will reduce further the SMT32 computational load
