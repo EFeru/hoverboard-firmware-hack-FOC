@@ -17,7 +17,7 @@ The main firmware architecture including:
 - FOC Algorithm: *implements the FOC strategy*
 - Control Type Manager: *Manages the transition between Commutation and FOC Algorithm*
 
-![Firmware architecture](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FOC_algorithm.png)
+![Firmware architecture](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FW_architecture.png)
 
 The FOC algorithm architecure is illustrated in the figure below:
 
