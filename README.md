@@ -16,7 +16,7 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
 
 ## Firmware architecture
 
-The main firmware architecture including:
+The main firmware architecture includes:
 - **Estimations**: estimates the rotor position, angle and motor speed based on Hall sensors signal
 - **Diagnostics**: implements error detection such as unconnected Hall sensor, motor blocked, MOSFET defective
 - **Control Manager**: manages the transitions between control modes (Voltage, Speed, Torque)
@@ -37,7 +37,7 @@ In this firmware two control methods are available:
 
 A short video showing the noise performance of the Commutation method vs advanced control method:
 
-[►Video: Commutation method vs FOC](https://drive.google.com/file/d/1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD/view)
+[►Video: Commutation method vs Advanced control](https://drive.google.com/file/d/1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD/view)
 
 ![Hoverboard wheel](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/hoverboard_wheel.JPG)
 
