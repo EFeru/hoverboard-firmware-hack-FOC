@@ -4,18 +4,24 @@
 
 This repository implements Field Oriented Control (FOC) for stock hoverboards. Compared to the commutation method, this new FOC control method offers superior performance featuring:
  - reduced noise and vibrations 	
- - smooth torque output 	
- - improved motor efficiency. Thus, lower energy consumption
+ - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
+ 
+ This new firmware offers 3 control modes:
+  - **VOLTAGE MODE**: in this mode the controller applies a constant Voltage to the motors
+  - **SPEED MODE**: in this mode a closed-loop controller realizes the input target speed by rejecting any of the disturbance (resistive load) applied to the motor
+  - **TORQUE MODE**: in this mode the target torque set by the user is realized. This mode enables motor "freewheeling" when the torque target is "0".
+  
+  **NOTE**: In all the modes, the controller features maximum motor speed and maximum motor current protection. This brings great advantages to fulfil the needs of many robotic applications while maintaining safe operation.
 
 ## Firmware architecture
 
 The main firmware architecture including:
-- **Estimations**: *estimates the rotor position, angle and motor speed based on Hall sensors signal*
-- **Diagnostics**: *implements error detection such as unconnected Hall sensor, motor blocked, MOSFET defective*
-- **Control Manager**: *manages the transitions between control modes (Voltage, Speed, Torque)*
-- **FOC Algorithm**: *implements the FOC strategy*
-- **Control Type Manager**: *Manages the transition between Commutation and FOC Algorithm*
+- **Estimations**: estimates the rotor position, angle and motor speed based on Hall sensors signal
+- **Diagnostics**: implements error detection such as unconnected Hall sensor, motor blocked, MOSFET defective
+- **Control Manager**: manages the transitions between control modes (Voltage, Speed, Torque)
+- **FOC Algorithm**: implements the FOC strategy
+- **Control Type Manager**: Manages the transition between Commutation and FOC Algorithm
 
 ![Firmware architecture](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FW_architecture.png)
 
