@@ -1,5 +1,5 @@
 /*
-* This file has been re-implemented FOC motor control.
+* This file implements FOC motor control.
 * This control method offers superior performanace
 * compared to previous cummutation method. The new method features:
 * ► reduced noise and vibrations
@@ -66,7 +66,7 @@ static uint32_t buzzerTimer = 0;
 uint8_t        enable       = 0;
 static uint8_t enableFin    = 0;
 
-static const uint16_t pwm_res       = 64000000 / 2 / PWM_FREQ; // = 2000
+static const uint16_t pwm_res  = 64000000 / 2 / PWM_FREQ; // = 2000
 
 static uint16_t offsetcount = 0;
 static int16_t offsetrl1    = 2000;
@@ -113,7 +113,7 @@ void DMA1_Channel1_IRQHandler(void) {
   curR_DC   = (int16_t)(adc_buffer.dcr - offsetdcr);
 
   // Disable PWM when current limit is reached (current chopping)
-  if(ABS(curL_DC * MOTOR_AMP_CONV_DC_AMP) > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
+  if(ABS(curL_DC) > I_DC_MAX || timeout > TIMEOUT || enable == 0) {
     LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
     //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
   } else {
@@ -121,7 +121,7 @@ void DMA1_Channel1_IRQHandler(void) {
     //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 0);
   }
 
-  if(ABS(curR_DC * MOTOR_AMP_CONV_DC_AMP)  > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
+  if(ABS(curR_DC)  > I_DC_MAX || timeout > TIMEOUT || enable == 0) {
     RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     RIGHT_TIM->BDTR |= TIM_BDTR_MOE;

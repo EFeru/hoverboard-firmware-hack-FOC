@@ -7,6 +7,7 @@
 #define DEAD_TIME              32     // PWM deadtime
 #define DELAY_IN_MAIN_LOOP      5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
 #define TIMEOUT                 5     // number of wrong / missing input commands before emergency off
+#define A2BIT_CONV             50     // bits per A on ADC. Example: 50 = 1 A, 100 = 2 A, etc
 
 // ADC conversion time definitions
 #define ADC_CONV_TIME_1C5       (14)  //Total ADC clock cycles / conversion = (  1.5+12.5)
@@ -93,13 +94,13 @@
 
 
 // ############################### MOTOR CONTROL (overwrite) #########################
-#define CTRL_TYP_SEL    1               // [-] Control type selection: 0 = Commutation , 1 = FOC Field Oriented Control (default)
-#define CTRL_MOD_REQ    1               // [-] Control mode request: 0 = Open mode, 1 = Voltage mode (default), 2 = Speed mode, 3 = Torque mode
-#define DIAG_ENA        1               // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
-#define FIELD_WEAK_ENA  0               // [-] Field Weakening enable flag: 0 = Disabled (default), 1 = Enabled
-#define I_MOT_MAX       (15 * 50) << 4  // [A] Maximum motor current (change only the first number, the rest is needed for fixed-point conversion)
-#define DC_CUR_LIMIT    17              // [A] DC current limit in amps per motor. (Final current protection. Above this value, current chopping is applied. To avoid this make sure that DC_CUR_LIMIT = I_MOT_MAX + 2A )
-#define N_MOT_MAX       800 << 4        // [rpm] Maximum motor speed (change only the first number, the rest is needed for fixed-point conversion)
+#define CTRL_TYP_SEL    1                       // [-] Control type selection: 0 = Commutation , 1 = FOC Field Oriented Control (default)
+#define CTRL_MOD_REQ    1                       // [-] Control mode request: 0 = Open mode, 1 = Voltage mode (default), 2 = Speed mode, 3 = Torque mode
+#define DIAG_ENA        1                       // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
+#define FIELD_WEAK_ENA  0                       // [-] Field Weakening enable flag: 0 = Disabled (default), 1 = Enabled
+#define I_MOT_MAX       (15 * A2BIT_CONV) << 4  // [A] Maximum motor current limit (Change only the first number, the rest is needed for fixed-point conversion)
+#define I_DC_MAX        (17 * A2BIT_CONV)       // [A] Maximum DC Link current limit (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A )
+#define N_MOT_MAX       800 << 4                // [rpm] Maximum motor speed (change only the first number, the rest is needed for fixed-point conversion)
 
 
 // GENERAL NOTES:
