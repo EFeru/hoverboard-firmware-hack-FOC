@@ -76,7 +76,9 @@ static int16_t offsetrr2    = 2000;
 static int16_t offsetdcl    = 2000;
 static int16_t offsetdcr    = 2000;
 
-float batteryVoltage = BAT_NUMBER_OF_CELLS * 4.0;
+int16_t        batVoltage       = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
+static int16_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 4;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
+
 
 //scan 8 channels with 2ADCs @ 20 clk cycles per sample
 //meaning ~80 ADC clock cycles @ 8MHz until new DMA interrupt =~ 100KHz
@@ -98,27 +100,27 @@ void DMA1_Channel1_IRQHandler(void) {
     return;
   }
 
-  if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time
-    batteryVoltage = batteryVoltage * 0.99f + ((float)adc_buffer.batt1 * ((float)BAT_CALIB_REAL_VOLTAGE / (float)BAT_CALIB_ADC)) * 0.01f;
+  if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time -> not any more, everything converted to fixed-point
+    filtLowPass16(adc_buffer.batt1, BAT_FILT_COEF, &batVoltageFixdt);
+    batVoltage = batVoltageFixdt >> 4;  // convert fixed-point to integer
   }
 
   // Get Left motor currents
   curL_phaA = (int16_t)(offsetrl1 - adc_buffer.rl1);
   curL_phaB = (int16_t)(offsetrl2 - adc_buffer.rl2);
-  curL_DC   = (int16_t)(adc_buffer.dcl - offsetdcl);
+  curL_DC   = (int16_t)(offsetdcl - adc_buffer.dcl);
   
   // Get Right motor currents
   curR_phaB = (int16_t)(offsetrr1 - adc_buffer.rr1);
   curR_phaC = (int16_t)(offsetrr2 - adc_buffer.rr2);
-  curR_DC   = (int16_t)(adc_buffer.dcr - offsetdcr);
+  curR_DC   = (int16_t)(offsetdcr - adc_buffer.dcr);
 
   // Disable PWM when current limit is reached (current chopping)
+  // This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
   if(ABS(curL_DC) > I_DC_MAX || timeout > TIMEOUT || enable == 0) {
     LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
-    //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
   } else {
     LEFT_TIM->BDTR |= TIM_BDTR_MOE;
-    //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 0);
   }
 
   if(ABS(curR_DC)  > I_DC_MAX || timeout > TIMEOUT || enable == 0) {

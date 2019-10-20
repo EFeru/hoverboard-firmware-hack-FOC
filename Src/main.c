@@ -29,11 +29,11 @@
 
 // Matlab includes and defines - from auto-code generation
 // ###############################################################################
-#include "BLDC_controller.h"            /* Model's header file */
+#include "BLDC_controller.h"      /* Model's header file */
 #include "rtwtypes.h"
 
-RT_MODEL rtM_Left_;    /* Real-time model */
-RT_MODEL rtM_Right_;   /* Real-time model */
+RT_MODEL rtM_Left_;               /* Real-time model */
+RT_MODEL rtM_Right_;              /* Real-time model */
 RT_MODEL *const rtM_Left = &rtM_Left_;
 RT_MODEL *const rtM_Right = &rtM_Right_;
 
@@ -76,8 +76,10 @@ static volatile Serialcommand command;
 
 static uint8_t button1, button2;
 
-static int steer;                 // local variable for steering. -1000 to 1000
-static int speed;                 // local variable for speed. -1000 to 1000
+static int16_t steerFixdt;        // local fixed-point variable for steering.
+static int16_t speedFixdt;        // local fixed-point variable for speed.
+static int16_t steer;             // local variable for steering. -1000 to 1000
+static int16_t speed;             // local variable for speed. -1000 to 1000
 
 extern volatile int pwml;         // global variable for pwm left. -1000 to 1000
 extern volatile int pwmr;         // global variable for pwm right. -1000 to 1000
@@ -88,7 +90,7 @@ extern uint8_t buzzerPattern;     // global variable for the buzzer pattern. can
 extern uint8_t enable;            // global variable for motor enable
 
 extern volatile uint32_t timeout; // global variable for timeout
-extern float batteryVoltage;      // global variable for battery voltage
+extern int16_t batVoltage;        // global variable for battery voltage
 
 static uint32_t inactivity_timeout_counter;
 
@@ -196,8 +198,6 @@ int main(void) {
 
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
 
-  int lastSpeedL = 0, lastSpeedR = 0;
-  int speedL = 0, speedR = 0;
 
   #ifdef CONTROL_PPM
     PPM_Init();
@@ -235,8 +235,13 @@ int main(void) {
     LCD_WriteString(&lcd, "Initializing...");
   #endif
 
-  float board_temp_adc_filtered = (float)adc_buffer.temp;
-  float board_temp_deg_c;
+
+  int16_t lastSpeedL = 0, lastSpeedR = 0;
+  int16_t speedL = 0, speedR = 0;
+
+  int16_t board_temp_adcFixdt = adc_buffer.temp << 4;  // Fixed-point filter output initialized with current ADC converted to fixed-point
+  int16_t board_temp_adcFilt  = adc_buffer.temp;
+  int16_t board_temp_deg_c;
 
   enable = 0;  // initially motors are disabled for SAFETY
 
@@ -262,8 +267,8 @@ int main(void) {
 
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
-       cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) / (ADC1_MAX / 1000.0f);  // ADC1
-       cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) / (ADC2_MAX / 1000.0f);  // ADC2
+       cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) * 1000 / ADC1_MAX;  // ADC1
+       cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) * 1000 / ADC2_MAX;  // ADC2
 
       // use ADCs as button inputs:
       button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
@@ -289,31 +294,33 @@ int main(void) {
     }
 
     // ####### LOW-PASS FILTER #######
-    steer = (int)(steer * (1.0f - FILTER) + cmd1 * FILTER);
-    speed = (int)(speed * (1.0f - FILTER) + cmd2 * FILTER);
+    filtLowPass16(cmd1, FILTER, &steerFixdt);
+    filtLowPass16(cmd2, FILTER, &speedFixdt);
+    steer = steerFixdt >> 4;  // convert fixed-point to integer
+    speed = speedFixdt >> 4;  // convert fixed-point to integer    
 
     // ####### MIXER #######
-    speedR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), -1000, 1000);
-    speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), -1000, 1000);
-
+    // speedR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), -1000, 1000);
+    // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), -1000, 1000);
+    mixerFcn(speedFixdt, steerFixdt, &speedR, &speedL);   // This function implements the equations above
 
     #ifdef ADDITIONAL_CODE
       ADDITIONAL_CODE;
     #endif
 
 
-    // ####### SET OUTPUTS (if the target change less than +/- 50) #######
+    // ####### SET OUTPUTS (if the target change is less than +/- 50) #######
     if ((speedL > lastSpeedL-50 && speedL < lastSpeedL+50) && (speedR > lastSpeedR-50 && speedR < lastSpeedR+50) && timeout < TIMEOUT) {
-    #ifdef INVERT_R_DIRECTION
-      pwmr = speedR;
-    #else
-      pwmr = -speedR;
-    #endif
-    #ifdef INVERT_L_DIRECTION
-      pwml = -speedL;
-    #else
-      pwml = speedL;
-    #endif
+      #ifdef INVERT_R_DIRECTION
+        pwmr = speedR;
+      #else
+        pwmr = -speedR;
+      #endif
+      #ifdef INVERT_L_DIRECTION
+        pwml = -speedL;
+      #else
+        pwml = speedL;
+      #endif
     }
 
     lastSpeedL = speedL;
@@ -322,8 +329,9 @@ int main(void) {
 
     if (inactivity_timeout_counter % 25 == 0) {
       // ####### CALC BOARD TEMPERATURE #######
-      board_temp_adc_filtered = board_temp_adc_filtered * 0.99f + (float)adc_buffer.temp * 0.01f;
-      board_temp_deg_c = ((float)TEMP_CAL_HIGH_DEG_C - (float)TEMP_CAL_LOW_DEG_C) / ((float)TEMP_CAL_HIGH_ADC - (float)TEMP_CAL_LOW_ADC) * (board_temp_adc_filtered - (float)TEMP_CAL_LOW_ADC) + (float)TEMP_CAL_LOW_DEG_C;
+      filtLowPass16(adc_buffer.temp, TEMP_FILT_COEF, &board_temp_adcFixdt);
+      board_temp_adcFilt  = board_temp_adcFixdt >> 4;  // convert fixed-point to integer
+      board_temp_deg_c    = (TEMP_CAL_HIGH_DEG_C - TEMP_CAL_LOW_DEG_C) * (board_temp_adcFilt - TEMP_CAL_LOW_ADC) / (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
 
       // ####### DEBUG SERIAL OUT #######
       #ifdef CONTROL_ADC
@@ -335,13 +343,13 @@ int main(void) {
       setScopeChannel(2, (int16_t)rtY_Right.n_mot);           // 3: Real motor speed [rpm]
       setScopeChannel(3, (int16_t)rtY_Left.n_mot);            // 4: Real motor speed [rpm]
       setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
-      setScopeChannel(5, (int16_t)(batteryVoltage * 100.0f)); // 6: for verifying battery voltage calibration
-      setScopeChannel(6, (int16_t)board_temp_adc_filtered);   // 7: for board temperature calibration
+      setScopeChannel(5, (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC)); // 6: for verifying battery voltage calibration
+      setScopeChannel(6, (int16_t)board_temp_adcFilt);        // 7: for board temperature calibration
       setScopeChannel(7, (int16_t)board_temp_deg_c);          // 8: for verifying board temperature calibration
       consoleScope();
     }
 
-HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
+    HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
     // ####### POWEROFF BY POWER-BUTTON #######
     if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
       enable = 0;
@@ -351,15 +359,15 @@ HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
 
 
     // ####### BEEP AND EMERGENCY POWEROFF #######
-    if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && abs(speed) < 20) || (batteryVoltage < ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && abs(speed) < 20)) {  // poweroff before mainboard burns OR low bat 3
+    if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && abs(speed) < 20) || (batVoltage < BAT_LOW_DEAD && abs(speed) < 20)) {  // poweroff before mainboard burns OR low bat 3
       poweroff();
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {  // beep if mainboard gets hot
       buzzerFreq = 4;
       buzzerPattern = 1;
-    } else if (batteryVoltage < ((float)BAT_LOW_LVL1 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS) && BAT_LOW_LVL1_ENABLE) {  // low bat 1: slow beep
+    } else if (batVoltage < BAT_LOW_LVL1 && batVoltage >= BAT_LOW_LVL2 && BAT_LOW_LVL1_ENABLE) {  // low bat 1: slow beep
       buzzerFreq = 5;
       buzzerPattern = 42;
-    } else if (batteryVoltage < ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && BAT_LOW_LVL2_ENABLE) {  // low bat 2: fast beep
+    } else if (batVoltage < BAT_LOW_LVL2 && batVoltage >= BAT_LOW_DEAD && BAT_LOW_LVL2_ENABLE) {  // low bat 2: fast beep
       buzzerFreq = 5;
       buzzerPattern = 6;
     } else if (errCode_Left || errCode_Right) {  // beep in case of Motor error - fast beep
@@ -436,32 +444,27 @@ void SystemClock_Config(void) {
   * Max:  2047.9375
   * Min: -2048
   * Res:  0.0625
-  * coef: [0,65535U] = fixdt(0,16,16)
   * 
-  * Call function example: 
+  * Inputs:       u     = int16
+  * Outputs:      y     = fixdt(1,16,4)
+  * Parameters:   coef  = fixdt(0,16,16) = [0,65535U]
+  * 
+  * Example: 
   * If coef = 0.8 (in floating point), then coef = 0.8 * 2^16 = 52429 (in fixed-point)
-  * y = filtLowPass16(u, 52429, y);
+  * filtLowPass16(u, 52429, &y);
+  * yint = y >> 4; // the integer output is the fixed-point ouput shifted by 4 bits
   */
-int16_t filtLowPass16(int16_t u, uint16_t coef, int16_t yPrev)
+void filtLowPass16(int16_t u, uint16_t coef, int16_t *y)
 {
   int32_t tmp;
-  int16_t y;
 
   tmp = (((int16_t)(u << 4) * coef) >> 16) + 
-        (((int32_t)(65535U - coef) * yPrev) >> 16);
+        (((int32_t)(65535U - coef) * (*y)) >> 16);
 
   // Overflow protection
-  if (tmp > 32767) {
-    tmp = 32767;
-  } else {
-    if (tmp < -32768) {
-      tmp = -32768;
-    }
-  }
+  tmp = CLAMP(tmp, -32768, 32767);
 
-  y = (int16_t)tmp;
-
-  return y;
+  *y = (int16_t)tmp;
 }
 
 // ===========================================================
@@ -469,30 +472,61 @@ int16_t filtLowPass16(int16_t u, uint16_t coef, int16_t yPrev)
   * Max:  32767.99998474121
   * Min: -32768
   * Res:  1.52587890625e-5
-  * coef: [0,65535U] = fixdt(0,16,16)
   * 
-  * Call function example: 
+  * Inputs:       u     = int32
+  * Outputs:      y     = fixdt(1,32,16)
+  * Parameters:   coef  = fixdt(0,16,16) = [0,65535U]
+  * 
+  * Example: 
   * If coef = 0.8 (in floating point), then coef = 0.8 * 2^16 = 52429 (in fixed-point)
-  * y = filtLowPass16(u, 52429, y);
+  * filtLowPass16(u, 52429, &y);
+  * yint = y >> 16;  // the integer output is the fixed-point ouput shifted by 16 bits
   */
-int32_t filtLowPass32(int32_t u, uint16_t coef, int32_t yPrev)
+void filtLowPass32(int32_t u, uint16_t coef, int32_t *y)
 {
   int32_t q0;
   int32_t q1;
-  int32_t y;
+  int32_t tmp;
 
   q0 = (int32_t)(((int64_t)(u << 16) * coef) >> 16);
-  q1 = (int32_t)(((int64_t)(65535U - coef) * yPrev) >> 16);
+  q1 = (int32_t)(((int64_t)(65535U - coef) * (*y)) >> 16);
 
   // Overflow protection
   if ((q0 < 0) && (q1 < MIN_int32_T - q0)) {
-    y = MIN_int32_T;
+    tmp = MIN_int32_T;
   } else if ((q0 > 0) && (q1 > MAX_int32_T - q0)) {
-    y = MAX_int32_T;
+    tmp = MAX_int32_T;
   } else {
-    y = q0 + q1;
+    tmp = q0 + q1;
   }
 
-  return y;
+  *y = tmp;
 }
+
+// ===========================================================
+  /* mixerFcn(rtu_speed, rtu_steer, &rty_speedR, &rty_speedL); 
+  * Inputs:       rtu_speed, rtu_steer                  = fixdt(1,16,4)
+  * Outputs:      rty_speedR, rty_speedL                = int16_t
+  * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,15)
+  */
+void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t *rty_speedL)
+{
+  int16_t prodSpeed;
+  int16_t prodSteer;
+  int32_t tmp;
+
+  prodSpeed   = (int16_t)((rtu_speed * (int16_t)SPEED_COEFFICIENT) >> 14);
+  prodSteer   = (int16_t)((rtu_steer * (int16_t)STEER_COEFFICIENT) >> 14);
+
+  tmp         = prodSpeed - prodSteer;  
+  tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
+  *rty_speedR = (int16_t)(tmp >> 4);        // Convert from fixed-point to int 
+  *rty_speedR = CLAMP(*rty_speedR, -1000, 1000);
+
+  tmp         = prodSpeed + prodSteer;
+  tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
+  *rty_speedL = (int16_t)(tmp >> 4);        // Convert from fixed-point to int
+  *rty_speedL = CLAMP(*rty_speedL, -1000, 1000);
+}
+
 // ===========================================================

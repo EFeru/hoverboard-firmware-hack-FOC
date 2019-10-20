@@ -158,5 +158,6 @@ typedef struct {
 } adc_buf_t;
 
 // Define low-pass filter functions. Implementation is in main.c
-int16_t filtLowPass16(int16_t u, uint16_t coef, int16_t yPrev);
-int32_t filtLowPass32(int32_t u, uint16_t coef, int32_t yPrev);
+void filtLowPass16(int16_t u, uint16_t coef, int16_t *y);
+void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
+void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t *rty_speedL);
