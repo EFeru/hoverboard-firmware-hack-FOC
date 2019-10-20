@@ -64,6 +64,16 @@ A short video showing the noise performance of the Commutation method vs advance
 
 ![Parameters table](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/paramTable.png)
 
+
+### Diagnostics
+Each motor is constantly monitored for errors. These errors are:
+- **Error 001**: Hall sensor not connected
+- **Error 002**: Hall sensor short circuit
+- **Error 004**: Motor NOT able to spin (Possible causes: motor phase disconnected, MOSFET defective, operational Amplifier defective, motor blocked)
+
+These error codes are reported for each motor in the variables **errCode_Left** and **errCode_Right** for Left motor (long wired motor) and Right motor (short wired motor), respecitvely.
+
+
 ---
 ## Building 
 For building (and flashing) I recommend platform.io, plaformio.ini file included. Simply open the folder in the IDE of choice (vscode or Atom), and press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
