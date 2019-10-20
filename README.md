@@ -71,7 +71,7 @@ Each motor is constantly monitored for errors. These errors are:
 - **Error 002**: Hall sensor short circuit
 - **Error 004**: Motor NOT able to spin (Possible causes: motor phase disconnected, MOSFET defective, operational Amplifier defective, motor blocked)
 
-These error codes are reported for each motor in the variables **errCode_Left** and **errCode_Right** for Left motor (long wired motor) and Right motor (short wired motor), respecitvely.
+The error codes above are reported for each motor in the variables **errCode_Left** and **errCode_Right** for Left motor (long wired motor) and Right motor (short wired motor), respectively.
 
 
 ---
