@@ -109,6 +109,59 @@
   }
  },
  {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2415",
+  "className":"Simulink.MinMax",
+  "icon":"WebViewIcon3",
+  "name":"MinMax",
+  "label":"MinMax",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
+  "inspector":{
+   "params":[
+    "OutDataTypeStr",
+    "Function",
+    "InputSameDT",
+    "Inputs",
+    "LockScale",
+    "OutMax",
+    "OutMin",
+    "RndMeth",
+    "SampleTime",
+    "SaturateOnIntegerOverflow",
+    "ZeroCross"
+   ],
+   "values":[
+    "Inherit: Inherit via internal rule",
+    "min",
+    "off",
+    "2",
+    "off",
+    "[]",
+    "[]",
+    "Floor",
+    "-1",
+    "off",
+    "on"
+   ],
+   "tabs":[
+    "Signal Attributes",
+    "-Other"
+   ],
+   "tabs_idx":[
+    0,
+    1
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"MinMax",
+   "masktype":""
+  }
+ },
+ {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2414",
   "className":"Simulink.Inport",
   "icon":"WebViewIcon3",
@@ -172,118 +225,6 @@
   ],
   "finder":{
    "blocktype":"Inport",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2416",
-  "className":"Simulink.Sum",
-  "icon":"WebViewIcon3",
-  "name":"Sum1",
-  "label":"Sum1",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
-  "inspector":{
-   "params":[
-    "IconShape",
-    "Inputs",
-    "InputSameDT",
-    "AccumDataTypeStr",
-    "OutMin",
-    "OutMax",
-    "OutDataTypeStr",
-    "LockScale",
-    "RndMeth",
-    "SaturateOnIntegerOverflow",
-    "CollapseDim",
-    "CollapseMode",
-    "SampleTime"
-   ],
-   "values":[
-    "round",
-    "|++",
-    "on",
-    "Inherit: Same as first input",
-    "[]",
-    "[]",
-    "Inherit: Same as first input",
-    "off",
-    "Simplest",
-    "off",
-    "1",
-    "All dimensions",
-    "-1"
-   ],
-   "tabs":[
-    "Main",
-    "Signal Attributes",
-    "-Other"
-   ],
-   "tabs_idx":[
-    0,
-    2,
-    10
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"Sum",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2415",
-  "className":"Simulink.MinMax",
-  "icon":"WebViewIcon3",
-  "name":"MinMax",
-  "label":"MinMax",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
-  "inspector":{
-   "params":[
-    "OutDataTypeStr",
-    "Function",
-    "InputSameDT",
-    "Inputs",
-    "LockScale",
-    "OutMax",
-    "OutMin",
-    "RndMeth",
-    "SampleTime",
-    "SaturateOnIntegerOverflow",
-    "ZeroCross"
-   ],
-   "values":[
-    "Inherit: Inherit via internal rule",
-    "min",
-    "off",
-    "2",
-    "off",
-    "[]",
-    "[]",
-    "Floor",
-    "-1",
-    "off",
-    "on"
-   ],
-   "tabs":[
-    "Signal Attributes",
-    "-Other"
-   ],
-   "tabs_idx":[
-    0,
-    1
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"MinMax",
    "masktype":""
   }
  },
@@ -418,6 +359,65 @@
   ],
   "finder":{
    "blocktype":"Inport",
+   "masktype":""
+  }
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2416",
+  "className":"Simulink.Sum",
+  "icon":"WebViewIcon3",
+  "name":"Sum1",
+  "label":"Sum1",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
+  "inspector":{
+   "params":[
+    "IconShape",
+    "Inputs",
+    "InputSameDT",
+    "AccumDataTypeStr",
+    "OutMin",
+    "OutMax",
+    "OutDataTypeStr",
+    "LockScale",
+    "RndMeth",
+    "SaturateOnIntegerOverflow",
+    "CollapseDim",
+    "CollapseMode",
+    "SampleTime"
+   ],
+   "values":[
+    "round",
+    "|++",
+    "on",
+    "Inherit: Same as first input",
+    "[]",
+    "[]",
+    "Inherit: Same as first input",
+    "off",
+    "Simplest",
+    "off",
+    "1",
+    "All dimensions",
+    "-1"
+   ],
+   "tabs":[
+    "Main",
+    "Signal Attributes",
+    "-Other"
+   ],
+   "tabs_idx":[
+    0,
+    2,
+    10
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"Sum",
    "masktype":""
   }
  },

@@ -130,11 +130,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2404",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2405",
   "className":"Simulink.Sum",
   "icon":"WebViewIcon3",
-  "name":"Sum1",
-  "label":"Sum1",
+  "name":"Sum5",
+  "label":"Sum5",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
   "inspector":{
    "params":[
@@ -154,12 +154,12 @@
    ],
    "values":[
     "rectangular",
-    "++",
+    "+-",
     "on",
-    "Inherit: Inherit via internal rule",
+    "Inherit: Same as first input",
     "[]",
     "[]",
-    "fixdt(1,16,4)",
+    "Inherit: Same as first input",
     "off",
     "Simplest",
     "off",
@@ -242,6 +242,65 @@
   ],
   "finder":{
    "blocktype":"Product",
+   "masktype":""
+  }
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2404",
+  "className":"Simulink.Sum",
+  "icon":"WebViewIcon3",
+  "name":"Sum1",
+  "label":"Sum1",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
+  "inspector":{
+   "params":[
+    "IconShape",
+    "Inputs",
+    "InputSameDT",
+    "AccumDataTypeStr",
+    "OutMin",
+    "OutMax",
+    "OutDataTypeStr",
+    "LockScale",
+    "RndMeth",
+    "SaturateOnIntegerOverflow",
+    "CollapseDim",
+    "CollapseMode",
+    "SampleTime"
+   ],
+   "values":[
+    "rectangular",
+    "++",
+    "on",
+    "Inherit: Inherit via internal rule",
+    "[]",
+    "[]",
+    "fixdt(1,16,4)",
+    "off",
+    "Simplest",
+    "off",
+    "1",
+    "All dimensions",
+    "-1"
+   ],
+   "tabs":[
+    "Main",
+    "Signal Attributes",
+    "-Other"
+   ],
+   "tabs_idx":[
+    0,
+    2,
+    10
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"Sum",
    "masktype":""
   }
  },
@@ -348,65 +407,6 @@
   ],
   "finder":{
    "blocktype":"Constant",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2405",
-  "className":"Simulink.Sum",
-  "icon":"WebViewIcon3",
-  "name":"Sum5",
-  "label":"Sum5",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
-  "inspector":{
-   "params":[
-    "IconShape",
-    "Inputs",
-    "InputSameDT",
-    "AccumDataTypeStr",
-    "OutMin",
-    "OutMax",
-    "OutDataTypeStr",
-    "LockScale",
-    "RndMeth",
-    "SaturateOnIntegerOverflow",
-    "CollapseDim",
-    "CollapseMode",
-    "SampleTime"
-   ],
-   "values":[
-    "rectangular",
-    "+-",
-    "on",
-    "Inherit: Same as first input",
-    "[]",
-    "[]",
-    "Inherit: Same as first input",
-    "off",
-    "Simplest",
-    "off",
-    "1",
-    "All dimensions",
-    "-1"
-   ],
-   "tabs":[
-    "Main",
-    "Signal Attributes",
-    "-Other"
-   ],
-   "tabs_idx":[
-    0,
-    2,
-    10
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"Sum",
    "masktype":""
   }
  },
