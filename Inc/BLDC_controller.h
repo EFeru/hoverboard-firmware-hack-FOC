@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1175
+ * Model version                  : 1.1183
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Sun Oct 20 19:28:43 2019
+ * C/C++ source code generated on : Mon Oct 21 16:34:10 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -57,11 +57,6 @@ typedef struct {
   int32_T UnitDelay_DSTATE;            /* '<S51>/UnitDelay' */
 } DW_Rate_Limiter;
 
-/* Block signals and states (auto storage) for system '<S36>/rising_edge_init' */
-typedef struct {
-  boolean_T UnitDelay_DSTATE;          /* '<S50>/UnitDelay' */
-} DW_rising_edge_init;
-
 /* Block signals and states (auto storage) for system '<S22>/Counter' */
 typedef struct {
   uint16_T UnitDelay_DSTATE;           /* '<S27>/UnitDelay' */
@@ -84,7 +79,6 @@ typedef struct {
 typedef struct {
   DW_either_edge either_edge_a;        /* '<S3>/either_edge' */
   DW_Debounce_Filter Debounce_Filter_f;/* '<S3>/Debounce_Filter' */
-  DW_rising_edge_init rising_edge_init_p;/* '<S36>/rising_edge_init' */
   DW_Rate_Limiter Rate_Limiter_l;      /* '<S36>/Rate_Limiter' */
   DW_PI_backCalc_fixdt PI_backCalc_fixdt_Iq;/* '<S39>/PI_backCalc_fixdt_Iq' */
   DW_PI_backCalc_fixdt_f PI_backCalc_fixdt_n_p;/* '<S38>/PI_backCalc_fixdt_n' */
@@ -125,8 +119,10 @@ typedef struct {
   uint8_T is_ACTIVE;                   /* '<S4>/F02_02_Control_Mode_Manager' */
   boolean_T Merge_n;                   /* '<S18>/Merge' */
   boolean_T dz_cntTrnsDet;             /* '<S16>/dz_cntTrnsDet' */
+  boolean_T UnitDelay_DSTATE_g;        /* '<S50>/UnitDelay' */
   boolean_T UnitDelay1_DSTATE_n;       /* '<S16>/UnitDelay1' */
   boolean_T n_commDeacv_Mode;          /* '<S11>/n_commDeacv' */
+  boolean_T n_commDeacv_Mode_c;        /* '<S32>/n_commDeacv' */
   boolean_T dz_cntTrnsDet_Mode;        /* '<S16>/dz_cntTrnsDet' */
 } DW;
 
@@ -209,6 +205,15 @@ struct P_ {
   uint16_T t_errQual;                  /* Variable: t_errQual
                                         * Referenced by: '<S3>/t_errQual'
                                         */
+  uint16_T cf_idKp;                    /* Variable: cf_idKp
+                                        * Referenced by: '<S40>/cf_idKp'
+                                        */
+  uint16_T cf_iqKp;                    /* Variable: cf_iqKp
+                                        * Referenced by: '<S39>/cf_iqKp'
+                                        */
+  uint16_T cf_nKp;                     /* Variable: cf_nKp
+                                        * Referenced by: '<S38>/cf_nKp'
+                                        */
   int16_T Vd_max;                      /* Variable: Vd_max
                                         * Referenced by:
                                         *   '<S35>/Vd_max1'
@@ -225,6 +230,9 @@ struct P_ {
                                         *   '<S35>/i_max'
                                         *   '<S14>/i_max'
                                         */
+  int16_T id_fieldWeak_M1[12];         /* Variable: id_fieldWeak_M1
+                                        * Referenced by: '<S32>/id_fieldWeak_M1'
+                                        */
   int16_T iq_max_M1[51];               /* Variable: iq_max_M1
                                         * Referenced by: '<S35>/iq_max_M1'
                                         */
@@ -237,8 +245,11 @@ struct P_ {
   int16_T n_commDeacvHi;               /* Variable: n_commDeacvHi
                                         * Referenced by: '<S11>/n_commDeacv'
                                         */
-  int16_T n_fieldWeak_XA[12];          /* Variable: n_fieldWeak_XA
-                                        * Referenced by: '<S32>/n_fieldWeak_XA'
+  int16_T n_fieldWeakAuthHi;           /* Variable: n_fieldWeakAuthHi
+                                        * Referenced by: '<S32>/n_commDeacv'
+                                        */
+  int16_T n_fieldWeakAuthLo;           /* Variable: n_fieldWeakAuthLo
+                                        * Referenced by: '<S32>/n_commDeacv'
                                         */
   int16_T n_max;                       /* Variable: n_max
                                         * Referenced by:
@@ -247,6 +258,9 @@ struct P_ {
                                         */
   int16_T n_stdStillDet;               /* Variable: n_stdStillDet
                                         * Referenced by: '<S11>/n_stdStillDet'
+                                        */
+  int16_T r_fieldWeak_XA[12];          /* Variable: r_fieldWeak_XA
+                                        * Referenced by: '<S32>/r_fieldWeak_XA'
                                         */
   uint16_T cf_currFilt;                /* Variable: cf_currFilt
                                         * Referenced by: '<S31>/cf_currFilt'
@@ -277,18 +291,6 @@ struct P_ {
                                         */
   uint16_T cf_nKpLimProt;              /* Variable: cf_nKpLimProt
                                         * Referenced by: '<S46>/cf_nKpLimProt'
-                                        */
-  uint16_T id_fieldWeak_M1[12];        /* Variable: id_fieldWeak_M1
-                                        * Referenced by: '<S32>/id_fieldWeak_M1'
-                                        */
-  uint16_T cf_idKp;                    /* Variable: cf_idKp
-                                        * Referenced by: '<S40>/cf_idKp'
-                                        */
-  uint16_T cf_iqKp;                    /* Variable: cf_iqKp
-                                        * Referenced by: '<S39>/cf_iqKp'
-                                        */
-  uint16_T cf_nKp;                     /* Variable: cf_nKp
-                                        * Referenced by: '<S38>/cf_nKp'
                                         */
   uint8_T z_ctrlTypSel;                /* Variable: z_ctrlTypSel
                                         * Referenced by: '<S1>/z_ctrlTypSel1'

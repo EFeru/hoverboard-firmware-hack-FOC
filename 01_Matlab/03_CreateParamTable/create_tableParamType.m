@@ -71,6 +71,23 @@ for k = 1:length(Blocks)
     end
 end
 
+% Search for Relay
+Blocks = find_system(modelName, 'regexp', 'on', 'BlockType', 'Relay');
+for k = 1:length(Blocks)
+    
+    if strcmp('yellow',get_param(Blocks{k},'BackgroundColor'))  % get only the tunnable parameters
+        
+        val1 = get_param(Blocks{k}, 'OnSwitchValue');
+        val2 = get_param(Blocks{k}, 'OffSwitchValue');
+        typ = get_param(Blocks{k}, 'CompiledPortDataTypes');
+        Parameter{end+1,1}    = val1;
+        Parameter{end+1,1}    = val2;
+        DataType{end+1,1}     = typ.Inport{1};
+        DataType{end+1,1}     = typ.Inport{1};
+        
+    end
+end
+
 % Terminate compilation
 BLDCmotorControl_FOC_R2017b_fixdt([],[],[],'term');
 

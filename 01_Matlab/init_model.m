@@ -99,10 +99,12 @@ dV_openRate         = 1000 * Ts_ctrl;   % [V/s] Rate for voltage cut-off in Open
 
 % Field Weakening
 b_fieldWeakEna      = 0;                % [-] Field weakening enable flag: 0 = disable (default), 1 = enable
-id_fieldWeak_M1     = [  0   0  0.05  0.25    1    2    3    4  4.5  4.8   5   5] * i_sca;  % [-] Field weakening current map
-n_fieldWeak_XA      = [400 420   440   460  480  500  520  540  560  580 600 620];          % [rpm] Motor speed grid
+n_fieldWeakAuthHi   = 200;              % [rpm] Motor speed High for field weakening authorization
+n_fieldWeakAuthLo   = 140;              % [rpm] Motor speed Low for field weakening authorization
+id_fieldWeak_M1     = [0   0.1   0.3   0.7  1.3  2.1    3  3.8  4.4  4.8   5    5] * i_sca;  % [-] Field weakening current map
+r_fieldWeak_XA      = [570 600   630   660  690  720  750  780  810  840 870  900];          % [-] Scaled input target grid
 % figure
-% plot(n_fieldWeak_XA, id_fieldWeak_M1, '.-'); hold on
+% plot(r_fieldWeak_XA, id_fieldWeak_M1, '.-'); hold on
 % grid
 
 % Q axis control gains
@@ -111,8 +113,8 @@ cf_iqKi             = 100 * Ts_ctrl;    % [-] I gain
 cf_iqKb             = 1000 * Ts_ctrl;   % [-] Back calculation gain for integral anti-windup
 
 % D axis control gains
-cf_idKp             = 1;                % [-] P gain
-cf_idKi             = 100 * Ts_ctrl;    % [-] I gain
+cf_idKp             = 0.2;              % [-] P gain
+cf_idKi             = 60 * Ts_ctrl;     % [-] I gain
 cf_idKb             = 1000 * Ts_ctrl;   % [-] Back calculation gain for integral anti-windup
 
 % Speed control gains

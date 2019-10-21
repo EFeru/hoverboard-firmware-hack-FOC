@@ -246,7 +246,40 @@
   ]
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:30",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:31",
+  "className":"Stateflow.Transition",
+  "icon":"WebViewIcon8",
+  "name":"",
+  "label":"[b_toTrqMod]",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8603",
+  "inspector":{
+   "params":[
+    "ExecutionOrder",
+    "LabelString",
+    "Description",
+    "Document"
+   ],
+   "values":[
+    1,
+    "[b_toTrqMod]",
+    "",
+    ""
+   ],
+   "tabs":[
+    "Parameter Attributes"
+   ],
+   "tabs_idx":0
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":[
+  ]
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:9",
   "className":"Stateflow.Transition",
   "icon":"WebViewIcon8",
   "name":"",
@@ -260,7 +293,7 @@
     "Document"
    ],
    "values":[
-    2,
+    1,
     "",
     "",
     ""
@@ -312,7 +345,7 @@
   ]
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:9",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:30",
   "className":"Stateflow.Transition",
   "icon":"WebViewIcon8",
   "name":"",
@@ -326,41 +359,8 @@
     "Document"
    ],
    "values":[
-    1,
+    2,
     "",
-    "",
-    ""
-   ],
-   "tabs":[
-    "Parameter Attributes"
-   ],
-   "tabs_idx":0
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":[
-  ]
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:31",
-  "className":"Stateflow.Transition",
-  "icon":"WebViewIcon8",
-  "name":"",
-  "label":"[b_toTrqMod]",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8603",
-  "inspector":{
-   "params":[
-    "ExecutionOrder",
-    "LabelString",
-    "Description",
-    "Document"
-   ],
-   "values":[
-    1,
-    "[b_toTrqMod]",
     "",
     ""
    ],

@@ -134,7 +134,7 @@
  * 5. A webview was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code
  *
  * NOTES Field weakening:
- * 1. In BLDC_controller_data.c you can find the field weakening Map as a function of speed: MAP = id_fieldWeak_M1, XAXIS = n_fieldWeak_XA
+ * 1. In BLDC_controller_data.c you can find the field weakening Map as a function of input target: MAP = id_fieldWeak_M1, XAXIS = r_fieldWeak_XA
  * 2. The default calibration was experimentally calibrated to my particular needs
  * 3. If you re-calibrate the field weakening map please take all the safety measures! The motors can spin very fast!
  * 4. During the recalibration make sure the speed values in XAXIS are equally spaced for a correct Map interpolation.

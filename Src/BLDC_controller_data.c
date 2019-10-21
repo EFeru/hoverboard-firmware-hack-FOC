@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1175
+ * Model version                  : 1.1183
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Sun Oct 20 19:28:43 2019
+ * C/C++ source code generated on : Mon Oct 21 16:34:10 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -120,6 +120,21 @@ P rtP_Left = {
    */
   9600U,
 
+  /* Variable: cf_idKp
+   * Referenced by: '<S40>/cf_idKp'
+   */
+  819U,
+
+  /* Variable: cf_iqKp
+   * Referenced by: '<S39>/cf_iqKp'
+   */
+  2048U,
+
+  /* Variable: cf_nKp
+   * Referenced by: '<S38>/cf_nKp'
+   */
+  4833U,
+
   /* Variable: Vd_max
    * Referenced by:
    *   '<S35>/Vd_max1'
@@ -150,6 +165,11 @@ P rtP_Left = {
    */
   12000,
 
+  /* Variable: id_fieldWeak_M1
+   * Referenced by: '<S32>/id_fieldWeak_M1'
+   */
+  { 0, 80, 240, 560, 1040, 1680, 2400, 3040, 3520, 3840, 4000, 4000 },
+
   /* Variable: iq_max_M1
    * Referenced by: '<S35>/iq_max_M1'
    */
@@ -177,10 +197,15 @@ P rtP_Left = {
    */
   480,
 
-  /* Variable: n_fieldWeak_XA
-   * Referenced by: '<S32>/n_fieldWeak_XA'
+  /* Variable: n_fieldWeakAuthHi
+   * Referenced by: '<S32>/n_commDeacv'
    */
-  { 6400, 6720, 7040, 7360, 7680, 8000, 8320, 8640, 8960, 9280, 9600, 9920 },
+  3200,
+
+  /* Variable: n_fieldWeakAuthLo
+   * Referenced by: '<S32>/n_commDeacv'
+   */
+  2240,
 
   /* Variable: n_max
    * Referenced by:
@@ -193,6 +218,12 @@ P rtP_Left = {
    * Referenced by: '<S11>/n_stdStillDet'
    */
   48,
+
+  /* Variable: r_fieldWeak_XA
+   * Referenced by: '<S32>/r_fieldWeak_XA'
+   */
+  { 9120, 9600, 10080, 10560, 11040, 11520, 12000, 12480, 12960, 13440, 13920,
+    14400 },
 
   /* Variable: cf_currFilt
    * Referenced by: '<S31>/cf_currFilt'
@@ -207,7 +238,7 @@ P rtP_Left = {
   /* Variable: cf_idKi
    * Referenced by: '<S40>/cf_idKi'
    */
-  393U,
+  236U,
 
   /* Variable: cf_iqKb
    * Referenced by: '<S39>/cf_iqKb'
@@ -237,32 +268,12 @@ P rtP_Left = {
   /* Variable: cf_iqKpLimProt
    * Referenced by: '<S45>/cf_iqKpLimProt'
    */
-  461U,
+  1843U,
 
   /* Variable: cf_nKpLimProt
    * Referenced by: '<S46>/cf_nKpLimProt'
    */
-  320U,
-
-  /* Variable: id_fieldWeak_M1
-   * Referenced by: '<S32>/id_fieldWeak_M1'
-   */
-  { 0U, 0U, 3U, 13U, 50U, 100U, 150U, 200U, 225U, 240U, 250U, 250U },
-
-  /* Variable: cf_idKp
-   * Referenced by: '<S40>/cf_idKp'
-   */
-  256U,
-
-  /* Variable: cf_iqKp
-   * Referenced by: '<S39>/cf_iqKp'
-   */
-  128U,
-
-  /* Variable: cf_nKp
-   * Referenced by: '<S38>/cf_nKp'
-   */
-  302U,
+  1280U,
 
   /* Variable: z_ctrlTypSel
    * Referenced by: '<S1>/z_ctrlTypSel1'
