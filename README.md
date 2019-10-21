@@ -50,7 +50,7 @@ A short video showing the noise performance of the Commutation method vs advance
 ### Field weakening
 
  - By default the Field weakening is disabled. You can enable it in config.h file by setting the FIELD_WEAK_ENA = 1 
- - In BLDC_controller_data.c you can find the field weakening Map as a function of speed: MAP = id_fieldWeak_M1, XAXIS = n_fieldWeak_XA
+ - In BLDC_controller_data.c you can find the field weakening Map as a function of Input target: MAP = id_fieldWeak_M1, XAXIS = r_fieldWeak_XA
  - The default calibration was experimentally calibrated to my particular needs
  - If you re-calibrate the field weakening map please take all the safety measures! The motors can spin very fast!
  - During the recalibration make sure the speed values in XAXIS are equally spaced for a correct Map interpolation.
@@ -147,7 +147,7 @@ A good example of control via UART, eg. from an Arduino or raspberryPi, can be f
 https://github.com/p-h-a-i-l/hoverboard-firmware-hack
 
 ### Future work
- - conversion of the remaining filters (for the battery voltage, current, and temperature) from floating point to fixed-point. This will reduce further the SMT32 computational load -> DONE
+ - convert all calculations and remaining filters (for the battery voltage, current, and temperature) from floating point to fixed-point. This will reduce further the SMT32 computational load -> **DONE**
 
 ---
 ## Acknowledgements
