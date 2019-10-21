@@ -147,7 +147,7 @@ A good example of control via UART, eg. from an Arduino or raspberryPi, can be f
 https://github.com/p-h-a-i-l/hoverboard-firmware-hack
 
 ### Future work
- - conversion of the remaining filters (for the battery voltage, current, and temperature) from floating point to fixed-point. This will reduce further the SMT32 computational load
+ - conversion of the remaining filters (for the battery voltage, current, and temperature) from floating point to fixed-point. This will reduce further the SMT32 computational load -> DONE
 
 ---
 ## Acknowledgements
