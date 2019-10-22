@@ -58,16 +58,16 @@ r_cos_M1            = cos((a_elecAngle_XA + 30)*(pi/180));
 
 %% Control Manager
 % Control type selection
-CTRL_COM            = 0;    % [-] Commutation Control
-CTRL_FOC            = 1;    % [-] Field Oriented Control (FOC)
-z_ctrlTypSel        = 1;    % [-] Control Type Selection (default)
+CTRL_COM            = 0;        % [-] Commutation Control
+CTRL_FOC            = 1;        % [-] Field Oriented Control (FOC)
+z_ctrlTypSel        = CTRL_FOC; % [-] Control Type Selection (default)
 
 % Control model request
-OPEN_MODE           = 0;    % [-] Open mode
-VLT_MODE            = 1;    % [-] Voltage mode
-SPD_MODE            = 2;    % [-] Speed mode
-TRQ_MODE            = 3;    % [-] Torque mode
-z_ctrlModReq        = 1;    % [-] Control Mode Request (default)
+OPEN_MODE           = 0;        % [-] Open mode
+VLT_MODE            = 1;        % [-] Voltage mode
+SPD_MODE            = 2;        % [-] Speed mode
+TRQ_MODE            = 3;        % [-] Torque mode
+z_ctrlModReq        = VLT_MODE; % [-] Control Mode Request (default)
 
 %% F01_Estimations
 % Position Estimation Parameters

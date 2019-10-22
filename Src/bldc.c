@@ -79,10 +79,9 @@ static int16_t offsetdcr    = 2000;
 int16_t        batVoltage       = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
 static int16_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 4;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
 
-
-//scan 8 channels with 2ADCs @ 20 clk cycles per sample
-//meaning ~80 ADC clock cycles @ 8MHz until new DMA interrupt =~ 100KHz
-//=640 cpu cycles
+// =================================
+// DMA interrupt frequency =~ 16 kHz
+// =================================
 void DMA1_Channel1_IRQHandler(void) {
 
   DMA1->IFCR = DMA_IFCR_CTCIF1;
