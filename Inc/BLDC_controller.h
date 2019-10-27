@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1183
+ * Model version                  : 1.1187
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Mon Oct 21 16:34:10 2019
+ * C/C++ source code generated on : Sun Oct 27 17:31:20 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -122,7 +122,7 @@ typedef struct {
   boolean_T UnitDelay_DSTATE_g;        /* '<S50>/UnitDelay' */
   boolean_T UnitDelay1_DSTATE_n;       /* '<S16>/UnitDelay1' */
   boolean_T n_commDeacv_Mode;          /* '<S11>/n_commDeacv' */
-  boolean_T n_commDeacv_Mode_c;        /* '<S32>/n_commDeacv' */
+  boolean_T n_fieldWeakAuth_Mode;      /* '<S32>/n_fieldWeakAuth' */
   boolean_T dz_cntTrnsDet_Mode;        /* '<S16>/dz_cntTrnsDet' */
 } DW;
 
@@ -246,10 +246,10 @@ struct P_ {
                                         * Referenced by: '<S11>/n_commDeacv'
                                         */
   int16_T n_fieldWeakAuthHi;           /* Variable: n_fieldWeakAuthHi
-                                        * Referenced by: '<S32>/n_commDeacv'
+                                        * Referenced by: '<S32>/n_fieldWeakAuth'
                                         */
   int16_T n_fieldWeakAuthLo;           /* Variable: n_fieldWeakAuthLo
-                                        * Referenced by: '<S32>/n_commDeacv'
+                                        * Referenced by: '<S32>/n_fieldWeakAuth'
                                         */
   int16_T n_max;                       /* Variable: n_max
                                         * Referenced by:

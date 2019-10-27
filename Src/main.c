@@ -76,10 +76,12 @@ static volatile Serialcommand command;
 
 static uint8_t button1, button2;
 
-static int16_t steerFixdt;        // local fixed-point variable for steering.
-static int16_t speedFixdt;        // local fixed-point variable for speed.
 static int16_t steer;             // local variable for steering. -1000 to 1000
 static int16_t speed;             // local variable for speed. -1000 to 1000
+static int16_t steerFixdt;        // local fixed-point variable for steering low-pass filter
+static int16_t speedFixdt;        // local fixed-point variable for speed low-pass filter
+static int16_t steerRateFixdt;    // local fixed-point variable for steering rate limiter
+static int16_t speedRateFixdt;    // local fixed-point variable for speed rate limiter
 
 extern volatile int pwml;         // global variable for pwm left. -1000 to 1000
 extern volatile int pwmr;         // global variable for pwm right. -1000 to 1000
@@ -243,8 +245,6 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
-  enable = 0;  // initially motors are disabled for SAFETY
-
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
@@ -267,8 +267,19 @@ int main(void) {
 
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
-       cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) * 1000 / ADC1_MAX;  // ADC1
-       cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) * 1000 / ADC2_MAX;  // ADC2
+      #ifdef ADC1_MID_POT
+        cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MID, 0, ADC1_MAX - ADC1_MID) * 1000 / (ADC1_MAX - ADC1_MID)
+              -CLAMP(ADC1_MID - adc_buffer.l_tx2, 0, ADC1_MID - ADC1_MIN) * 1000 / (ADC1_MID - ADC1_MIN); // ADC1        
+      #else
+        cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) * 1000 / ADC1_MAX;                         // ADC1
+      #endif
+
+      #ifdef ADC2_MID_POT
+        cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MID, 0, ADC2_MAX - ADC2_MID) * 1000 / (ADC2_MAX - ADC2_MID) 
+              -CLAMP(ADC2_MID - adc_buffer.l_rx2, 0, ADC2_MID - ADC2_MIN) * 1000 / (ADC2_MID - ADC2_MIN); // ADC2        
+      #else
+        cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) * 1000 / ADC2_MAX;                         // ADC2
+      #endif  
 
       // use ADCs as button inputs:
       button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
@@ -284,18 +295,21 @@ int main(void) {
       timeout = 0;
     #endif
 
-    // Bypass - only for testing purposes
-    // cmd1 = 2*(cmd1-500);
-    // cmd2 = 2*(cmd2-500);
 
     // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
     if (enable == 0 && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
-      enable = 1;   // enable motors
+      buzzerPattern = 0;
+      buzzerFreq = 6; HAL_Delay(100);   // make 2 beeps indicating the motor enable
+      buzzerFreq = 4; HAL_Delay(200);
+      buzzerFreq = 0;
+      enable = 1;                       // enable motors
     }
 
     // ####### LOW-PASS FILTER #######
-    filtLowPass16(cmd1, FILTER, &steerFixdt);
-    filtLowPass16(cmd2, FILTER, &speedFixdt);
+    rateLimiter16(cmd1, RATE, &steerRateFixdt);
+    rateLimiter16(cmd2, RATE, &speedRateFixdt);
+    filtLowPass16(steerRateFixdt >> 4, FILTER, &steerFixdt);
+    filtLowPass16(speedRateFixdt >> 4, FILTER, &speedFixdt);
     steer = steerFixdt >> 4;  // convert fixed-point to integer
     speed = speedFixdt >> 4;  // convert fixed-point to integer    
 
@@ -335,13 +349,11 @@ int main(void) {
 
       // ####### DEBUG SERIAL OUT #######
       #ifdef CONTROL_ADC
-        // setScopeChannel(0, (int)adc_buffer.l_tx2);        // 1: ADC1
-        // setScopeChannel(1, (int)adc_buffer.l_rx2);        // 2: ADC2
+        setScopeChannel(0, (int)adc_buffer.l_tx2);            // 1: ADC1
+        setScopeChannel(1, (int)adc_buffer.l_rx2);            // 2: ADC2
       #endif
-      setScopeChannel(0, (int16_t)speedR);                    // 1: output command: [-1000, 1000]
-      setScopeChannel(1, (int16_t)speedL);                    // 2: output command: [-1000, 1000]
-      setScopeChannel(2, (int16_t)rtY_Right.n_mot);           // 3: Real motor speed [rpm]
-      setScopeChannel(3, (int16_t)rtY_Left.n_mot);            // 4: Real motor speed [rpm]
+      setScopeChannel(2, (int16_t)speedR);                    // 1: output command: [-1000, 1000]
+      setScopeChannel(3, (int16_t)speedL);                    // 2: output command: [-1000, 1000]
       setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
       setScopeChannel(5, (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC)); // 6: for verifying battery voltage calibration
       setScopeChannel(6, (int16_t)board_temp_adcFilt);        // 7: for board temperature calibration
@@ -352,9 +364,13 @@ int main(void) {
     HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
     // ####### POWEROFF BY POWER-BUTTON #######
     if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
-      enable = 0;
-      while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {}
-      poweroff();
+      enable = 0;                                             // disable motors
+      while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {}    // wait until button is released
+      if(__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST)) {               // do not power off after software reset (from a programmer/debugger)
+        __HAL_RCC_CLEAR_RESET_FLAGS();                        // clear reset flags
+      } else {
+        poweroff();                                           // release power-latch
+      }
     }
 
 
@@ -507,7 +523,7 @@ void filtLowPass32(int32_t u, uint16_t coef, int32_t *y)
   /* mixerFcn(rtu_speed, rtu_steer, &rty_speedR, &rty_speedL); 
   * Inputs:       rtu_speed, rtu_steer                  = fixdt(1,16,4)
   * Outputs:      rty_speedR, rty_speedL                = int16_t
-  * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,15)
+  * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,14)
   */
 void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t *rty_speedL)
 {
@@ -527,6 +543,31 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t
   tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
   *rty_speedL = (int16_t)(tmp >> 4);        // Convert from fixed-point to int
   *rty_speedL = CLAMP(*rty_speedL, -1000, 1000);
+}
+
+// ===========================================================
+  /* rateLimiter16(int16_t u, int16_t rate, int16_t *y);
+  * Inputs:       u     = int16
+  * Outputs:      y     = fixdt(1,16,4)
+  * Parameters:   rate  = fixdt(1,16,4) = [0, 32767] Do NOT make rate negative (>32767)
+  */
+void rateLimiter16(int16_t u, int16_t rate, int16_t *y)
+{
+  int16_t q0;
+  int16_t q1;
+
+  q0 = (u << 4)  - *y;
+
+  if (q0 > rate) {
+    q0 = rate;
+  } else {
+    q1 = -rate;
+    if (q0 < q1) {
+      q0 = q1;
+    }
+  }
+
+  *y = (int16_T)(q0 + *y);
 }
 
 // ===========================================================

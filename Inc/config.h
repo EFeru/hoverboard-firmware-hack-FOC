@@ -98,13 +98,19 @@
 // ###### CONTROL VIA TWO POTENTIOMETERS ######
 /* ADC-calibration to cover the full poti-range:
  * Connect potis to left sensor board cable (0 to 3.3V) (do NOT use the red 15V wire in the cable!). see <How to calibrate>.
- * Turn the potis to minimum position, write value 1 to ADC1_MIN and value 2 to ADC2_MIN.
- * Turn to maximum position and repeat it for ADC?_MAX. make, flash and test it.
+ * Turn the potis to minimum position, write value 1 to ADC1_MIN and value 2 to ADC2_MIN
+ * Turn the potis to maximum position, write value 1 to ADC1_MAX and value 2 to ADC2_MAX
+ * For middle resting potis: Let the potis in the middle resting position, write value 1 to ADC1_MID and value 2 to ADC2_MID
+ * Make, flash and test it.
  */
 #define CONTROL_ADC           // use ADC as input. disable CONTROL_SERIAL_USART2!
+#define ADC1_MID_POT          // ADC1 middle resting poti: comment-out if NOT a middle resting poti
+#define ADC2_MID_POT          // ADC2 middle resting poti: comment-out if NOT a middle resting poti
 #define ADC1_MIN 0            // min ADC1-value while poti at minimum-position (0 - 4095)
+#define ADC1_MID 1963         // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
 #define ADC1_MAX 4095         // max ADC1-value while poti at maximum-position (0 - 4095)
 #define ADC2_MIN 0            // min ADC2-value while poti at minimum-position (0 - 4095)
+#define ADC2_MID 2006         // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
 #define ADC2_MAX 4095         // max ADC2-value while poti at maximum-position (0 - 4095)
 
 // ###### CONTROL VIA NINTENDO NUNCHUCK ######
@@ -151,9 +157,11 @@
  * - speedR and speedL: normal driving -1000 to 1000 
  */
 
-// Value of FILTER is in fixdt(0,16,16)
-// VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
-#define FILTER              6553  // 0.1f [-] lower value == softer filter [0, 65535] = [ 0.0 - 1.0].
+// Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
+#define RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0 - 2047.9375]. Do NOT make rate negative (>32767)
+
+// Value of FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
+#define FILTER              6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
 
 // Value of COEFFICIENT is in fixdt(1,16,14)
 // If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^15

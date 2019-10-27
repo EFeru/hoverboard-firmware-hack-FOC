@@ -486,32 +486,32 @@
             <!--RAWSTRING-->
           </g>
           <!--RAWSTRING-->
-          <g data-tags="blk">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,105,144)">
-              <path d="M-22.3984,0 L22.3984,0 L22.3984,14 L-22.3984,14 L-22.3984,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip59">
-                <path d="M-49.6016,-127 L177.398,-127 L177.398,14 L-49.6016,14 L-49.6016,-127 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip59)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="0.6" stroke-width="1" transform="matrix(1,0,0,1,82.6016,144)">
-              <text fill="#000000" fill-opacity="0.6" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="42.7969" x="1" xml:space="preserve" y="10">Ini=initVal</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
           <g data-tags="portannotationpanel PortDataTypeString">
             <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,117,128)">
               <path d="M0,-12 L26.4844,-12 L26.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip60">
+              <clipPath id="clip59">
                 <path d="M-84,-99 L143,-99 L143,42 L-84,42 L-84,-99 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip60)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,117,116)">
+            <g clip-path="url(#clip59)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,117,116)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="24.4844" x="1" xml:space="preserve" y="9">uint16</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,105,144)">
+              <path d="M-22.3984,0 L22.3984,0 L22.3984,14 L-22.3984,14 L-22.3984,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip60">
+                <path d="M-49.6016,-127 L177.398,-127 L177.398,14 L-49.6016,14 L-49.6016,-127 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip60)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="0.6" stroke-width="1" transform="matrix(1,0,0,1,82.6016,144)">
+              <text fill="#000000" fill-opacity="0.6" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="42.7969" x="1" xml:space="preserve" y="10">Ini=initVal</text>
             </g>
             <!--RAWSTRING-->
           </g>
@@ -592,5 +592,5 @@
       <!--RAWSTRING-->
     </g>
   </g>
-  <!--generated on windows @ 2019-10-21 16:34:26 W. Europe Daylight Time-->
+  <!--generated on windows @ 2019-10-27 17:31:38 W. Europe Standard Time-->
 </svg>

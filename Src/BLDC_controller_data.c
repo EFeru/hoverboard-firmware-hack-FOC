@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1183
+ * Model version                  : 1.1187
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Mon Oct 21 16:34:10 2019
+ * C/C++ source code generated on : Sun Oct 27 17:31:20 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -198,12 +198,12 @@ P rtP_Left = {
   480,
 
   /* Variable: n_fieldWeakAuthHi
-   * Referenced by: '<S32>/n_commDeacv'
+   * Referenced by: '<S32>/n_fieldWeakAuth'
    */
   3200,
 
   /* Variable: n_fieldWeakAuthLo
-   * Referenced by: '<S32>/n_commDeacv'
+   * Referenced by: '<S32>/n_fieldWeakAuth'
    */
   2240,
 

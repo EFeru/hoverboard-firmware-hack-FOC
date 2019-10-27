@@ -63,7 +63,7 @@ uint8_t buzzerFreq          = 0;
 uint8_t buzzerPattern       = 0;
 static uint32_t buzzerTimer = 0;
 
-uint8_t        enable       = 0;
+uint8_t        enable       = 0;        // initially motors are disabled for SAFETY
 static uint8_t enableFin    = 0;
 
 static const uint16_t pwm_res  = 64000000 / 2 / PWM_FREQ; // = 2000
