@@ -515,87 +515,39 @@
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8235",
   "inspector":{
    "params":[
-    "NumberOfDimensions",
     "IndexMode",
     "IndexOptionArray",
-    "IndexParamArray",
-    "OutputSizeArray",
-    "InputPortWidth",
-    "SampleTime",
     "IndexOptions",
-    "NumberOfDimensions",
-    "IndexMode",
-    "IndexOptionArray",
     "IndexParamArray",
-    "OutputSizeArray",
-    "InputPortWidth",
-    "SampleTime",
-    "IndexOptions",
-    "NumberOfDimensions",
-    "IndexMode",
-    "IndexOptionArray",
-    "IndexParamArray",
-    "OutputSizeArray",
-    "InputPortWidth",
-    "SampleTime",
-    "IndexOptions",
     "Indices",
-    "OutputSizes"
+    "InputPortWidth",
+    "NumberOfDimensions",
+    "OutputSizeArray",
+    "OutputSizes",
+    "SampleTime"
    ],
    "values":[
-    "1",
     "Zero-based",
     [
      "Index vector (port)"
     ],
+    "Index vector (port)",
     [
      "[1 3]"
     ],
-    [
-     "1"
-    ],
-    "length(vec_hallToPos)",
-    "-1",
-    "Index vector (port)",
-    "1",
-    "Zero-based",
-    [
-     "Index vector (port)"
-    ],
-    [
-     "[1 3]"
-    ],
-    [
-     "1"
-    ],
-    "length(vec_hallToPos)",
-    "-1",
-    "Index vector (port)",
-    "1",
-    "Zero-based",
-    [
-     "Index vector (port)"
-    ],
-    [
-     "[1 3]"
-    ],
-    [
-     "1"
-    ],
-    "length(vec_hallToPos)",
-    "-1",
-    "Index vector (port)",
     "[1 3]",
-    "1"
+    "length(vec_hallToPos)",
+    "1",
+    [
+     "1"
+    ],
+    "1",
+    "-1"
    ],
    "tabs":[
-    "Parameter Attributes",
-    "-Other"
+    "Parameter Attributes"
    ],
-   "tabs_idx":[
-    0,
-    24
-   ]
+   "tabs_idx":0
   },
   "viewer":{
    "jshandler":"webview/handlers/ElementHandler"
