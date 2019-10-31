@@ -95,7 +95,7 @@ r_errInpTgtThres    = 200;          % [-] Error input target threshold (for "Blo
 
 % Current measurement
 b_selPhaABCurrMeas  = 1;                % [-] Measured phase currents selection: {iA,iB} = 1 (default); {iB,iC} = 0
-dV_openRate         = 1000 * Ts_ctrl;   % [V/s] Rate for voltage cut-off in Open Mode (Sample Time included in the rate)
+dV_openRate         = 1000 / f_ctrl;    % [V/s] Rate for voltage cut-off in Open Mode (Sample Time included in the rate)
 
 % Field Weakening
 b_fieldWeakEna      = 0;                % [-] Field weakening enable flag: 0 = disable (default), 1 = enable
@@ -109,18 +109,15 @@ r_fieldWeak_XA      = [570 600   630   660  690  720  750  780  810  840 870  90
 
 % Q axis control gains
 cf_iqKp             = 0.5;              % [-] P gain
-cf_iqKi             = 100 * Ts_ctrl;    % [-] I gain
-cf_iqKb             = 1000 * Ts_ctrl;   % [-] Back calculation gain for integral anti-windup
+cf_iqKi             = 100 / f_ctrl;     % [-] I gain
 
 % D axis control gains
 cf_idKp             = 0.2;              % [-] P gain
-cf_idKi             = 60 * Ts_ctrl;     % [-] I gain
-cf_idKb             = 1000 * Ts_ctrl;   % [-] Back calculation gain for integral anti-windup
+cf_idKi             = 60 / f_ctrl;      % [-] I gain
 
 % Speed control gains
 cf_nKp              = 1.18;             % [-] P gain
-cf_nKi              = 20.4 * Ts_ctrl;   % [-] I gain
-cf_nKb              = 1000 * Ts_ctrl;   % [-] Back calculation gain for integral anti-windup
+cf_nKi              = 20.4 / f_ctrl;    % [-] I gain
 
 % Limitations
 %-------------------------------
@@ -138,7 +135,7 @@ n_max               = 800;              % [rpm] Maximum motor speed
 
 % Current Limitations
 cf_iqKpLimProt      = 7.2;              % [-] Current limit protection gain (only used in VLT_MODE and SPD_MODE)
-cf_iqKiLimProt      = 40.7 * Ts_ctrl;   % [-] Current limit protection integral gain (only used in SPD_MODE)
+cf_iqKiLimProt      = 40.7 / f_ctrl;    % [-] Current limit protection integral gain (only used in SPD_MODE)
 i_max               = 15;               % [A] Maximum allowed motor current (continuous)
 i_max               = i_max * i_sca;
 iq_max_XA           = 0:15:i_max;

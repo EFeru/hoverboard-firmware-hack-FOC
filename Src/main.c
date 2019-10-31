@@ -63,9 +63,6 @@ extern volatile adc_buf_t adc_buffer;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart2;
 
-static int cmd1;  // normalized input values. -1000 to 1000
-static int cmd2;
-
 typedef struct{
    int16_t steer;
    int16_t speed;
@@ -76,6 +73,8 @@ static volatile Serialcommand command;
 
 static uint8_t button1, button2;
 
+static int     cmd1;              // normalized input value. -1000 to 1000
+static int     cmd2;              // normalized input value. -1000 to 1000
 static int16_t steer;             // local variable for steering. -1000 to 1000
 static int16_t speed;             // local variable for speed. -1000 to 1000
 static int16_t steerFixdt;        // local fixed-point variable for steering low-pass filter
@@ -271,14 +270,14 @@ int main(void) {
         cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MID, 0, ADC1_MAX - ADC1_MID) * 1000 / (ADC1_MAX - ADC1_MID)
               -CLAMP(ADC1_MID - adc_buffer.l_tx2, 0, ADC1_MID - ADC1_MIN) * 1000 / (ADC1_MID - ADC1_MIN); // ADC1        
       #else
-        cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) * 1000 / ADC1_MAX;                         // ADC1
+        cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) * 1000 / (ADC1_MAX - ADC1_MIN);            // ADC1
       #endif
 
       #ifdef ADC2_MID_POT
         cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MID, 0, ADC2_MAX - ADC2_MID) * 1000 / (ADC2_MAX - ADC2_MID) 
               -CLAMP(ADC2_MID - adc_buffer.l_rx2, 0, ADC2_MID - ADC2_MIN) * 1000 / (ADC2_MID - ADC2_MIN); // ADC2        
       #else
-        cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) * 1000 / ADC2_MAX;                         // ADC2
+        cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) * 1000 / (ADC2_MAX - ADC2_MIN);            // ADC2
       #endif  
 
       // use ADCs as button inputs:
@@ -567,7 +566,7 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y)
     }
   }
 
-  *y = (int16_T)(q0 + *y);
+  *y = q0 + *y;
 }
 
 // ===========================================================

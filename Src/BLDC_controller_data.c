@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1187
+ * Model version                  : 1.1197
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Sun Oct 27 17:31:20 2019
+ * C/C++ source code generated on : Thu Oct 31 21:29:42 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -78,7 +78,7 @@ P rtP_Left = {
   /* Variable: dV_openRate
    * Referenced by: '<S36>/dV_openRate'
    */
-  3932,
+  4096,
 
   /* Variable: dz_cntTrnsDetHi
    * Referenced by: '<S16>/dz_cntTrnsDet'
@@ -121,7 +121,7 @@ P rtP_Left = {
   9600U,
 
   /* Variable: cf_idKp
-   * Referenced by: '<S40>/cf_idKp'
+   * Referenced by: '<S40>/cf_idKp1'
    */
   819U,
 
@@ -230,40 +230,25 @@ P rtP_Left = {
    */
   7864U,
 
-  /* Variable: cf_idKb
-   * Referenced by: '<S40>/cf_idKb'
-   */
-  3932U,
-
   /* Variable: cf_idKi
-   * Referenced by: '<S40>/cf_idKi'
+   * Referenced by: '<S40>/cf_idKi1'
    */
-  236U,
-
-  /* Variable: cf_iqKb
-   * Referenced by: '<S39>/cf_iqKb'
-   */
-  3932U,
+  246U,
 
   /* Variable: cf_iqKi
    * Referenced by: '<S39>/cf_iqKi'
    */
-  393U,
+  410U,
 
   /* Variable: cf_iqKiLimProt
    * Referenced by: '<S38>/cf_iqKiLimProt'
    */
-  160U,
-
-  /* Variable: cf_nKb
-   * Referenced by: '<S38>/cf_nKb'
-   */
-  3932U,
+  167U,
 
   /* Variable: cf_nKi
    * Referenced by: '<S38>/cf_nKi'
    */
-  80U,
+  84U,
 
   /* Variable: cf_iqKpLimProt
    * Referenced by: '<S45>/cf_iqKpLimProt'

@@ -7,7 +7,7 @@
 #define DEAD_TIME              32     // PWM deadtime
 #define DELAY_IN_MAIN_LOOP      5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
 #define TIMEOUT                 5     // number of wrong / missing input commands before emergency off
-#define A2BIT_CONV             50     // bits per A on ADC. Example: 50 = 1 A, 100 = 2 A, etc
+#define A2BIT_CONV             50     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
 
 // ADC conversion time definitions
 #define ADC_CONV_TIME_1C5       (14)  //Total ADC clock cycles / conversion = (  1.5+12.5)
@@ -127,9 +127,9 @@
 #define CTRL_MOD_REQ    1                       // [-] Control mode request: 0 = Open mode, 1 = Voltage mode (default), 2 = Speed mode, 3 = Torque mode
 #define DIAG_ENA        1                       // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
 #define FIELD_WEAK_ENA  0                       // [-] Field Weakening enable flag: 0 = Disabled (default), 1 = Enabled
-#define I_MOT_MAX       (15 * A2BIT_CONV) << 4  // [A] Maximum motor current limit (Change only the first number, the rest is needed for fixed-point conversion)
+#define I_MOT_MAX       (15 * A2BIT_CONV) << 4  // [A] Maximum motor current limit (Change only the first number, the rest is needed for fixed-point conversion, fixdt(1,16,4))
 #define I_DC_MAX        (17 * A2BIT_CONV)       // [A] Maximum DC Link current limit (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A )
-#define N_MOT_MAX       800 << 4                // [rpm] Maximum motor speed (change only the first number, the rest is needed for fixed-point conversion)
+#define N_MOT_MAX       800 << 4                // [rpm] Maximum motor speed (change only the first number, the rest is needed for fixed-point conversion, fixdt(1,16,4))
 
 
 /* GENERAL NOTES:
@@ -164,10 +164,10 @@
 #define FILTER              6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
 
 // Value of COEFFICIENT is in fixdt(1,16,14)
-// If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^15
-// If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^15).
+// If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
+// If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
 #define SPEED_COEFFICIENT   16384 // 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14 
-#define STEER_COEFFICIENT   8192  // 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^15. If you do not want any steering, set it to 0. 
+#define STEER_COEFFICIENT   8192  // 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0. 
 
 #define INVERT_R_DIRECTION
 #define INVERT_L_DIRECTION
