@@ -267,17 +267,17 @@ int main(void) {
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
       #ifdef ADC1_MID_POT
-        cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MID, 0, ADC1_MAX - ADC1_MID) * 1000 / (ADC1_MAX - ADC1_MID)
-              -CLAMP(ADC1_MID - adc_buffer.l_tx2, 0, ADC1_MID - ADC1_MIN) * 1000 / (ADC1_MID - ADC1_MIN); // ADC1        
+        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MID) * 1000 / (ADC1_MAX - ADC1_MID), 0, 1000) 
+              -CLAMP((ADC1_MID - adc_buffer.l_tx2) * 1000 / (ADC1_MID - ADC1_MIN), 0, 1000);    // ADC1        
       #else
-        cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) * 1000 / (ADC1_MAX - ADC1_MIN);            // ADC1
+        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MIN) * 1000 / (ADC1_MAX - ADC1_MIN), 0, 1000);    // ADC1
       #endif
 
       #ifdef ADC2_MID_POT
-        cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MID, 0, ADC2_MAX - ADC2_MID) * 1000 / (ADC2_MAX - ADC2_MID) 
-              -CLAMP(ADC2_MID - adc_buffer.l_rx2, 0, ADC2_MID - ADC2_MIN) * 1000 / (ADC2_MID - ADC2_MIN); // ADC2        
+        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MID) * 1000 / (ADC2_MAX - ADC2_MID), 0, 1000)  
+              -CLAMP((ADC2_MID - adc_buffer.l_rx2) * 1000 / (ADC2_MID - ADC2_MIN), 0, 1000);    // ADC2        
       #else
-        cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) * 1000 / (ADC2_MAX - ADC2_MIN);            // ADC2
+        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN) * 1000 / (ADC2_MAX - ADC2_MIN), 0, 1000);    // ADC2
       #endif  
 
       // use ADCs as button inputs:
