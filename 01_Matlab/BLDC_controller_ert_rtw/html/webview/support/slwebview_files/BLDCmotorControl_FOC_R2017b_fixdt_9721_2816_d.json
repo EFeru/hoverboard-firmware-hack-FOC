@@ -245,40 +245,38 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2840",
-  "className":"Simulink.DataTypeConversion",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2841",
+  "className":"Simulink.RelationalOperator",
   "icon":"WebViewIcon3",
-  "name":"DataTypeConv4",
-  "label":"DataTypeConv4",
+  "name":"Equal1",
+  "label":"Equal1",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2816",
   "inspector":{
    "params":[
-    "OutMin",
-    "OutMax",
+    "Operator",
+    "InputSameDT",
     "OutDataTypeStr",
-    "LockScale",
-    "ConvertRealWorld",
     "RndMeth",
-    "SaturateOnIntegerOverflow",
-    "SampleTime"
+    "SampleTime",
+    "ZeroCross"
    ],
    "values":[
-    "[]",
-    "[]",
-    "int8",
+    "==",
     "on",
-    "Real World Value (RWV)",
+    "Inherit: Logical (see Configuration Parameters: Optimization)",
     "Zero",
-    "off",
-    "-1"
+    "-1",
+    "on"
    ],
    "tabs":[
-    "Parameter Attributes",
+    "Main",
+    "Data Type",
     "-Other"
    ],
    "tabs_idx":[
     0,
-    7
+    1,
+    4
    ]
   },
   "viewer":{
@@ -287,7 +285,7 @@
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"DataTypeConversion",
+   "blocktype":"RelationalOperator",
    "masktype":""
   }
  },
@@ -370,38 +368,40 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2841",
-  "className":"Simulink.RelationalOperator",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2840",
+  "className":"Simulink.DataTypeConversion",
   "icon":"WebViewIcon3",
-  "name":"Equal1",
-  "label":"Equal1",
+  "name":"DataTypeConv4",
+  "label":"DataTypeConv4",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2816",
   "inspector":{
    "params":[
-    "Operator",
-    "InputSameDT",
+    "OutMin",
+    "OutMax",
     "OutDataTypeStr",
+    "LockScale",
+    "ConvertRealWorld",
     "RndMeth",
-    "SampleTime",
-    "ZeroCross"
+    "SaturateOnIntegerOverflow",
+    "SampleTime"
    ],
    "values":[
-    "==",
+    "[]",
+    "[]",
+    "int8",
     "on",
-    "Inherit: Logical (see Configuration Parameters: Optimization)",
+    "Real World Value (RWV)",
     "Zero",
-    "-1",
-    "on"
+    "off",
+    "-1"
    ],
    "tabs":[
-    "Main",
-    "Data Type",
+    "Parameter Attributes",
     "-Other"
    ],
    "tabs_idx":[
     0,
-    1,
-    4
+    7
    ]
   },
   "viewer":{
@@ -410,7 +410,7 @@
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"RelationalOperator",
+   "blocktype":"DataTypeConversion",
    "masktype":""
   }
  },

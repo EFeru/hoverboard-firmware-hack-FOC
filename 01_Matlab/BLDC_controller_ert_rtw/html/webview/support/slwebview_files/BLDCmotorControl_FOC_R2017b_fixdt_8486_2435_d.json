@@ -80,119 +80,75 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435:2416",
-  "className":"Simulink.Sum",
-  "icon":"WebViewIcon3",
-  "name":"Sum1",
-  "label":"Sum1",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435:2515",
+  "className":"Simulink.SubSystem",
+  "icon":"WebViewIcon4",
+  "name":"rst_Delay",
+  "label":"rst_Delay",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435",
   "inspector":{
    "params":[
-    "IconShape",
-    "Inputs",
-    "InputSameDT",
-    "AccumDataTypeStr",
-    "OutMin",
-    "OutMax",
-    "OutDataTypeStr",
-    "LockScale",
-    "RndMeth",
-    "SaturateOnIntegerOverflow",
-    "CollapseDim",
-    "CollapseMode",
-    "SampleTime"
+    "initVal"
    ],
    "values":[
-    "round",
-    "|++",
-    "on",
-    "Inherit: Same as first input",
-    "[]",
-    "[]",
-    "Inherit: Same as first input",
-    "off",
-    "Simplest",
-    "off",
-    "1",
-    "All dimensions",
-    "-1"
+    "z_cntInit"
    ],
    "tabs":[
-    "Main",
-    "Signal Attributes",
-    "-Other"
    ],
    "tabs_idx":[
-    0,
-    2,
-    10
    ]
   },
   "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
+   "jshandler":"webview/handlers/ContainerHandler"
   },
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"Sum",
+   "blocktype":"SubSystem",
    "masktype":""
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435:2414",
-  "className":"Simulink.Inport",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435:2415",
+  "className":"Simulink.MinMax",
   "icon":"WebViewIcon3",
-  "name":"rst",
-  "label":"rst",
+  "name":"MinMax",
+  "label":"MinMax",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435",
   "inspector":{
    "params":[
-    "Port",
-    "IconDisplay",
-    "OutMin",
-    "OutMax",
     "OutDataTypeStr",
+    "Function",
+    "InputSameDT",
+    "Inputs",
     "LockScale",
-    "Unit",
-    "PortDimensions",
-    "VarSizeSig",
+    "OutMax",
+    "OutMin",
+    "RndMeth",
     "SampleTime",
-    "SignalType",
-    "BusOutputAsStruct",
-    "InputConnect",
-    "Interpolate",
-    "LatchByDelayingOutsideSignal",
-    "LatchInputForFeedbackSignals",
-    "OutputFunctionCall"
+    "SaturateOnIntegerOverflow",
+    "ZeroCross"
    ],
    "values":[
-    "3",
-    "Port number",
+    "Inherit: Inherit via internal rule",
+    "min",
+    "off",
+    "2",
+    "off",
     "[]",
     "[]",
-    "Inherit: auto",
-    "off",
-    "inherit",
+    "Floor",
     "-1",
-    "Inherit",
-    "-1",
-    "auto",
     "off",
-    "",
-    "on",
-    "off",
-    "off",
-    "off"
+    "on"
    ],
    "tabs":[
-    "Main",
     "Signal Attributes",
     "-Other"
    ],
    "tabs_idx":[
     0,
-    2,
-    11
+    1
    ]
   },
   "viewer":{
@@ -201,7 +157,7 @@
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"Inport",
+   "blocktype":"MinMax",
    "masktype":""
   }
  },
@@ -273,31 +229,69 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435:2515",
-  "className":"Simulink.SubSystem",
-  "icon":"WebViewIcon4",
-  "name":"rst_Delay",
-  "label":"rst_Delay",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435:2414",
+  "className":"Simulink.Inport",
+  "icon":"WebViewIcon3",
+  "name":"rst",
+  "label":"rst",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435",
   "inspector":{
    "params":[
-    "initVal"
+    "Port",
+    "IconDisplay",
+    "OutMin",
+    "OutMax",
+    "OutDataTypeStr",
+    "LockScale",
+    "Unit",
+    "PortDimensions",
+    "VarSizeSig",
+    "SampleTime",
+    "SignalType",
+    "BusOutputAsStruct",
+    "InputConnect",
+    "Interpolate",
+    "LatchByDelayingOutsideSignal",
+    "LatchInputForFeedbackSignals",
+    "OutputFunctionCall"
    ],
    "values":[
-    "z_cntInit"
+    "3",
+    "Port number",
+    "[]",
+    "[]",
+    "Inherit: auto",
+    "off",
+    "inherit",
+    "-1",
+    "Inherit",
+    "-1",
+    "auto",
+    "off",
+    "",
+    "on",
+    "off",
+    "off",
+    "off"
    ],
    "tabs":[
+    "Main",
+    "Signal Attributes",
+    "-Other"
    ],
    "tabs_idx":[
+    0,
+    2,
+    11
    ]
   },
   "viewer":{
-   "jshandler":"webview/handlers/ContainerHandler"
+   "jshandler":"webview/handlers/ElementHandler"
   },
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"SubSystem",
+   "blocktype":"Inport",
    "masktype":""
   }
  },
@@ -369,46 +363,52 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435:2415",
-  "className":"Simulink.MinMax",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435:2416",
+  "className":"Simulink.Sum",
   "icon":"WebViewIcon3",
-  "name":"MinMax",
-  "label":"MinMax",
+  "name":"Sum1",
+  "label":"Sum1",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2435",
   "inspector":{
    "params":[
-    "OutDataTypeStr",
-    "Function",
-    "InputSameDT",
+    "IconShape",
     "Inputs",
-    "LockScale",
-    "OutMax",
+    "InputSameDT",
+    "AccumDataTypeStr",
     "OutMin",
+    "OutMax",
+    "OutDataTypeStr",
+    "LockScale",
     "RndMeth",
-    "SampleTime",
     "SaturateOnIntegerOverflow",
-    "ZeroCross"
+    "CollapseDim",
+    "CollapseMode",
+    "SampleTime"
    ],
    "values":[
-    "Inherit: Inherit via internal rule",
-    "min",
-    "off",
-    "2",
-    "off",
+    "round",
+    "|++",
+    "on",
+    "Inherit: Same as first input",
     "[]",
     "[]",
-    "Floor",
-    "-1",
+    "Inherit: Same as first input",
     "off",
-    "on"
+    "Simplest",
+    "off",
+    "1",
+    "All dimensions",
+    "-1"
    ],
    "tabs":[
+    "Main",
     "Signal Attributes",
     "-Other"
    ],
    "tabs_idx":[
     0,
-    1
+    2,
+    10
    ]
   },
   "viewer":{
@@ -417,7 +417,7 @@
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"MinMax",
+   "blocktype":"Sum",
    "masktype":""
   }
  },

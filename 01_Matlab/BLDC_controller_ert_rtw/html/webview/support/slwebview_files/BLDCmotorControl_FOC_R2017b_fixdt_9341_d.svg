@@ -13,6 +13,117 @@
       <!--RAWSTRING-->
       <g data-tags="blk">
         <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9360">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,764,172)">
+            <image height="22" preserveAspectRatio="none" width="38" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAWCAYAAACsR+4DAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABo0lEQVRIie2WXU8CMRBFD+uCgqKJQsQXiYn//z/5hAZC+HLlYwUf5ja7WYbgCsQXJpkU2tI5vZ1OqQAvwD3QAtpq74A6UAMioEI52wBrYAl8AWNgAPTVDtU305wtiwXVAZ7kHeDWAfst3MYBmwBN4Eox0XgqX3tgLQE9A12BBcWqwEUJqDzcN7AiU+xG6yGYJTAHFvItsLbAusBrAexYigUwBDsHEuwoP3eBtYBHAXWAB6ChsbJKkdtEhKldJTu+GTCVj7BcqzprEGP5lPfGrsl/hKxqzVUhTpNMgC2LsOO6zLXuxAMt1vrFWDVMVRfsv23jdUZYgi5ybXqC4OEWFmMtcUpFAJsUPMHywd1JSdtorcSJM1W/K0SMVeKmPFzplOOXi3f5B/YCjMlEcMH6WEUON3HGaQrsO/AG9DAxRvvABmQ3cSWwYz9JY0ypXg5sorGdYEN9TrGKPOU0ioUHPDziE8Vzkz/Wj8LuEkzifKE9FCwk/lhr5xPfVQsFrGE5VhfMtdpj/u1JsDcx0fc5e25+CBhh6nh+qGKeu8d3trOdDfgBs5ixBRXsvc4AAAAASUVORK5CYII=" y="0"/>
+          </g>
+          <g clip-path="none" fill="#ff8000" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,765,173)">
+            <path d="M7,0 L23,0 C26.866,0 30,3.13401 30,7 C30,10.866 26.866,14 23,14 L7,14 C3.13401,14 0,10.866 0,7 C0,3.13401 3.13401,0 7,0 z" fill-rule="nonzero" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip2">
+                <path d="M-15,-7 L15,-7 L15,7 L-15,7 L-15,-7 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip2)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,780,180)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="5.54688" x="-2.76562" xml:space="preserve" y="3.5">1</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,765,173)">
+              <path d="M7,0 L23,0 C26.866,0 30,3.13401 30,7 C30,10.866 26.866,14 23,14 L7,14 C3.13401,14 0,10.866 0,7 C0,3.13401 3.13401,0 7,0 z" fill-rule="nonzero" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk BlockName">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,780,189)">
+              <path d="M-38.4375,0 L38.4375,0 L38.4375,14 L-38.4375,14 L-38.4375,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip3">
+                <path d="M-703.359,-91 L103.438,-91 L103.438,226 L-703.359,226 L-703.359,-91 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip3)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,741.562,189)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="74.875" x="1" xml:space="preserve" y="10">r_inpTgtScaFOC</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9359">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,59,341)">
+            <image height="24" preserveAspectRatio="none" width="93" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAAAYCAYAAACY5PEcAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA9UlEQVRoge3YMQvCMBCG4VepLq66uDj5i/z/g4tLO8RBh3ZxuCueEqUGMSDfA0dCuaF8hJTeDDgAG2Dtq5Rpgc7XWN1zY4MFvQ0lZVbA0vcDcAXOucYGO+FbYOclZRa+9sAFSOHZg3jSd8D+F2/3xwYs8DN2tWRDn//yjcQo9AoUegUKvQKFXoFCr0ChV6DQK1DoFTTYn9OKF39PMtkROGF5Jmz2MuQaG2wKFgc1Uubk1WFjgLeht74fBzVSJo52E5Zln2scQ4+DGimTsPwSE66X1hsS91Mvn7t6XcKaDX2GzdOX2IdUH9Nyg1cf9mOJiIjIt9wAK35CtbEp+lAAAAAASUVORK5CYII=" y="0"/>
+          </g>
+          <g clip-path="none" fill="#e8d152" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,60,342)">
+            <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip5">
+                <path d="M-42,-8 L43,-8 L43,8 L-42,8 L-42,-8 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip5)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,102,350)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="29.9688" x="-14.9844" xml:space="preserve" y="3.5">n_max</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,60,342)">
+              <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk BlockName">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,102.5,360)">
+              <path d="M-15.9844,0 L15.9844,0 L15.9844,14 L-15.9844,14 L-15.9844,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip6">
+                <path d="M-48.3125,-262 L758.484,-262 L758.484,55 L-48.3125,55 L-48.3125,-262 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip6)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,86.5156,360)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="29.9688" x="1" xml:space="preserve" y="10">n_max</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="portannotationpanel PortDataTypeString">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,147,348)">
+              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip7">
+                <path d="M-108.797,-238 L698,-238 L698,79 L-108.797,79 L-108.797,-238 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip7)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,147,336)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
         <g id="BLDCmotorControl_FOC_R2017b_fixdt:9358">
           <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,59,381)">
             <image height="24" preserveAspectRatio="none" width="93" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAAAYCAYAAACY5PEcAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA9UlEQVRoge3YMQvCMBCG4VepLq66uDj5i/z/g4tLO8RBh3ZxuCueEqUGMSDfA0dCuaF8hJTeDDgAG2Dtq5Rpgc7XWN1zY4MFvQ0lZVbA0vcDcAXOucYGO+FbYOclZRa+9sAFSOHZg3jSd8D+F2/3xwYs8DN2tWRDn//yjcQo9AoUegUKvQKFXoFCr0ChV6DQK1DoFTTYn9OKF39PMtkROGF5Jmz2MuQaG2wKFgc1Uubk1WFjgLeht74fBzVSJo52E5Zln2scQ4+DGimTsPwSE66X1hsS91Mvn7t6XcKaDX2GzdOX2IdUH9Nyg1cf9mOJiIjIt9wAK35CtbEp+lAAAAAASUVORK5CYII=" y="0"/>
@@ -23,11 +134,11 @@
           <!--RAWSTRING-->
           <g data-tags="blk">
             <defs>
-              <clipPath id="clip2">
+              <clipPath id="clip9">
                 <path d="M-42,-8 L43,-8 L43,8 L-42,8 L-42,-8 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip2)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,102,390)">
+            <g clip-path="url(#clip9)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,102,390)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="26.6406" x="-13.3125" xml:space="preserve" y="3.5">i_max</text>
             </g>
             <!--RAWSTRING-->
@@ -45,11 +156,11 @@
               <path d="M-14.3203,0 L14.3203,0 L14.3203,14 L-14.3203,14 L-14.3203,0 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip3">
+              <clipPath id="clip10">
                 <path d="M-49.9766,-302 L756.82,-302 L756.82,15 L-49.9766,15 L-49.9766,-302 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip3)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,88.1797,400)">
+            <g clip-path="url(#clip10)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,88.1797,400)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="26.6406" x="1" xml:space="preserve" y="10">i_max</text>
             </g>
             <!--RAWSTRING-->
@@ -60,122 +171,11 @@
               <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip4">
+              <clipPath id="clip11">
                 <path d="M-108.797,-278 L698,-278 L698,39 L-108.797,39 L-108.797,-278 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip4)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,147,376)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9357">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,59,261)">
-            <image height="24" preserveAspectRatio="none" width="93" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAAAYCAYAAACY5PEcAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA9UlEQVRoge3YMQvCMBCG4VepLq66uDj5i/z/g4tLO8RBh3ZxuCueEqUGMSDfA0dCuaF8hJTeDDgAG2Dtq5Rpgc7XWN1zY4MFvQ0lZVbA0vcDcAXOucYGO+FbYOclZRa+9sAFSOHZg3jSd8D+F2/3xwYs8DN2tWRDn//yjcQo9AoUegUKvQKFXoFCr0ChV6DQK1DoFTTYn9OKF39PMtkROGF5Jmz2MuQaG2wKFgc1Uubk1WFjgLeht74fBzVSJo52E5Zln2scQ4+DGimTsPwSE66X1hsS91Mvn7t6XcKaDX2GzdOX2IdUH9Nyg1cf9mOJiIjIt9wAK35CtbEp+lAAAAAASUVORK5CYII=" y="0"/>
-          </g>
-          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,60,262)">
-            <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip6">
-                <path d="M-42,-8 L43,-8 L43,8 L-42,8 L-42,-8 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip6)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,102,270)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="5.54688" x="-2.76562" xml:space="preserve" y="3.5">0</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,60,262)">
-              <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="portannotationpanel PortDataTypeString">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,147,268)">
-              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip7">
-                <path d="M-108.797,-158 L698,-158 L698,159 L-108.797,159 L-108.797,-158 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip7)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,147,256)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9355">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,59,301)">
-            <image height="24" preserveAspectRatio="none" width="93" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAAAYCAYAAACY5PEcAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA9UlEQVRoge3YMQvCMBCG4VepLq66uDj5i/z/g4tLO8RBh3ZxuCueEqUGMSDfA0dCuaF8hJTeDDgAG2Dtq5Rpgc7XWN1zY4MFvQ0lZVbA0vcDcAXOucYGO+FbYOclZRa+9sAFSOHZg3jSd8D+F2/3xwYs8DN2tWRDn//yjcQo9AoUegUKvQKFXoFCr0ChV6DQK1DoFTTYn9OKF39PMtkROGF5Jmz2MuQaG2wKFgc1Uubk1WFjgLeht74fBzVSJo52E5Zln2scQ4+DGimTsPwSE66X1hsS91Mvn7t6XcKaDX2GzdOX2IdUH9Nyg1cf9mOJiIjIt9wAK35CtbEp+lAAAAAASUVORK5CYII=" y="0"/>
-          </g>
-          <g clip-path="none" fill="#e8d152" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,60,302)">
-            <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip9">
-                <path d="M-42,-8 L43,-8 L43,8 L-42,8 L-42,-8 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip9)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,102,310)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="36.625" x="-18.3125" xml:space="preserve" y="3.5">Vd_max</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,60,302)">
-              <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk BlockName">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,102.5,320)">
-              <path d="M-19.3125,0 L19.3125,0 L19.3125,14 L-19.3125,14 L-19.3125,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip10">
-                <path d="M-44.9844,-222 L761.812,-222 L761.812,95 L-44.9844,95 L-44.9844,-222 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip10)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,83.1875,320)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="36.625" x="1" xml:space="preserve" y="10">Vd_max</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="portannotationpanel PortDataTypeString">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,147,308)">
-              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip11">
-                <path d="M-108.797,-198 L698,-198 L698,119 L-108.797,119 L-108.797,-198 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip11)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,147,296)">
+            <g clip-path="url(#clip11)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,147,376)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
             </g>
             <!--RAWSTRING-->
@@ -292,6 +292,39 @@
       <!--RAWSTRING-->
       <g data-tags="blk">
         <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9350">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,719,328)">
+            <image height="20" preserveAspectRatio="none" width="128" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAUCAYAAABFyTWeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABaUlEQVRoge2Zy27CMBBFD2AoJH38/+d1w6ZZBKmkEWlRFzMWxnIgC3sRmCNdOQErSJnrO05YcJ+lygFr1YtqO3J86zt/DRdc28jLF9DoGKqJJ7roPHexU+cbvb4DVsBCZeSjRu4zwAB0wCE10SEFKlHsse/8b61UlgD5Wet4Ao5AG3x2hTdAhbjmVVUDO5UvXC4jhAngE8cSID8DUvwDEv+jBgjx8b8F3oAPHWtVxbUprNgzJzZAiiXinh1ihncdfVJUXApvxZ4Z1n+fnCkJ8If0kx9kRf8iu8oWawGzJzbAGSlwWGy/i7RN4APigB5Z5T3wTdnHwI3KHgPL8gnskd1/iyT2kJroDdDrub0Iegz2qgZ5DLxpgJAzlzZQyhT2Krg84avgFmnjp9TEKZvAnKbwCRC2AEuA/LTIym+50wJy3vipprAEKE+nOkZjF08svfJSpoj/C7AEyM+gOgXHXoZhGIZhGMaz8w/7glXF59GMEgAAAABJRU5ErkJggg==" y="0"/>
+          </g>
+          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,720,329)">
+            <path d="M30,0 L120,0 L120,12 L30,12 L0,6 L30,0 z" fill-rule="nonzero" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip21">
+                <path d="M-74,-5 L46,-5 L46,7 L-74,7 L-74,-5 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip21)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,794,334)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="80.4062" x="-40.2031" xml:space="preserve" y="3.5">[r_inpTgtScaFOC]</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,720,329)">
+              <path d="M30,0 L120,0 L120,12 L30,12 L0,6 L30,0 z" fill-rule="nonzero" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
         <g id="BLDCmotorControl_FOC_R2017b_fixdt:9349">
           <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,224,363)">
             <image height="20" preserveAspectRatio="none" width="128" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAUCAYAAABFyTWeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABUUlEQVRoge2ZzU7CUBCFv2pl41Y3bFj5RL7/E+DCHwq0/LmYuelFiwIdqiTnS05oC5n05kxn5pYCeAYegQf/FLFsXWtg5apdywPHP32XYqyz2GdTYqaPM4k4dq4NZtgaaDhs9OBJUWJP/hiYuEQsWywBNuxXgAjjeydFXgEmwFPcugX29Oct4LcKcI7xS2DhqoCZqwLmtMmQqtEeZfSKxR4FcOu682t9kiKZPccMroAP4M3j1sDNKTeoBBieY5MiGZ7MnmFmv/vvG040u4veAcR1owowPBEtYIH19U3fm1ECXJahh8A08R9NCUyBe9p+JGL5ug1sXENvA7/tAMAS4AUY+fkqaNHCuIoXQVM/brBpU8Ty718FTz1ghe0nRRx5BchbQM0fmN1FSoA58EpbDUQcx1aAi5vdRYH9FzDChkANgrF0VYBcg5othBBCCCEEAJ+G2WlPPBfvMwAAAABJRU5ErkJggg==" y="0"/>
@@ -302,11 +335,11 @@
           <!--RAWSTRING-->
           <g data-tags="blk">
             <defs>
-              <clipPath id="clip21">
+              <clipPath id="clip23">
                 <path d="M-44,-5 L76,-5 L76,7 L-44,7 L-44,-5 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip21)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,269,369)">
+            <g clip-path="url(#clip23)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,269,369)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="67.125" x="-33.5625" xml:space="preserve" y="3.5">[z_ctrlModReq]</text>
             </g>
             <!--RAWSTRING-->
@@ -324,75 +357,12 @@
               <path d="M0,-12 L21.4844,-12 L21.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip22">
+              <clipPath id="clip24">
                 <path d="M-308.797,-258 L498,-258 L498,59 L-308.797,59 L-308.797,-258 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip22)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,347,356)">
+            <g clip-path="url(#clip24)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,347,356)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="19.4844" x="1" xml:space="preserve" y="9">uint8</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9359">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,59,341)">
-            <image height="24" preserveAspectRatio="none" width="93" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAAAYCAYAAACY5PEcAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA9UlEQVRoge3YMQvCMBCG4VepLq66uDj5i/z/g4tLO8RBh3ZxuCueEqUGMSDfA0dCuaF8hJTeDDgAG2Dtq5Rpgc7XWN1zY4MFvQ0lZVbA0vcDcAXOucYGO+FbYOclZRa+9sAFSOHZg3jSd8D+F2/3xwYs8DN2tWRDn//yjcQo9AoUegUKvQKFXoFCr0ChV6DQK1DoFTTYn9OKF39PMtkROGF5Jmz2MuQaG2wKFgc1Uubk1WFjgLeht74fBzVSJo52E5Zln2scQ4+DGimTsPwSE66X1hsS91Mvn7t6XcKaDX2GzdOX2IdUH9Nyg1cf9mOJiIjIt9wAK35CtbEp+lAAAAAASUVORK5CYII=" y="0"/>
-          </g>
-          <g clip-path="none" fill="#e8d152" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,60,342)">
-            <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip24">
-                <path d="M-42,-8 L43,-8 L43,8 L-42,8 L-42,-8 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip24)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,102,350)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="29.9688" x="-14.9844" xml:space="preserve" y="3.5">n_max</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,60,342)">
-              <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk BlockName">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,102.5,360)">
-              <path d="M-15.9844,0 L15.9844,0 L15.9844,14 L-15.9844,14 L-15.9844,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip25">
-                <path d="M-48.3125,-262 L758.484,-262 L758.484,55 L-48.3125,55 L-48.3125,-262 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip25)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,86.5156,360)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="29.9688" x="1" xml:space="preserve" y="10">n_max</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="portannotationpanel PortDataTypeString">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,147,348)">
-              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip26">
-                <path d="M-108.797,-238 L698,-238 L698,79 L-108.797,79 L-108.797,-238 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip26)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,147,336)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
             </g>
             <!--RAWSTRING-->
           </g>
@@ -413,11 +383,11 @@
           <!--RAWSTRING-->
           <g data-tags="blk">
             <defs>
-              <clipPath id="clip28">
+              <clipPath id="clip26">
                 <path d="M-44,-5 L76,-5 L76,7 L-44,7 L-44,-5 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip28)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,514,294)">
+            <g clip-path="url(#clip26)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,514,294)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="42.125" x="-21.0625" xml:space="preserve" y="3.5">[r_inpTgt]</text>
             </g>
             <!--RAWSTRING-->
@@ -435,11 +405,11 @@
               <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip29">
+              <clipPath id="clip27">
                 <path d="M-553.797,-183 L253,-183 L253,134 L-553.797,134 L-553.797,-183 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip29)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,592,281)">
+            <g clip-path="url(#clip27)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,592,281)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
             </g>
             <!--RAWSTRING-->
@@ -461,35 +431,35 @@
           <!--RAWSTRING-->
           <g data-tags="blk">
             <defs>
+              <clipPath id="clip29">
+                <path d="M549.5,331.5 L579.5,331.5 L579.5,402.5 L549.5,402.5 L549.5,331.5 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip29)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0.5,0.5)">
+              <polyline fill="none" points="560,353 554,347" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip30">
+                <path d="M549.5,331.5 L579.5,331.5 L579.5,402.5 L549.5,402.5 L549.5,331.5 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip30)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0.5,0.5)">
+              <polyline fill="none" points="560,347 554,353" vector-effect="none"/>
+            </g>
+            <defs>
               <clipPath id="clip31">
                 <path d="M549.5,331.5 L579.5,331.5 L579.5,402.5 L549.5,402.5 L549.5,331.5 z"/>
               </clipPath>
             </defs>
             <g clip-path="url(#clip31)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0.5,0.5)">
-              <polyline fill="none" points="560,353 554,347" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip32">
-                <path d="M549.5,331.5 L579.5,331.5 L579.5,402.5 L549.5,402.5 L549.5,331.5 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip32)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0.5,0.5)">
-              <polyline fill="none" points="560,347 554,353" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip33">
-                <path d="M549.5,331.5 L579.5,331.5 L579.5,402.5 L549.5,402.5 L549.5,331.5 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip33)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0.5,0.5)">
               <polyline fill="none" points="554,385 560,385" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip34">
+              <clipPath id="clip32">
                 <path d="M550,332 L580,332 L580,403 L550,403 L550,332 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip34)" fill="#000000" fill-opacity="1" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0,0)">
+            <g clip-path="url(#clip32)" fill="#000000" fill-opacity="1" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0,0)">
               <path d="M558,383 C558,383.552 557.552,384 557,384 C556.448,384 556,383.552 556,383 C556,382.448 556.448,382 557,382 C557.552,382 558,382.448 558,383 z" fill-rule="evenodd" vector-effect="none"/>
               <path d="M558,388 C558,388.552 557.552,389 557,389 C556.448,389 556,388.552 556,388 C556,387.448 556.448,387 557,387 C557.552,387 558,387.448 558,388 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
@@ -508,12 +478,60 @@
               <path d="M0,-12 L51.9844,-12 L51.9844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip35">
+              <clipPath id="clip33">
                 <path d="M-543.797,-258 L263,-258 L263,59 L-543.797,59 L-543.797,-258 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip35)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,582,356)">
+            <g clip-path="url(#clip33)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,582,356)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="49.9844" x="1" xml:space="preserve" y="9">ufix16_En12</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9357">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,59,261)">
+            <image height="24" preserveAspectRatio="none" width="93" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAAAYCAYAAACY5PEcAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA9UlEQVRoge3YMQvCMBCG4VepLq66uDj5i/z/g4tLO8RBh3ZxuCueEqUGMSDfA0dCuaF8hJTeDDgAG2Dtq5Rpgc7XWN1zY4MFvQ0lZVbA0vcDcAXOucYGO+FbYOclZRa+9sAFSOHZg3jSd8D+F2/3xwYs8DN2tWRDn//yjcQo9AoUegUKvQKFXoFCr0ChV6DQK1DoFTTYn9OKF39PMtkROGF5Jmz2MuQaG2wKFgc1Uubk1WFjgLeht74fBzVSJo52E5Zln2scQ4+DGimTsPwSE66X1hsS91Mvn7t6XcKaDX2GzdOX2IdUH9Nyg1cf9mOJiIjIt9wAK35CtbEp+lAAAAAASUVORK5CYII=" y="0"/>
+          </g>
+          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,60,262)">
+            <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip35">
+                <path d="M-42,-8 L43,-8 L43,8 L-42,8 L-42,-8 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip35)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,102,270)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="5.54688" x="-2.76562" xml:space="preserve" y="3.5">0</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,60,262)">
+              <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="portannotationpanel PortDataTypeString">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,147,268)">
+              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip36">
+                <path d="M-108.797,-158 L698,-158 L698,159 L-108.797,159 L-108.797,-158 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip36)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,147,256)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
             </g>
             <!--RAWSTRING-->
           </g>
@@ -526,7 +544,7 @@
         <!--RAWSTRING-->
         <g id="BLDCmotorControl_FOC_R2017b_fixdt:9345">
           <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,644,254)">
-            <image height="163" preserveAspectRatio="none" width="38" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAACjCAYAAADmQGzFAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB/klEQVR4nO3cPU4CQRyG8ReDNLba0FB5FmPtOfQw1t7AE3gWbWxooFhNoIBCix3iri5k3sEh/+L5JZMlZj+erCvorpmRpDtJV5Iu07KmhaRlWnbH8veK4xQz7YyaLiRN0uutpLWkj6EVx2rP1FTSLI2aztNyI2klqel87U/Y7ozNJF1XDpPaM7VSe6YW+8LOThBShDAXYS7CXGHDxhnrPBTs97Fgm56csNdjD1IiJ+ytesWAsGFhL37CXIS5CHMR5iLMFTYs50P8vnrFAH4fc4UNC3vxE+YizEWYizAXYS7CXIS5CHMR5iLMRZiLMBdhrrBhOTdVvqpXDAh7xghzEeYizFXrdvrR/yBX6671ScJKzthtwTY9Ye/z88jGFTYs7PsYYS7CXIS5CHMR5iLMRZiLMBdhLsJchLkIcxHmIsxFmIswV9gwHqS6CHMR5iLMRZiLR88uHj27ePTsChsW9n2MMBdhrrBh/PnmIswVNizn4n8p2O9NwTY9OWHPBfsNG/ZUsE1PTtjnsQcpEfbiJ8zFZ6WLMBdhLsJcY7UTEl9oz6TE/+xd0jwds1E7ffR2X9hS/bmma5qnsVQ7S/PBsEV6vZtruqbuTOBNOt7mUFh3rumamnSMRhnfykVaodHP2atlncaqsxwMG6mdonyi9uKv/QOwTWPTeb0bACTpGwaYX+kRT1zDAAAAAElFTkSuQmCC" y="0"/>
+            <image height="163" preserveAspectRatio="none" width="38" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAACjCAYAAADmQGzFAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB9ElEQVR4nO3cMU7DMACF4VcUurDC0qUTZ0HMnIMbcQNOwFlgYemSDAGpHdoBhrgigbTyc3Ax0v9JViqUJr9MSAVBnkm6k3Ql6TJsc6olNWHbH833HasQs+iNnC4kzcPrnaSNpLexHSt1M7WQtAwjp/Ow3UpaS2p7X/sRtp+xpaTrzGFSN1NrdTNVHwo7O0FIEsJchLkIcxHmqiL2eU447uRPkJiwl4TjniQsZcZuE94zkGvGJss1Y5P96xn7k7Bi72OEuQhzEeYqNizmBnufvWIEn5WuYsOKvfgJcxHmIsxFmIswF2EuwlyEuQhzEeYizEWYizBXsWExf1T5yF4xotgZI8xFmIswF//e4OLfG1w8snEVG1bsfYwwF2EuwlyEuQhzEeYizEWYizAXYS7CXIS5CHMR5iLMRZir2DAepLoIcxHmIsxFmItHzy4ePbt49OwqNqzY+xhhLsJcxYbx65uLMFexYTEX/1PCcW8S3jMQE/aYcNxiwx4S3jMQE/Y+9SQpir34CXPxWekizEWYizBXpW5B4gsdWJT4l71KWoVztuqWj94dCms0XGs6p1UYjbpVmo+G1eH1fq3pnPorgbfhfNtjYf21pnNqwzlaRXwr67BDq6/Zy2UTxrq3HQ2bqVuifK7u4s/9A7ALY9t7vR8AJOkTts9i8AEdl+oAAAAASUVORK5CYII=" y="0"/>
           </g>
           <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,645,255)">
             <path d="M0,0 L30,0 L30,155 L0,155 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
@@ -534,19 +552,19 @@
           <!--RAWSTRING-->
           <g data-tags="blk">
             <defs>
-              <clipPath id="clip37">
-                <path d="M644.5,254.5 L674.5,254.5 L674.5,409.5 L644.5,409.5 L644.5,254.5 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip37)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0.5,0.5)">
-              <polyline fill="none" points="663,335 657,329" vector-effect="none"/>
-            </g>
-            <defs>
               <clipPath id="clip38">
                 <path d="M644.5,254.5 L674.5,254.5 L674.5,409.5 L644.5,409.5 L644.5,254.5 z"/>
               </clipPath>
             </defs>
             <g clip-path="url(#clip38)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0.5,0.5)">
+              <polyline fill="none" points="663,335 657,329" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip39">
+                <path d="M644.5,254.5 L674.5,254.5 L674.5,409.5 L644.5,409.5 L644.5,254.5 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip39)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,0.5,0.5)">
               <polyline fill="none" points="663,329 657,335" vector-effect="none"/>
             </g>
             <!--RAWSTRING-->
@@ -564,251 +582,11 @@
               <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip39">
+              <clipPath id="clip40">
                 <path d="M-638.797,-223 L168,-223 L168,94 L-638.797,94 L-638.797,-223 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip39)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,677,321)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9344">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,154,99)">
-            <image height="36" preserveAspectRatio="none" width="67" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEMAAAAkCAYAAADSO4eRAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABQklEQVRoge2ZPU7DQBBGX5BJkxaaNKlyGGrOQQ7D9ZKGJo1dbIqkiAsoZiw+0AatgmPQap402pU12p/n9RaeGfAMPAIP3tZGC3TeanTfExtMwFKiNhbA3Ps9cAIOucQGOxFLYOVRG/fenoEjkOTZF/RkrID1FKv7A3pMxAH7RLIy7qZc0X8nZAghQwgZQsgQQoYQMoSQITQFOZsrxn298HwL7DLtrmDMlyvnLKZExva3k4zEzddRIqPkrU3BzdcRMoS4QIWSk/E+4nxrj6cRxxyNOBlCyBBChhAyhJAhhAwhZAgN9rd4wYU/xhXwBuyxfSasbtLnEhussqRFltrYe3RYqeBHGa33hyJLbWh5MWF7POcSBxlaZKmNhO0rUfCZtJ6Q+DwlNXHyOEqblTHDaq1z7AKt8RLtPc7SHyIIgiAYgw9opFGPV2JI5AAAAABJRU5ErkJggg==" y="0"/>
-          </g>
-          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,155,100)">
-            <path d="M0,0 L59,0 L59,28 L0,28 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip41">
-                <path d="M-29,-14 L30,-14 L30,14 L-29,14 L-29,-14 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip41)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,184,114)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="17.1719" x="-8.57812" xml:space="preserve" y="3.5">if { }</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,155,100)">
-              <path d="M0,0 L59,0 L59,28 L0,28 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk BlockName">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,184.5,130)">
-              <path d="M-25.3984,0 L25.3984,0 L25.3984,14 L-25.3984,14 L-25.3984,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip42">
-                <path d="M-120.898,-32 L685.898,-32 L685.898,285 L-120.898,285 L-120.898,-32 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip42)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,159.102,130)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="48.7969" x="1" xml:space="preserve" y="10">Action Port</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9347">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,619,173)">
-            <image height="20" preserveAspectRatio="none" width="128" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAUCAYAAABFyTWeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABUUlEQVRoge2ZzU7CUBCFv2pl41Y3bFj5RL7/E+DCHwq0/LmYuelFiwIdqiTnS05oC5n05kxn5pYCeAYegQf/FLFsXWtg5apdywPHP32XYqyz2GdTYqaPM4k4dq4NZtgaaDhs9OBJUWJP/hiYuEQsWywBNuxXgAjjeydFXgEmwFPcugX29Oct4LcKcI7xS2DhqoCZqwLmtMmQqtEeZfSKxR4FcOu682t9kiKZPccMroAP4M3j1sDNKTeoBBieY5MiGZ7MnmFmv/vvG040u4veAcR1owowPBEtYIH19U3fm1ECXJahh8A08R9NCUyBe9p+JGL5ug1sXENvA7/tAMAS4AUY+fkqaNHCuIoXQVM/brBpU8Ty718FTz1ghe0nRRx5BchbQM0fmN1FSoA58EpbDUQcx1aAi5vdRYH9FzDChkANgrF0VYBcg5othBBCCCEEAJ+G2WlPPBfvMwAAAABJRU5ErkJggg==" y="0"/>
-          </g>
-          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,620,174)">
-            <path d="M0,0 L90,0 L120,6 L90,12 L0,12 L0,0 z" fill-rule="nonzero" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip44">
-                <path d="M-44,-5 L76,-5 L76,7 L-44,7 L-44,-5 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip44)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,664,179)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="80.4062" x="-40.2031" xml:space="preserve" y="3.5">[r_inpTgtScaFOC]</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,620,174)">
-              <path d="M0,0 L90,0 L120,6 L90,12 L0,12 L0,0 z" fill-rule="nonzero" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="portannotationpanel PortDataTypeString">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,742,178)">
-              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip45">
-                <path d="M-703.797,-68 L103,-68 L103,249 L-703.797,249 L-703.797,-68 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip45)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,742,166)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9343">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,54,197)">
-            <image height="22" preserveAspectRatio="none" width="38" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAWCAYAAACsR+4DAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABo0lEQVRIie2WXU8CMRBFD+uCgqKJQsQXiYn//z/5hAZC+HLlYwUf5ja7WYbgCsQXJpkU2tI5vZ1OqQAvwD3QAtpq74A6UAMioEI52wBrYAl8AWNgAPTVDtU305wtiwXVAZ7kHeDWAfst3MYBmwBN4Eox0XgqX3tgLQE9A12BBcWqwEUJqDzcN7AiU+xG6yGYJTAHFvItsLbAusBrAexYigUwBDsHEuwoP3eBtYBHAXWAB6ChsbJKkdtEhKldJTu+GTCVj7BcqzprEGP5lPfGrsl/hKxqzVUhTpNMgC2LsOO6zLXuxAMt1vrFWDVMVRfsv23jdUZYgi5ybXqC4OEWFmMtcUpFAJsUPMHywd1JSdtorcSJM1W/K0SMVeKmPFzplOOXi3f5B/YCjMlEcMH6WEUON3HGaQrsO/AG9DAxRvvABmQ3cSWwYz9JY0ypXg5sorGdYEN9TrGKPOU0ioUHPDziE8Vzkz/Wj8LuEkzifKE9FCwk/lhr5xPfVQsFrGE5VhfMtdpj/u1JsDcx0fc5e25+CBhh6nh+qGKeu8d3trOdDfgBs5ixBRXsvc4AAAAASUVORK5CYII=" y="0"/>
-          </g>
-          <g clip-path="none" fill="#00d1d1" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,55,198)">
-            <path d="M7,0 L23,0 C26.866,0 30,3.13401 30,7 C30,10.866 26.866,14 23,14 L7,14 C3.13401,14 0,10.866 0,7 C0,3.13401 3.13401,0 7,0 z" fill-rule="nonzero" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip47">
-                <path d="M-15,-7 L15,-7 L15,7 L-15,7 L-15,-7 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip47)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,70,205)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="5.54688" x="-2.76562" xml:space="preserve" y="3.5">2</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,55,198)">
-              <path d="M7,0 L23,0 C26.866,0 30,3.13401 30,7 C30,10.866 26.866,14 23,14 L7,14 C3.13401,14 0,10.866 0,7 C0,3.13401 3.13401,0 7,0 z" fill-rule="nonzero" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk BlockName">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,70,214)">
-              <path d="M-31.7969,0 L31.7969,0 L31.7969,14 L-31.7969,14 L-31.7969,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip48">
-                <path d="M0,-116 L806.797,-116 L806.797,201 L0,201 L0,-116 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip48)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,38.2031,214)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="61.5938" x="1" xml:space="preserve" y="10">z_ctrlModReq</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="portannotationpanel PortDataTypeString">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,87,203)">
-              <path d="M0,-12 L21.4844,-12 L21.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip49">
-                <path d="M-48.7969,-93 L758,-93 L758,224 L-48.7969,224 L-48.7969,-93 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip49)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,87,191)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="19.4844" x="1" xml:space="preserve" y="9">uint8</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9350">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,719,328)">
-            <image height="20" preserveAspectRatio="none" width="128" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAUCAYAAABFyTWeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABaUlEQVRoge2Zy27CMBBFD2AoJH38/+d1w6ZZBKmkEWlRFzMWxnIgC3sRmCNdOQErSJnrO05YcJ+lygFr1YtqO3J86zt/DRdc28jLF9DoGKqJJ7roPHexU+cbvb4DVsBCZeSjRu4zwAB0wCE10SEFKlHsse/8b61UlgD5Wet4Ao5AG3x2hTdAhbjmVVUDO5UvXC4jhAngE8cSID8DUvwDEv+jBgjx8b8F3oAPHWtVxbUprNgzJzZAiiXinh1ihncdfVJUXApvxZ4Z1n+fnCkJ8If0kx9kRf8iu8oWawGzJzbAGSlwWGy/i7RN4APigB5Z5T3wTdnHwI3KHgPL8gnskd1/iyT2kJroDdDrub0Iegz2qgZ5DLxpgJAzlzZQyhT2Krg84avgFmnjp9TEKZvAnKbwCRC2AEuA/LTIym+50wJy3vipprAEKE+nOkZjF08svfJSpoj/C7AEyM+gOgXHXoZhGIZhGMaz8w/7glXF59GMEgAAAABJRU5ErkJggg==" y="0"/>
-          </g>
-          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,720,329)">
-            <path d="M30,0 L120,0 L120,12 L30,12 L0,6 L30,0 z" fill-rule="nonzero" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip51">
-                <path d="M-74,-5 L46,-5 L46,7 L-74,7 L-74,-5 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip51)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,794,334)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="80.4062" x="-40.2031" xml:space="preserve" y="3.5">[r_inpTgtScaFOC]</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,720,329)">
-              <path d="M30,0 L120,0 L120,12 L30,12 L0,6 L30,0 z" fill-rule="nonzero" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9353">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,194,252)">
-            <image height="162" preserveAspectRatio="none" width="13" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAACiCAYAAACaoUdHAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAq0lEQVRoge3ZsQ6CMBSF4R+DLq66+Fq+/xOUAYcy4OLQEpsbqu7+J+nATT8uzGcA7sCVd1I4EyFjBbcwfwIL8IhgQ5eAViADM3Dsobgp1w2phw57w28RiUQikUgkEolEIpFIJBKJRCKRSCQSiUQi0b+jkdJFn5tZopTaC6UV30UTcGpmE6XY/ohSmG2bMqVO76L2jfMvn5fqhS25PuceGigNf/tPa73cHrOXF729LhtdqqBxAAAAAElFTkSuQmCC" y="0"/>
-          </g>
-          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,195,253)">
-            <path d="M0,0 L5,0 L5,154 L0,154 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip53">
-                <path d="M195,253 L200,253 L200,407 L195,407 L195,253 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip53)" fill="#000000" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,0,0)">
-              <path d="M195,253 L200,253 L200,407 L195,407 L195,253 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,195,253)">
-              <path d="M0,0 L5,0 L5,154 L0,154 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="portannotationpanel PortDataTypeString">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,202,328)">
-              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip54">
-                <path d="M-163.797,-218 L643,-218 L643,99 L-163.797,99 L-163.797,-218 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip54)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,202,316)">
+            <g clip-path="url(#clip40)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,677,321)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
             </g>
             <!--RAWSTRING-->
@@ -830,11 +608,11 @@
           <!--RAWSTRING-->
           <g data-tags="blk">
             <defs>
-              <clipPath id="clip56">
+              <clipPath id="clip42">
                 <path d="M-27,-9 L28,-9 L28,9 L-27,9 L-27,-9 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip56)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,472,385)">
+            <g clip-path="url(#clip42)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,472,385)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="22.1875" x="-11.0938" xml:space="preserve" y="3.5">1000</text>
             </g>
             <!--RAWSTRING-->
@@ -852,11 +630,266 @@
               <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip57">
+              <clipPath id="clip43">
                 <path d="M-463.797,-273 L343,-273 L343,44 L-463.797,44 L-463.797,-273 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip57)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,502,371)">
+            <g clip-path="url(#clip43)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,502,371)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9355">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,59,301)">
+            <image height="24" preserveAspectRatio="none" width="93" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAAAYCAYAAACY5PEcAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA9UlEQVRoge3YMQvCMBCG4VepLq66uDj5i/z/g4tLO8RBh3ZxuCueEqUGMSDfA0dCuaF8hJTeDDgAG2Dtq5Rpgc7XWN1zY4MFvQ0lZVbA0vcDcAXOucYGO+FbYOclZRa+9sAFSOHZg3jSd8D+F2/3xwYs8DN2tWRDn//yjcQo9AoUegUKvQKFXoFCr0ChV6DQK1DoFTTYn9OKF39PMtkROGF5Jmz2MuQaG2wKFgc1Uubk1WFjgLeht74fBzVSJo52E5Zln2scQ4+DGimTsPwSE66X1hsS91Mvn7t6XcKaDX2GzdOX2IdUH9Nyg1cf9mOJiIjIt9wAK35CtbEp+lAAAAAASUVORK5CYII=" y="0"/>
+          </g>
+          <g clip-path="none" fill="#e8d152" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,60,302)">
+            <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip45">
+                <path d="M-42,-8 L43,-8 L43,8 L-42,8 L-42,-8 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip45)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,102,310)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="36.625" x="-18.3125" xml:space="preserve" y="3.5">Vd_max</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,60,302)">
+              <path d="M0,0 L85,0 L85,16 L0,16 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk BlockName">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,102.5,320)">
+              <path d="M-19.3125,0 L19.3125,0 L19.3125,14 L-19.3125,14 L-19.3125,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip46">
+                <path d="M-44.9844,-222 L761.812,-222 L761.812,95 L-44.9844,95 L-44.9844,-222 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip46)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,83.1875,320)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="36.625" x="1" xml:space="preserve" y="10">Vd_max</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="portannotationpanel PortDataTypeString">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,147,308)">
+              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip47">
+                <path d="M-108.797,-198 L698,-198 L698,119 L-108.797,119 L-108.797,-198 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip47)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,147,296)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9344">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,154,99)">
+            <image height="36" preserveAspectRatio="none" width="67" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEMAAAAkCAYAAADSO4eRAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABLklEQVRoge2ZvU7DQBAGJ8ikSQtNmlQ8DDVvxutBQ5PGLi5FUtgNxa6VD3QgS05MWO1IqztZK/tutP6RdwW8AI/Ag4/RaIHOR43ue2KDCdhKRGMDrH0+ACfgUEtssIrYAjuPaNz72ANHoMixL2hl7ICnJVb3BwyYiAN2i1Rl3C25olsnZQgpQ0gZQsoQUoaQMoSUIaQMoZmQ83b1VVyG2V/PU2S8z73IQiwi479UxvPcE0SqjNlMkfF69VXcCPk2EVKGkDKElCGkDCFlCClDaLC/xRt++GMcgA9gj+2zYH2ToZbYYJ0lbbJEY+/RYa2CX2W0Ph+bLNHQ9mLB9tjXEkcZ2mSJRsH2VZhwm7SeUDhXSSROHkcZqzJWWK91jT1AIz5EB49e5mMkSZIkl+ATlJFHanShisYAAAAASUVORK5CYII=" y="0"/>
+          </g>
+          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,155,100)">
+            <path d="M0,0 L59,0 L59,28 L0,28 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip49">
+                <path d="M-29,-14 L30,-14 L30,14 L-29,14 L-29,-14 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip49)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,184,114)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="17.1719" x="-8.57812" xml:space="preserve" y="3.5">if { }</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,155,100)">
+              <path d="M0,0 L59,0 L59,28 L0,28 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk BlockName">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,184.5,130)">
+              <path d="M-25.3984,0 L25.3984,0 L25.3984,14 L-25.3984,14 L-25.3984,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip50">
+                <path d="M-120.898,-32 L685.898,-32 L685.898,285 L-120.898,285 L-120.898,-32 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip50)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,159.102,130)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="48.7969" x="1" xml:space="preserve" y="10">Action Port</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9343">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,54,197)">
+            <image height="22" preserveAspectRatio="none" width="38" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAWCAYAAACsR+4DAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABo0lEQVRIie2WXU8CMRBFD+uCgqKJQsQXiYn//z/5hAZC+HLlYwUf5ja7WYbgCsQXJpkU2tI5vZ1OqQAvwD3QAtpq74A6UAMioEI52wBrYAl8AWNgAPTVDtU305wtiwXVAZ7kHeDWAfst3MYBmwBN4Eox0XgqX3tgLQE9A12BBcWqwEUJqDzcN7AiU+xG6yGYJTAHFvItsLbAusBrAexYigUwBDsHEuwoP3eBtYBHAXWAB6ChsbJKkdtEhKldJTu+GTCVj7BcqzprEGP5lPfGrsl/hKxqzVUhTpNMgC2LsOO6zLXuxAMt1vrFWDVMVRfsv23jdUZYgi5ybXqC4OEWFmMtcUpFAJsUPMHywd1JSdtorcSJM1W/K0SMVeKmPFzplOOXi3f5B/YCjMlEcMH6WEUON3HGaQrsO/AG9DAxRvvABmQ3cSWwYz9JY0ypXg5sorGdYEN9TrGKPOU0ioUHPDziE8Vzkz/Wj8LuEkzifKE9FCwk/lhr5xPfVQsFrGE5VhfMtdpj/u1JsDcx0fc5e25+CBhh6nh+qGKeu8d3trOdDfgBs5ixBRXsvc4AAAAASUVORK5CYII=" y="0"/>
+          </g>
+          <g clip-path="none" fill="#00d1d1" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,55,198)">
+            <path d="M7,0 L23,0 C26.866,0 30,3.13401 30,7 C30,10.866 26.866,14 23,14 L7,14 C3.13401,14 0,10.866 0,7 C0,3.13401 3.13401,0 7,0 z" fill-rule="nonzero" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip52">
+                <path d="M-15,-7 L15,-7 L15,7 L-15,7 L-15,-7 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip52)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,70,205)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="5.54688" x="-2.76562" xml:space="preserve" y="3.5">2</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,55,198)">
+              <path d="M7,0 L23,0 C26.866,0 30,3.13401 30,7 C30,10.866 26.866,14 23,14 L7,14 C3.13401,14 0,10.866 0,7 C0,3.13401 3.13401,0 7,0 z" fill-rule="nonzero" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk BlockName">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,70,214)">
+              <path d="M-31.7969,0 L31.7969,0 L31.7969,14 L-31.7969,14 L-31.7969,0 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip53">
+                <path d="M0,-116 L806.797,-116 L806.797,201 L0,201 L0,-116 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip53)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,38.2031,214)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="61.5938" x="1" xml:space="preserve" y="10">z_ctrlModReq</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="portannotationpanel PortDataTypeString">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,87,203)">
+              <path d="M0,-12 L21.4844,-12 L21.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip54">
+                <path d="M-48.7969,-93 L758,-93 L758,224 L-48.7969,224 L-48.7969,-93 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip54)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,87,191)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="19.4844" x="1" xml:space="preserve" y="9">uint8</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9351">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,109,198)">
+            <image height="20" preserveAspectRatio="none" width="128" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAUCAYAAABFyTWeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABaUlEQVRoge2Zy27CMBBFD2AoJH38/+d1w6ZZBKmkEWlRFzMWxnIgC3sRmCNdOQErSJnrO05YcJ+lygFr1YtqO3J86zt/DRdc28jLF9DoGKqJJ7roPHexU+cbvb4DVsBCZeSjRu4zwAB0wCE10SEFKlHsse/8b61UlgD5Wet4Ao5AG3x2hTdAhbjmVVUDO5UvXC4jhAngE8cSID8DUvwDEv+jBgjx8b8F3oAPHWtVxbUprNgzJzZAiiXinh1ihncdfVJUXApvxZ4Z1n+fnCkJ8If0kx9kRf8iu8oWawGzJzbAGSlwWGy/i7RN4APigB5Z5T3wTdnHwI3KHgPL8gnskd1/iyT2kJroDdDrub0Iegz2qgZ5DLxpgJAzlzZQyhT2Krg84avgFmnjp9TEKZvAnKbwCRC2AEuA/LTIym+50wJy3vipprAEKE+nOkZjF08svfJSpoj/C7AEyM+gOgXHXoZhGIZhGMaz8w/7glXF59GMEgAAAABJRU5ErkJggg==" y="0"/>
+          </g>
+          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,110,199)">
+            <path d="M30,0 L120,0 L120,12 L30,12 L0,6 L30,0 z" fill-rule="nonzero" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip56">
+                <path d="M-74,-5 L46,-5 L46,7 L-74,7 L-74,-5 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip56)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,184,204)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="67.125" x="-33.5625" xml:space="preserve" y="3.5">[z_ctrlModReq]</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,110,199)">
+              <path d="M30,0 L120,0 L120,12 L30,12 L0,6 L30,0 z" fill-rule="nonzero" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+        </g>
+        <!--RAWSTRING-->
+      </g>
+      <!--RAWSTRING-->
+      <g data-tags="blk">
+        <!--RAWSTRING-->
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9347">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,619,173)">
+            <image height="20" preserveAspectRatio="none" width="128" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAUCAYAAABFyTWeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABUUlEQVRoge2ZzU7CUBCFv2pl41Y3bFj5RL7/E+DCHwq0/LmYuelFiwIdqiTnS05oC5n05kxn5pYCeAYegQf/FLFsXWtg5apdywPHP32XYqyz2GdTYqaPM4k4dq4NZtgaaDhs9OBJUWJP/hiYuEQsWywBNuxXgAjjeydFXgEmwFPcugX29Oct4LcKcI7xS2DhqoCZqwLmtMmQqtEeZfSKxR4FcOu682t9kiKZPccMroAP4M3j1sDNKTeoBBieY5MiGZ7MnmFmv/vvG040u4veAcR1owowPBEtYIH19U3fm1ECXJahh8A08R9NCUyBe9p+JGL5ug1sXENvA7/tAMAS4AUY+fkqaNHCuIoXQVM/brBpU8Ty718FTz1ghe0nRRx5BchbQM0fmN1FSoA58EpbDUQcx1aAi5vdRYH9FzDChkANgrF0VYBcg5othBBCCCEEAJ+G2WlPPBfvMwAAAABJRU5ErkJggg==" y="0"/>
+          </g>
+          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,620,174)">
+            <path d="M0,0 L90,0 L120,6 L90,12 L0,12 L0,0 z" fill-rule="nonzero" vector-effect="none"/>
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk">
+            <defs>
+              <clipPath id="clip58">
+                <path d="M-44,-5 L76,-5 L76,7 L-44,7 L-44,-5 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip58)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,664,179)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="80.4062" x="-40.2031" xml:space="preserve" y="3.5">[r_inpTgtScaFOC]</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="blk frame">
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,620,174)">
+              <path d="M0,0 L90,0 L120,6 L90,12 L0,12 L0,0 z" fill-rule="nonzero" vector-effect="none"/>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="portannotationpanel PortDataTypeString">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,742,178)">
+              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip59">
+                <path d="M-703.797,-68 L103,-68 L103,249 L-703.797,249 L-703.797,-68 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip59)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,742,166)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
             </g>
             <!--RAWSTRING-->
@@ -878,11 +911,11 @@
           <!--RAWSTRING-->
           <g data-tags="blk">
             <defs>
-              <clipPath id="clip59">
+              <clipPath id="clip61">
                 <path d="M-15,-7 L15,-7 L15,7 L-15,7 L-15,-7 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip59)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,70,170)">
+            <g clip-path="url(#clip61)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,70,170)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="5.54688" x="-2.76562" xml:space="preserve" y="3.5">1</text>
             </g>
             <!--RAWSTRING-->
@@ -900,11 +933,11 @@
               <path d="M-19.2969,0 L19.2969,0 L19.2969,14 L-19.2969,14 L-19.2969,0 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip60">
+              <clipPath id="clip62">
                 <path d="M-12.5,-81 L794.297,-81 L794.297,236 L-12.5,236 L-12.5,-81 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip60)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,50.7031,179)">
+            <g clip-path="url(#clip62)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,50.7031,179)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="36.5938" x="1" xml:space="preserve" y="10">r_inpTgt</text>
             </g>
             <!--RAWSTRING-->
@@ -915,11 +948,11 @@
               <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip61">
+              <clipPath id="clip63">
                 <path d="M-48.7969,-58 L758,-58 L758,259 L-48.7969,259 L-48.7969,-58 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip61)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,87,156)">
+            <g clip-path="url(#clip63)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,87,156)">
               <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
             </g>
             <!--RAWSTRING-->
@@ -931,77 +964,44 @@
       <!--RAWSTRING-->
       <g data-tags="blk">
         <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9351">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,109,198)">
-            <image height="20" preserveAspectRatio="none" width="128" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAUCAYAAABFyTWeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABaUlEQVRoge2Zy27CMBBFD2AoJH38/+d1w6ZZBKmkEWlRFzMWxnIgC3sRmCNdOQErSJnrO05YcJ+lygFr1YtqO3J86zt/DRdc28jLF9DoGKqJJ7roPHexU+cbvb4DVsBCZeSjRu4zwAB0wCE10SEFKlHsse/8b61UlgD5Wet4Ao5AG3x2hTdAhbjmVVUDO5UvXC4jhAngE8cSID8DUvwDEv+jBgjx8b8F3oAPHWtVxbUprNgzJzZAiiXinh1ihncdfVJUXApvxZ4Z1n+fnCkJ8If0kx9kRf8iu8oWawGzJzbAGSlwWGy/i7RN4APigB5Z5T3wTdnHwI3KHgPL8gnskd1/iyT2kJroDdDrub0Iegz2qgZ5DLxpgJAzlzZQyhT2Krg84avgFmnjp9TEKZvAnKbwCRC2AEuA/LTIym+50wJy3vipprAEKE+nOkZjF08svfJSpoj/C7AEyM+gOgXHXoZhGIZhGMaz8w/7glXF59GMEgAAAABJRU5ErkJggg==" y="0"/>
+        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9353">
+          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,194,252)">
+            <image height="162" preserveAspectRatio="none" width="13" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAACiCAYAAACaoUdHAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAq0lEQVRoge3ZsQ6CMBSF4R+DLq66+Fq+/xOUAYcy4OLQEpsbqu7+J+nATT8uzGcA7sCVd1I4EyFjBbcwfwIL8IhgQ5eAViADM3Dsobgp1w2phw57w28RiUQikUgkEolEIpFIJBKJRCKRSCQSiUQi0b+jkdJFn5tZopTaC6UV30UTcGpmE6XY/ohSmG2bMqVO76L2jfMvn5fqhS25PuceGigNf/tPa73cHrOXF729LhtdqqBxAAAAAElFTkSuQmCC" y="0"/>
           </g>
-          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,110,199)">
-            <path d="M30,0 L120,0 L120,12 L30,12 L0,6 L30,0 z" fill-rule="nonzero" vector-effect="none"/>
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk">
-            <defs>
-              <clipPath id="clip63">
-                <path d="M-74,-5 L46,-5 L46,7 L-74,7 L-74,-5 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip63)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,184,204)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="67.125" x="-33.5625" xml:space="preserve" y="3.5">[z_ctrlModReq]</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-          <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,110,199)">
-              <path d="M30,0 L120,0 L120,12 L30,12 L0,6 L30,0 z" fill-rule="nonzero" vector-effect="none"/>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
-        </g>
-        <!--RAWSTRING-->
-      </g>
-      <!--RAWSTRING-->
-      <g data-tags="blk">
-        <!--RAWSTRING-->
-        <g id="BLDCmotorControl_FOC_R2017b_fixdt:9360">
-          <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,764,172)">
-            <image height="22" preserveAspectRatio="none" width="38" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAWCAYAAACsR+4DAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABo0lEQVRIie2WXU8CMRBFD+uCgqKJQsQXiYn//z/5hAZC+HLlYwUf5ja7WYbgCsQXJpkU2tI5vZ1OqQAvwD3QAtpq74A6UAMioEI52wBrYAl8AWNgAPTVDtU305wtiwXVAZ7kHeDWAfst3MYBmwBN4Eox0XgqX3tgLQE9A12BBcWqwEUJqDzcN7AiU+xG6yGYJTAHFvItsLbAusBrAexYigUwBDsHEuwoP3eBtYBHAXWAB6ChsbJKkdtEhKldJTu+GTCVj7BcqzprEGP5lPfGrsl/hKxqzVUhTpNMgC2LsOO6zLXuxAMt1vrFWDVMVRfsv23jdUZYgi5ybXqC4OEWFmMtcUpFAJsUPMHywd1JSdtorcSJM1W/K0SMVeKmPFzplOOXi3f5B/YCjMlEcMH6WEUON3HGaQrsO/AG9DAxRvvABmQ3cSWwYz9JY0ypXg5sorGdYEN9TrGKPOU0ioUHPDziE8Vzkz/Wj8LuEkzifKE9FCwk/lhr5xPfVQsFrGE5VhfMtdpj/u1JsDcx0fc5e25+CBhh6nh+qGKeu8d3trOdDfgBs5ixBRXsvc4AAAAASUVORK5CYII=" y="0"/>
-          </g>
-          <g clip-path="none" fill="#ff8000" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,765,173)">
-            <path d="M7,0 L23,0 C26.866,0 30,3.13401 30,7 C30,10.866 26.866,14 23,14 L7,14 C3.13401,14 0,10.866 0,7 C0,3.13401 3.13401,0 7,0 z" fill-rule="nonzero" vector-effect="none"/>
+          <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,195,253)">
+            <path d="M0,0 L5,0 L5,154 L0,154 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
           </g>
           <!--RAWSTRING-->
           <g data-tags="blk">
             <defs>
               <clipPath id="clip65">
-                <path d="M-15,-7 L15,-7 L15,7 L-15,7 L-15,-7 z"/>
+                <path d="M195,253 L200,253 L200,407 L195,407 L195,253 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip65)" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,780,180)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="5.54688" x="-2.76562" xml:space="preserve" y="3.5">1</text>
+            <g clip-path="url(#clip65)" fill="#000000" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,0,0)">
+              <path d="M195,253 L200,253 L200,407 L195,407 L195,253 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <!--RAWSTRING-->
           </g>
           <!--RAWSTRING-->
           <g data-tags="blk frame">
-            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,765,173)">
-              <path d="M7,0 L23,0 C26.866,0 30,3.13401 30,7 C30,10.866 26.866,14 23,14 L7,14 C3.13401,14 0,10.866 0,7 C0,3.13401 3.13401,0 7,0 z" fill-rule="nonzero" vector-effect="none"/>
+            <g clip-path="none" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,195,253)">
+              <path d="M0,0 L5,0 L5,154 L0,154 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <!--RAWSTRING-->
           </g>
           <!--RAWSTRING-->
-          <g data-tags="blk BlockName">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,780,189)">
-              <path d="M-38.4375,0 L38.4375,0 L38.4375,14 L-38.4375,14 L-38.4375,0 z" fill-rule="evenodd" vector-effect="none"/>
+          <g data-tags="portannotationpanel PortDataTypeString">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,202,328)">
+              <path d="M0,-12 L46.4844,-12 L46.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
               <clipPath id="clip66">
-                <path d="M-703.359,-91 L103.438,-91 L103.438,226 L-703.359,226 L-703.359,-91 z"/>
+                <path d="M-163.797,-218 L643,-218 L643,99 L-163.797,99 L-163.797,-218 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip66)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,741.562,189)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="74.875" x="1" xml:space="preserve" y="10">r_inpTgtScaFOC</text>
+            <g clip-path="url(#clip66)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,202,316)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="44.4844" x="1" xml:space="preserve" y="9">sfix16_En4</text>
             </g>
             <!--RAWSTRING-->
           </g>
@@ -1208,5 +1208,5 @@
       <!--RAWSTRING-->
     </g>
   </g>
-  <!--generated on windows @ 2019-10-31 21:29:53 W. Europe Standard Time-->
+  <!--generated on windows @ 2019-11-03 12:28:27 W. Europe Standard Time-->
 </svg>

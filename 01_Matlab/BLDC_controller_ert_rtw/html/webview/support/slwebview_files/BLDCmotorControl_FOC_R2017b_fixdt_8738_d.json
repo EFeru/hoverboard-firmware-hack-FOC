@@ -59,6 +59,56 @@
   }
  },
  {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2406",
+  "className":"Simulink.UnitDelay",
+  "icon":"WebViewIcon3",
+  "name":"UnitDelay3",
+  "label":"UnitDelay3",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
+  "inspector":{
+   "params":[
+    "InitialCondition",
+    "InputProcessing",
+    "SampleTime",
+    "StateName",
+    "CodeGenStateStorageTypeQualifier",
+    "StateMustResolveToSignalObject",
+    "StateSignalObject",
+    "StateStorageClass"
+   ],
+   "values":[
+    "0",
+    "Elements as channels (sample based)",
+    "-1",
+    "",
+    "",
+    "off",
+    [
+    ],
+    "Auto"
+   ],
+   "tabs":[
+    "Main",
+    "State Attributes",
+    "-Other"
+   ],
+   "tabs_idx":[
+    0,
+    3,
+    4
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"UnitDelay",
+   "masktype":""
+  }
+ },
+ {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2404",
   "className":"Simulink.Sum",
   "icon":"WebViewIcon3",
@@ -118,170 +168,6 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2403",
-  "className":"Simulink.Product",
-  "icon":"WebViewIcon3",
-  "name":"Divide2",
-  "label":"Divide2",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
-  "inspector":{
-   "params":[
-    "Inputs",
-    "Multiplication",
-    "InputSameDT",
-    "OutMin",
-    "OutMax",
-    "OutDataTypeStr",
-    "LockScale",
-    "RndMeth",
-    "SaturateOnIntegerOverflow",
-    "CollapseDim",
-    "CollapseMode",
-    "SampleTime"
-   ],
-   "values":[
-    "**",
-    "Element-wise(.*)",
-    "off",
-    "[]",
-    "[]",
-    "Inherit: Same as first input",
-    "off",
-    "Simplest",
-    "off",
-    "1",
-    "All dimensions",
-    "-1"
-   ],
-   "tabs":[
-    "Main",
-    "Signal Attributes",
-    "-Other"
-   ],
-   "tabs_idx":[
-    0,
-    2,
-    9
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"Product",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2406",
-  "className":"Simulink.UnitDelay",
-  "icon":"WebViewIcon3",
-  "name":"UnitDelay3",
-  "label":"UnitDelay3",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
-  "inspector":{
-   "params":[
-    "InitialCondition",
-    "InputProcessing",
-    "SampleTime",
-    "StateName",
-    "CodeGenStateStorageTypeQualifier",
-    "StateMustResolveToSignalObject",
-    "StateSignalObject",
-    "StateStorageClass"
-   ],
-   "values":[
-    "0",
-    "Elements as channels (sample based)",
-    "-1",
-    "",
-    "",
-    "off",
-    [
-    ],
-    "Auto"
-   ],
-   "tabs":[
-    "Main",
-    "State Attributes",
-    "-Other"
-   ],
-   "tabs_idx":[
-    0,
-    3,
-    4
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"UnitDelay",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2402",
-  "className":"Simulink.Product",
-  "icon":"WebViewIcon3",
-  "name":"Divide1",
-  "label":"Divide1",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
-  "inspector":{
-   "params":[
-    "Inputs",
-    "Multiplication",
-    "InputSameDT",
-    "OutMin",
-    "OutMax",
-    "OutDataTypeStr",
-    "LockScale",
-    "RndMeth",
-    "SaturateOnIntegerOverflow",
-    "CollapseDim",
-    "CollapseMode",
-    "SampleTime"
-   ],
-   "values":[
-    "**",
-    "Element-wise(.*)",
-    "off",
-    "[]",
-    "[]",
-    "Inherit: Same as first input",
-    "off",
-    "Simplest",
-    "off",
-    "1",
-    "All dimensions",
-    "-1"
-   ],
-   "tabs":[
-    "Main",
-    "Signal Attributes",
-    "-Other"
-   ],
-   "tabs_idx":[
-    0,
-    2,
-    9
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"Product",
-   "masktype":""
-  }
- },
- {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2401",
   "className":"Simulink.Constant",
   "icon":"WebViewIcon3",
@@ -327,73 +213,6 @@
   ],
   "finder":{
    "blocktype":"Constant",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2400",
-  "className":"Simulink.Inport",
-  "icon":"WebViewIcon3",
-  "name":"coef",
-  "label":"coef",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
-  "inspector":{
-   "params":[
-    "Port",
-    "IconDisplay",
-    "OutMin",
-    "OutMax",
-    "OutDataTypeStr",
-    "LockScale",
-    "Unit",
-    "PortDimensions",
-    "VarSizeSig",
-    "SampleTime",
-    "SignalType",
-    "BusOutputAsStruct",
-    "InputConnect",
-    "Interpolate",
-    "LatchByDelayingOutsideSignal",
-    "LatchInputForFeedbackSignals",
-    "OutputFunctionCall"
-   ],
-   "values":[
-    "2",
-    "Port number",
-    "[]",
-    "[]",
-    "Inherit: auto",
-    "off",
-    "inherit",
-    "-1",
-    "Inherit",
-    "-1",
-    "auto",
-    "off",
-    "",
-    "on",
-    "off",
-    "off",
-    "off"
-   ],
-   "tabs":[
-    "Main",
-    "Signal Attributes",
-    "-Other"
-   ],
-   "tabs_idx":[
-    0,
-    2,
-    11
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"Inport",
    "masktype":""
   }
  },
@@ -474,6 +293,187 @@
   ],
   "finder":{
    "blocktype":"Outport",
+   "masktype":""
+  }
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2403",
+  "className":"Simulink.Product",
+  "icon":"WebViewIcon3",
+  "name":"Divide2",
+  "label":"Divide2",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
+  "inspector":{
+   "params":[
+    "Inputs",
+    "Multiplication",
+    "InputSameDT",
+    "OutMin",
+    "OutMax",
+    "OutDataTypeStr",
+    "LockScale",
+    "RndMeth",
+    "SaturateOnIntegerOverflow",
+    "CollapseDim",
+    "CollapseMode",
+    "SampleTime"
+   ],
+   "values":[
+    "**",
+    "Element-wise(.*)",
+    "off",
+    "[]",
+    "[]",
+    "Inherit: Same as first input",
+    "off",
+    "Simplest",
+    "off",
+    "1",
+    "All dimensions",
+    "-1"
+   ],
+   "tabs":[
+    "Main",
+    "Signal Attributes",
+    "-Other"
+   ],
+   "tabs_idx":[
+    0,
+    2,
+    9
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"Product",
+   "masktype":""
+  }
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2400",
+  "className":"Simulink.Inport",
+  "icon":"WebViewIcon3",
+  "name":"coef",
+  "label":"coef",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
+  "inspector":{
+   "params":[
+    "Port",
+    "IconDisplay",
+    "OutMin",
+    "OutMax",
+    "OutDataTypeStr",
+    "LockScale",
+    "Unit",
+    "PortDimensions",
+    "VarSizeSig",
+    "SampleTime",
+    "SignalType",
+    "BusOutputAsStruct",
+    "InputConnect",
+    "Interpolate",
+    "LatchByDelayingOutsideSignal",
+    "LatchInputForFeedbackSignals",
+    "OutputFunctionCall"
+   ],
+   "values":[
+    "2",
+    "Port number",
+    "[]",
+    "[]",
+    "Inherit: auto",
+    "off",
+    "inherit",
+    "-1",
+    "Inherit",
+    "-1",
+    "auto",
+    "off",
+    "",
+    "on",
+    "off",
+    "off",
+    "off"
+   ],
+   "tabs":[
+    "Main",
+    "Signal Attributes",
+    "-Other"
+   ],
+   "tabs_idx":[
+    0,
+    2,
+    11
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"Inport",
+   "masktype":""
+  }
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8738:2402",
+  "className":"Simulink.Product",
+  "icon":"WebViewIcon3",
+  "name":"Divide1",
+  "label":"Divide1",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8738",
+  "inspector":{
+   "params":[
+    "Inputs",
+    "Multiplication",
+    "InputSameDT",
+    "OutMin",
+    "OutMax",
+    "OutDataTypeStr",
+    "LockScale",
+    "RndMeth",
+    "SaturateOnIntegerOverflow",
+    "CollapseDim",
+    "CollapseMode",
+    "SampleTime"
+   ],
+   "values":[
+    "**",
+    "Element-wise(.*)",
+    "off",
+    "[]",
+    "[]",
+    "Inherit: Same as first input",
+    "off",
+    "Simplest",
+    "off",
+    "1",
+    "All dimensions",
+    "-1"
+   ],
+   "tabs":[
+    "Main",
+    "Signal Attributes",
+    "-Other"
+   ],
+   "tabs_idx":[
+    0,
+    2,
+    9
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"Product",
    "masktype":""
   }
  },
