@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1197
+ * Model version                  : 1.1199
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Thu Oct 31 21:29:42 2019
+ * C/C++ source code generated on : Sun Nov  3 12:28:16 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -856,11 +856,11 @@ void BLDC_controller_step(RT_MODEL *const rtM)
      *  Inport: '<Root>/r_inpTgt'
      */
     if (rtb_Gain3 >= 16000) {
-      rtb_Gain4 = 16000;
+      rtb_toNegative = 16000;
     } else if (rtb_Gain3 <= -16000) {
-      rtb_Gain4 = -16000;
+      rtb_toNegative = -16000;
     } else {
-      rtb_Gain4 = (int16_T)(rtU->r_inpTgt << 4);
+      rtb_toNegative = (int16_T)(rtU->r_inpTgt << 4);
     }
 
     /* Outputs for IfAction SubSystem: '<S7>/FOC_Control_Type' incorporates:
@@ -872,7 +872,7 @@ void BLDC_controller_step(RT_MODEL *const rtM)
      *  Selector: '<S14>/Selector'
      */
     rtb_Merge = (int16_T)(((uint16_T)((tmp[rtU->z_ctrlModReq] << 5) / 125) *
-      rtb_Gain4) >> 12);
+      rtb_toNegative) >> 12);
 
     /* End of Outputs for SubSystem: '<S7>/FOC_Control_Type' */
   } else if (rtb_Gain3 >= 16000) {
@@ -1199,15 +1199,15 @@ void BLDC_controller_step(RT_MODEL *const rtM)
         /* Abs: '<S3>/Abs4' incorporates:
          *  UnitDelay: '<S6>/UnitDelay4'
          */
-        rtb_Gain4 = (int16_T)-rtDW->UnitDelay4_DSTATE;
+        rtb_toNegative = (int16_T)-rtDW->UnitDelay4_DSTATE;
       } else {
         /* Abs: '<S3>/Abs4' incorporates:
          *  UnitDelay: '<S6>/UnitDelay4'
          */
-        rtb_Gain4 = rtDW->UnitDelay4_DSTATE;
+        rtb_toNegative = rtDW->UnitDelay4_DSTATE;
       }
 
-      rtb_RelationalOperator1_m = ((rtb_Gain4 > rtP->r_errInpTgtThres) &&
+      rtb_RelationalOperator1_m = ((rtb_toNegative > rtP->r_errInpTgtThres) &&
         rtb_RelationalOperator4_d);
     }
 
@@ -1830,43 +1830,49 @@ void BLDC_controller_step(RT_MODEL *const rtM)
 
     /* Abs: '<S35>/Abs5' */
     if (rtDW->Switch1 < 0) {
-      rtb_Gain4 = (int16_T)-rtDW->Switch1;
+      rtb_toNegative = (int16_T)-rtDW->Switch1;
     } else {
-      rtb_Gain4 = rtDW->Switch1;
+      rtb_toNegative = rtDW->Switch1;
     }
 
     /* End of Abs: '<S35>/Abs5' */
 
     /* PreLookup: '<S35>/Vq_max_XA' */
-    rtb_r_fieldWeak_XA_o1 = plook_u8s16_evencka(rtb_Gain4, rtP->Vq_max_XA[0],
+    rtb_r_fieldWeak_XA_o1 = plook_u8s16_evencka(rtb_toNegative, rtP->Vq_max_XA[0],
       (uint16_T)(rtP->Vq_max_XA[1] - rtP->Vq_max_XA[0]), 45U);
-
-    /* Interpolation_n-D: '<S35>/Vq_max_M1' */
-    rtb_Gain2_f = rtP->Vq_max_M1[rtb_r_fieldWeak_XA_o1];
 
     /* Gain: '<S35>/Gain5' incorporates:
      *  Interpolation_n-D: '<S35>/Vq_max_M1'
      */
-    rtb_Saturation = (int16_T)-rtP->Vq_max_M1[rtb_r_fieldWeak_XA_o1];
+    rtb_Gain2_f = (int16_T)-rtP->Vq_max_M1[rtb_r_fieldWeak_XA_o1];
 
-    /* PreLookup: '<S35>/iq_max_XA' */
-    rtb_r_fieldWeak_XA_o1 = plook_u8s16_evencka(rtb_id_fieldWeak_M1,
-      rtP->iq_max_XA[0], (uint16_T)(rtP->iq_max_XA[1] - rtP->iq_max_XA[0]), 50U);
-
-    /* MinMax: '<S35>/MinMax' incorporates:
+    /* Interpolation_n-D: '<S35>/iq_maxSca_M1' incorporates:
      *  Constant: '<S35>/i_max'
-     *  Interpolation_n-D: '<S35>/iq_max_M1'
+     *  Product: '<S35>/Divide4'
      */
-    if (rtP->i_max < rtP->iq_max_M1[rtb_r_fieldWeak_XA_o1]) {
-      rtb_id_fieldWeak_M1 = rtP->i_max;
+    rtb_Gain3 = rtb_id_fieldWeak_M1 << 16;
+    rtb_Gain3 = (rtb_Gain3 == MIN_int32_T) && (rtP->i_max == -1) ? MAX_int32_T :
+      rtb_Gain3 / rtP->i_max;
+    if (rtb_Gain3 < 0) {
+      rtb_Gain3 = 0;
     } else {
-      rtb_id_fieldWeak_M1 = rtP->iq_max_M1[rtb_r_fieldWeak_XA_o1];
+      if (rtb_Gain3 > 65535) {
+        rtb_Gain3 = 65535;
+      }
     }
 
-    /* End of MinMax: '<S35>/MinMax' */
+    /* Product: '<S35>/Divide1' incorporates:
+     *  Constant: '<S35>/i_max'
+     *  Interpolation_n-D: '<S35>/iq_maxSca_M1'
+     *  PreLookup: '<S35>/iq_maxSca_XA'
+     *  Product: '<S35>/Divide4'
+     */
+    rtb_id_fieldWeak_M1 = (int16_T)
+      ((rtConstP.iq_maxSca_M1_Table[plook_u8u16_evencka((uint16_T)rtb_Gain3, 0U,
+         1311U, 49U)] * rtP->i_max) >> 16);
 
     /* Gain: '<S35>/Gain1' */
-    rtb_toNegative = (int16_T)-rtb_id_fieldWeak_M1;
+    rtb_Saturation = (int16_T)-rtb_id_fieldWeak_M1;
 
     /* If: '<S35>/If1' incorporates:
      *  Constant: '<S35>/CTRL_COMM'
@@ -1897,12 +1903,12 @@ void BLDC_controller_step(RT_MODEL *const rtM)
        *  Switch: '<S47>/Switch'
        */
       if (rtDW->Sum1[0] > rtb_id_fieldWeak_M1) {
-        rtb_Gain4 = rtb_id_fieldWeak_M1;
-      } else if (rtDW->Sum1[0] < rtb_toNegative) {
+        rtb_toNegative = rtb_id_fieldWeak_M1;
+      } else if (rtDW->Sum1[0] < rtb_Saturation) {
         /* Switch: '<S47>/Switch' */
-        rtb_Gain4 = rtb_toNegative;
+        rtb_toNegative = rtb_Saturation;
       } else {
-        rtb_Gain4 = rtDW->Sum1[0];
+        rtb_toNegative = rtDW->Sum1[0];
       }
 
       /* End of Switch: '<S47>/Switch2' */
@@ -1911,8 +1917,8 @@ void BLDC_controller_step(RT_MODEL *const rtM)
        *  Constant: '<S45>/cf_iqKpLimProt'
        *  Sum: '<S45>/Sum3'
        */
-      rtb_Gain3 = ((int16_T)(rtb_Gain4 - rtDW->Sum1[0]) * rtP->cf_iqKpLimProt) >>
-        8;
+      rtb_Gain3 = ((int16_T)(rtb_toNegative - rtDW->Sum1[0]) *
+                   rtP->cf_iqKpLimProt) >> 8;
       if (rtb_Gain3 > 32767) {
         rtb_Gain3 = 32767;
       } else {
@@ -1932,7 +1938,7 @@ void BLDC_controller_step(RT_MODEL *const rtM)
     /* Gain: '<S35>/Gain6' incorporates:
      *  Constant: '<S35>/n_max1'
      */
-    rtb_Gain4 = (int16_T)-rtP->n_max;
+    rtb_toNegative = (int16_T)-rtP->n_max;
 
     /* If: '<S35>/If2' incorporates:
      *  Constant: '<S35>/CTRL_COMM2'
@@ -1964,10 +1970,10 @@ void BLDC_controller_step(RT_MODEL *const rtM)
        *  Switch: '<S48>/Switch'
        */
       if (rtb_Switch2_fv > rtP->n_max) {
-        rtb_Gain4 = rtP->n_max;
+        rtb_toNegative = rtP->n_max;
       } else {
-        if (!(rtb_Switch2_fv < rtb_Gain4)) {
-          rtb_Gain4 = rtb_Switch2_fv;
+        if (!(rtb_Switch2_fv < rtb_toNegative)) {
+          rtb_toNegative = rtb_Switch2_fv;
         }
       }
 
@@ -1977,8 +1983,8 @@ void BLDC_controller_step(RT_MODEL *const rtM)
        *  Constant: '<S46>/cf_nKpLimProt'
        *  Sum: '<S46>/Sum1'
        */
-      rtb_Gain3 = ((int16_T)(rtb_Gain4 - rtb_Switch2_fv) * rtP->cf_nKpLimProt) >>
-        8;
+      rtb_Gain3 = ((int16_T)(rtb_toNegative - rtb_Switch2_fv) *
+                   rtP->cf_nKpLimProt) >> 8;
       if (rtb_Gain3 > 32767) {
         rtb_Gain3 = 32767;
       } else {
@@ -1999,6 +2005,7 @@ void BLDC_controller_step(RT_MODEL *const rtM)
      *  Constant: '<S38>/cf_iqKiLimProt'
      *  Constant: '<S38>/cf_nKi'
      *  Constant: '<S38>/cf_nKp'
+     *  Interpolation_n-D: '<S35>/Vq_max_M1'
      *  Product: '<S38>/Divide1'
      *  SignalConversion: '<S38>/Signal Conversion2'
      *  Sum: '<S38>/Sum3'
@@ -2039,19 +2046,20 @@ void BLDC_controller_step(RT_MODEL *const rtM)
       }
 
       /* Switch: '<S67>/Switch2' incorporates:
+       *  Interpolation_n-D: '<S35>/Vq_max_M1'
        *  RelationalOperator: '<S67>/LowerRelop1'
        *  RelationalOperator: '<S67>/UpperRelop'
        *  Sum: '<S41>/Sum3'
        *  Switch: '<S67>/Switch'
        */
-      if ((int16_T)rtb_Gain3 > rtb_Gain2_f) {
+      if ((int16_T)rtb_Gain3 > rtP->Vq_max_M1[rtb_r_fieldWeak_XA_o1]) {
         /* SignalConversion: '<S41>/Signal Conversion2' */
-        rtDW->Merge = rtb_Gain2_f;
-      } else if ((int16_T)rtb_Gain3 < rtb_Saturation) {
+        rtDW->Merge = rtP->Vq_max_M1[rtb_r_fieldWeak_XA_o1];
+      } else if ((int16_T)rtb_Gain3 < rtb_Gain2_f) {
         /* Switch: '<S67>/Switch' incorporates:
          *  SignalConversion: '<S41>/Signal Conversion2'
          */
-        rtDW->Merge = rtb_Saturation;
+        rtDW->Merge = rtb_Gain2_f;
       } else {
         /* SignalConversion: '<S41>/Signal Conversion2' */
         rtDW->Merge = (int16_T)rtb_Gain3;
@@ -2092,8 +2100,9 @@ void BLDC_controller_step(RT_MODEL *const rtM)
 
       /* Outputs for Atomic SubSystem: '<S38>/PI_clamp_fixdt_n' */
       rtDW->Merge = (int16_T) PI_clamp_fixdt_n((int16_T)rtb_Gain3, rtP->cf_nKp,
-        rtP->cf_nKi, rtb_Gain2_f, rtb_Saturation, (int16_T)((rtDW->Divide4 *
-        rtP->cf_iqKiLimProt) >> 10), &rtDW->PI_clamp_fixdt_n_o);
+        rtP->cf_nKi, rtP->Vq_max_M1[rtb_r_fieldWeak_XA_o1], rtb_Gain2_f,
+        (int16_T)((rtDW->Divide4 * rtP->cf_iqKiLimProt) >> 10),
+        &rtDW->PI_clamp_fixdt_n_o);
 
       /* End of Outputs for SubSystem: '<S38>/PI_clamp_fixdt_n' */
 
@@ -2137,8 +2146,8 @@ void BLDC_controller_step(RT_MODEL *const rtM)
         /* Switch: '<S58>/Switch' incorporates:
          *  RelationalOperator: '<S58>/UpperRelop'
          */
-        if ((int16_T)rtb_Gain3 < rtb_toNegative) {
-          rtb_id_fieldWeak_M1 = rtb_toNegative;
+        if ((int16_T)rtb_Gain3 < rtb_Saturation) {
+          rtb_id_fieldWeak_M1 = rtb_Saturation;
         } else {
           rtb_id_fieldWeak_M1 = (int16_T)rtb_Gain3;
         }
@@ -2164,10 +2173,12 @@ void BLDC_controller_step(RT_MODEL *const rtM)
        *  Constant: '<S39>/cf_iqKi'
        *  Constant: '<S39>/cf_iqKp'
        *  Constant: '<S39>/constant'
+       *  Interpolation_n-D: '<S35>/Vq_max_M1'
        *  Sum: '<S39>/Sum1'
        */
-      PI_clamp_fixdt((int16_T)rtb_Gain3, rtP->cf_iqKp, rtP->cf_iqKi, rtb_Gain2_f,
-                     rtb_Saturation, 0, &rtDW->Merge, &rtDW->PI_clamp_fixdt_iq);
+      PI_clamp_fixdt((int16_T)rtb_Gain3, rtP->cf_iqKp, rtP->cf_iqKi,
+                     rtP->Vq_max_M1[rtb_r_fieldWeak_XA_o1], rtb_Gain2_f, 0,
+                     &rtDW->Merge, &rtDW->PI_clamp_fixdt_iq);
 
       /* End of Outputs for SubSystem: '<S39>/PI_clamp_fixdt_iq' */
 

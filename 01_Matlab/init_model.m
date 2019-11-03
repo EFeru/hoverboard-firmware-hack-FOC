@@ -138,10 +138,11 @@ cf_iqKpLimProt      = 7.2;              % [-] Current limit protection gain (onl
 cf_iqKiLimProt      = 40.7 / f_ctrl;    % [-] Current limit protection integral gain (only used in SPD_MODE)
 i_max               = 15;               % [A] Maximum allowed motor current (continuous)
 i_max               = i_max * i_sca;
-iq_max_XA           = 0:15:i_max;
-iq_max_M1           = sqrt(i_max^2 - iq_max_XA.^2);  % Current circle limitations map
+iq_maxSca_XA        = 0:0.02:0.99;
+iq_maxSca_XA        = fixpt_evenspace_cleanup(iq_maxSca_XA, ufix(16), 2^-16);   % Make sure the data is evely spaced up to the last bit
+iq_maxSca_M1        = sqrt(1 - iq_maxSca_XA.^2);                                % Current circle limitations map
 % figure
-% stairs(iq_max_XA, iq_max_M1); legend('i_{max}');
+% stairs(iq_maxSca_XA, iq_maxSca_M1); legend('i_{maxSca}');
 %-------------------------------
 
 %% F05_Control_Type_Management

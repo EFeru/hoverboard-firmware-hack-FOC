@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1197
+ * Model version                  : 1.1199
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Thu Oct 31 21:29:42 2019
+ * C/C++ source code generated on : Sun Nov  3 12:28:16 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -139,6 +139,11 @@ typedef struct {
    */
   int16_T r_cos_M1_Table[181];
 
+  /* Computed Parameter: iq_maxSca_M1_Table
+   * Referenced by: '<S35>/iq_maxSca_M1'
+   */
+  uint16_T iq_maxSca_M1_Table[50];
+
   /* Computed Parameter: vec_hallToPos_Value
    * Referenced by: '<S9>/vec_hallToPos'
    */
@@ -228,12 +233,6 @@ struct P_ {
                                         */
   int16_T id_fieldWeak_M1[12];         /* Variable: id_fieldWeak_M1
                                         * Referenced by: '<S32>/id_fieldWeak_M1'
-                                        */
-  int16_T iq_max_M1[51];               /* Variable: iq_max_M1
-                                        * Referenced by: '<S35>/iq_max_M1'
-                                        */
-  int16_T iq_max_XA[51];               /* Variable: iq_max_XA
-                                        * Referenced by: '<S35>/iq_max_XA'
                                         */
   int16_T n_commAcvLo;                 /* Variable: n_commAcvLo
                                         * Referenced by: '<S11>/n_commDeacv'
