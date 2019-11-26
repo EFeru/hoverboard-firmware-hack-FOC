@@ -40,6 +40,9 @@ Src/setup.c \
 Src/control.c \
 Src/main.c \
 Src/bldc.c \
+Src/eeprom.c \
+Src/hd44780.c \
+Src/pcf8574.c \
 Src/comms.c \
 Src/stm32f1xx_it.c \
 Src/BLDC_controller_data.c \
@@ -52,7 +55,7 @@ startup_stm32f103xe.s
 #######################################
 # binaries
 #######################################
-PREFIX = arm-none-eabi-
+PREFIX = /usr/local/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-
 CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy

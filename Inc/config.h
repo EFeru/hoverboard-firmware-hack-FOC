@@ -1,11 +1,17 @@
 #pragma once
 #include "stm32f1xx_hal.h"
 
+#define TRANSPOTTER
+
 // ############################### DO-NOT-TOUCH SETTINGS ###############################
 
 #define PWM_FREQ            16000     // PWM frequency in Hz
 #define DEAD_TIME              32     // PWM deadtime
-#define DELAY_IN_MAIN_LOOP      5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
+#ifdef TRANSPOTTER
+  #define DELAY_IN_MAIN_LOOP    2
+#else
+  #define DELAY_IN_MAIN_LOOP    5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
+#endif
 #define TIMEOUT                 5     // number of wrong / missing input commands before emergency off
 #define A2BIT_CONV             50     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
 
@@ -78,10 +84,12 @@
 
 // ############################### SERIAL DEBUG ###############################
 
-#define DEBUG_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
-#define DEBUG_BAUD       115200     // UART baud rate
-//#define DEBUG_SERIAL_SERVOTERM
-#define DEBUG_SERIAL_ASCII          // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
+#ifndef TRANSPOTTER
+  #define DEBUG_SERIAL_USART3       // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+  #define DEBUG_BAUD       115200   // UART baud rate
+  //#define DEBUG_SERIAL_SERVOTERM
+  #define DEBUG_SERIAL_ASCII        // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
+#endif
 
 // ############################### INPUT ###############################
 
@@ -103,15 +111,17 @@
  * For middle resting potis: Let the potis in the middle resting position, write value 1 to ADC1_MID and value 2 to ADC2_MID
  * Make, flash and test it.
  */
-#define CONTROL_ADC           // use ADC as input. disable CONTROL_SERIAL_USART2!
-#define ADC1_MID_POT          // ADC1 middle resting poti: comment-out if NOT a middle resting poti
-#define ADC2_MID_POT          // ADC2 middle resting poti: comment-out if NOT a middle resting poti
-#define ADC1_MIN 0            // min ADC1-value while poti at minimum-position (0 - 4095)
-#define ADC1_MID 1963         // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
-#define ADC1_MAX 4095         // max ADC1-value while poti at maximum-position (0 - 4095)
-#define ADC2_MIN 0            // min ADC2-value while poti at minimum-position (0 - 4095)
-#define ADC2_MID 2006         // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
-#define ADC2_MAX 4095         // max ADC2-value while poti at maximum-position (0 - 4095)
+#ifndef TRANSPOTTER
+  #define CONTROL_ADC         // use ADC as input. disable CONTROL_SERIAL_USART2!
+  #define ADC1_MID_POT        // ADC1 middle resting poti: comment-out if NOT a middle resting poti
+  #define ADC2_MID_POT        // ADC2 middle resting poti: comment-out if NOT a middle resting poti
+  #define ADC1_MIN 0          // min ADC1-value while poti at minimum-position (0 - 4095)
+  #define ADC1_MID 1963       // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
+  #define ADC1_MAX 4095       // max ADC1-value while poti at maximum-position (0 - 4095)
+  #define ADC2_MIN 0          // min ADC2-value while poti at minimum-position (0 - 4095)
+  #define ADC2_MID 2006       // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
+  #define ADC2_MAX 4095       // max ADC2-value while poti at maximum-position (0 - 4095)
+#endif
 
 // ###### CONTROL VIA NINTENDO NUNCHUCK ######
 /* left sensor board cable.
@@ -120,6 +130,27 @@
  * use original nunchuck. most clones does not work very well.
  */
 // #define CONTROL_NUNCHUCK            // use nunchuck as input. disable DEBUG_SERIAL_USART3!
+
+
+// ################################# TRANSPOTTER SETTINGS ############################
+#ifdef TRANSPOTTER
+  #define CONTROL_GAMETRAK
+  #define SUPPORT_LCD
+  #define SUPPORT_NUNCHUCK
+
+  #define GAMETRAK_CONNECTION_NORMAL    // for normal wiring according to the wiki instructions
+  //#define GAMETRAK_CONNECTION_ALTERNATE // use this define instead if you messed up the gametrak ADC wiring (steering is speed, and length of the wire is steering)
+
+  #define ROT_P          1.2  // P coefficient for the direction controller. Positive / Negative values to invert gametrak steering direction.
+  #define FILTER         6553 // 0.1f - lower value == softer filter. do not use values <0.01, you will get float precision issues.
+
+  //#define INVERT_R_DIRECTION  // Invert right motor
+  #define INVERT_L_DIRECTION  // Invert left motor
+
+  // during nunchuck control (only relevant when activated)
+  #define SPEED_COEFFICIENT   14746  // 0.9f - higher value == stronger. 0.0 to ~2.0?
+  #define STEER_COEFFICIENT   8192   // 0.5f - higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
+#endif
 
 
 // ############################### MOTOR CONTROL (overwrite) #########################
@@ -160,17 +191,20 @@
 // Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
 #define RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0 - 2047.9375]. Do NOT make rate negative (>32767)
 
-// Value of FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
-#define FILTER              6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
+#ifndef TRANSPOTTER
+  // Value of FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
+  #define FILTER              6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
 
-// Value of COEFFICIENT is in fixdt(1,16,14)
-// If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
-// If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
-#define SPEED_COEFFICIENT   16384 // 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14 
-#define STEER_COEFFICIENT   8192  // 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0. 
+  // Value of COEFFICIENT is in fixdt(1,16,14)
+  // If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
+  // If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
+  #define SPEED_COEFFICIENT   16384 // 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14 
+  #define STEER_COEFFICIENT   8192  // 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0. 
 
-#define INVERT_R_DIRECTION
-#define INVERT_L_DIRECTION
+  #define INVERT_R_DIRECTION
+  #define INVERT_L_DIRECTION
+#endif
+
 #define BEEPS_BACKWARD      0     // 0 or 1
 
 // ###### SIMPLE BOBBYCAR ######
