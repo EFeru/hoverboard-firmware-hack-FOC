@@ -76,19 +76,38 @@
 
 //#define DEBUG_I2C_LCD             // standard 16x2 or larger text-lcd via i2c-converter on right sensor board cable
 
+
 // ############################### SERIAL DEBUG ###############################
 
-#define DEBUG_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
-#define DEBUG_BAUD       115200     // UART baud rate
 //#define DEBUG_SERIAL_SERVOTERM
 #define DEBUG_SERIAL_ASCII          // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
+
 
 // ############################### INPUT ###############################
 
 // ###### CONTROL VIA UART (serial) ######
-//#define CONTROL_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used!
-#define CONTROL_BAUD       19200      // control via usart from eg an Arduino or raspberry
-// for Arduino, use void loop(void){ Serial.write((uint8_t *) &steer, sizeof(steer)); Serial.write((uint8_t *) &speed, sizeof(speed));delay(20); }
+#define START_FRAME             0xAAAA                  // [-] Start frame definition for serial commands
+#define SERIAL_TIMEOUT          160                     // [-] Serial timeout duration for the received data. 160 ~= 0.8 sec. Calculation: 0.8 sec / 0.005 sec
+
+#define USART2_BAUD             38400                   // UART2 baud rate (long wired cable)
+#define USART2_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
+// #define CONTROL_SERIAL_USART2                           // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+// #define FEEDBACK_SERIAL_USART2                          // left sensor board cable, disable if ADC or PPM is used!
+// #define DEBUG_SERIAL_USART2                             // left sensor board cable, disable if ADC or PPM is used!
+
+#define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
+#define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
+// #define CONTROL_SERIAL_USART3                           // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
+// #define FEEDBACK_SERIAL_USART3                          // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+#define DEBUG_SERIAL_USART3                             // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+
+#if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
+#define UART_DMA_CHANNEL DMA1_Channel7
+#endif
+
+#if defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
+#define UART_DMA_CHANNEL DMA1_Channel2
+#endif
 
 // ###### CONTROL VIA RC REMOTE ######
 // left sensor board cable. Channel 1: steering, Channel 2: speed.
@@ -103,7 +122,7 @@
  * For middle resting potis: Let the potis in the middle resting position, write value 1 to ADC1_MID and value 2 to ADC2_MID
  * Make, flash and test it.
  */
-#define CONTROL_ADC           // use ADC as input. disable CONTROL_SERIAL_USART2!
+#define CONTROL_ADC           // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
 #define ADC1_MID_POT          // ADC1 middle resting poti: comment-out if NOT a middle resting poti
 #define ADC2_MID_POT          // ADC2 middle resting poti: comment-out if NOT a middle resting poti
 #define ADC1_MIN 0            // min ADC1-value while poti at minimum-position (0 - 4095)
@@ -119,7 +138,7 @@
  * use the right one of the 2 types of nunchucks, add i2c pullups.
  * use original nunchuck. most clones does not work very well.
  */
-// #define CONTROL_NUNCHUCK            // use nunchuck as input. disable DEBUG_SERIAL_USART3!
+// #define CONTROL_NUNCHUCK            // use nunchuck as input. disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
 
 
 // ############################### MOTOR CONTROL (overwrite) #########################
@@ -158,16 +177,16 @@
  */
 
 // Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
-#define RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0 - 2047.9375]. Do NOT make rate negative (>32767)
+#define RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
 
 // Value of FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
-#define FILTER              6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
+#define FILTER              6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0, 1.0].
 
 // Value of COEFFICIENT is in fixdt(1,16,14)
 // If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
 // If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
-#define SPEED_COEFFICIENT   16384 // 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14 
-#define STEER_COEFFICIENT   8192  // 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0. 
+#define SPEED_COEFFICIENT   16384 // 1.0f [-] higher value == stronger. [0, 65535] = [-2.0, 2.0]. In this case 16384 = 1.0 * 2^14 
+#define STEER_COEFFICIENT   8192  // 0.5f [-] higher value == stronger. [0, 65535] = [-2.0, 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0. 
 
 #define INVERT_R_DIRECTION
 #define INVERT_L_DIRECTION
@@ -186,22 +205,42 @@
 
 // ############################### VALIDATE SETTINGS ###############################
 
-#if defined CONTROL_SERIAL_USART2 && defined CONTROL_ADC
-  #error CONTROL_ADC and CONTROL_SERIAL_USART2 not allowed. it is on the same cable.
+#if defined(CONTROL_SERIAL_USART2) && defined(CONTROL_SERIAL_USART3)
+  #error CONTROL_SERIAL_USART2 and CONTROL_SERIAL_USART3 not allowed, choose one.
 #endif
 
-#if defined CONTROL_SERIAL_USART2 && defined CONTROL_PPM
-  #error CONTROL_PPM and CONTROL_SERIAL_USART2 not allowed. it is on the same cable.
+#if defined(FEEDBACK_SERIAL_USART2) && defined(FEEDBACK_SERIAL_USART3)
+  #error FEEDBACK_SERIAL_USART2 and FEEDBACK_SERIAL_USART3 not allowed, choose one.
 #endif
 
-#if defined DEBUG_SERIAL_USART3 && defined CONTROL_NUNCHUCK
-  #error CONTROL_NUNCHUCK and DEBUG_SERIAL_USART3 not allowed. it is on the same cable.
+#if defined(DEBUG_SERIAL_USART2) && defined(FEEDBACK_SERIAL_USART2)
+  #error DEBUG_SERIAL_USART2 and FEEDBACK_SERIAL_USART2 not allowed, choose one.
 #endif
 
-#if defined DEBUG_SERIAL_USART3 && defined DEBUG_I2C_LCD
-  #error DEBUG_I2C_LCD and DEBUG_SERIAL_USART3 not allowed. it is on the same cable.
+#if defined(DEBUG_SERIAL_USART3) && defined(FEEDBACK_SERIAL_USART3)
+  #error DEBUG_SERIAL_USART3 and FEEDBACK_SERIAL_USART3 not allowed, choose one.
 #endif
 
-#if defined CONTROL_PPM && defined CONTROL_ADC && defined CONTROL_NUNCHUCK || defined CONTROL_PPM && defined CONTROL_ADC || defined CONTROL_ADC && defined CONTROL_NUNCHUCK || defined CONTROL_PPM && defined CONTROL_NUNCHUCK
+#if defined(DEBUG_SERIAL_USART2) && defined(DEBUG_SERIAL_USART3)
+  #error DEBUG_SERIAL_USART2 and DEBUG_SERIAL_USART3 not allowed, choose one.
+#endif
+
+#if defined(CONTROL_ADC) && (defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2))
+  #error CONTROL_ADC and SERIAL_USART2 not allowed. It is on the same cable.
+#endif
+
+#if (defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2)) && defined(CONTROL_PPM)
+  #error CONTROL_PPM and SERIAL_USART2 not allowed. It is on the same cable.
+#endif
+
+#if (defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3)) && defined(CONTROL_NUNCHUCK)
+  #error CONTROL_NUNCHUCK and SERIAL_USART3 not allowed. It is on the same cable.
+#endif
+
+#if (defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3)) && defined(DEBUG_I2C_LCD)
+  #error DEBUG_I2C_LCD and SERIAL_USART3 not allowed. It is on the same cable.
+#endif
+
+#if defined(CONTROL_PPM) && defined(CONTROL_ADC) && defined(CONTROL_NUNCHUCK) || defined(CONTROL_PPM) && defined(CONTROL_ADC) || defined(CONTROL_ADC) && defined(CONTROL_NUNCHUCK) || defined(CONTROL_PPM) && defined(CONTROL_NUNCHUCK)
   #error only 1 input method allowed. use CONTROL_PPM or CONTROL_ADC or CONTROL_NUNCHUCK.
 #endif

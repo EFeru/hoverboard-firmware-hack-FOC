@@ -6,16 +6,8 @@
 #include "config.h"
 #include "comms.h"
 
-UART_HandleTypeDef huart2;
-
-#ifdef DEBUG_SERIAL_USART3
-#define UART_DMA_CHANNEL DMA1_Channel2
-#endif
-
-#ifdef DEBUG_SERIAL_USART2
-#define UART_DMA_CHANNEL DMA1_Channel7
-#endif
-
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
 
 static volatile uint8_t uart_buf[100];
 static volatile int16_t ch_buf[8];
@@ -47,19 +39,29 @@ void consoleScope(void) {
   #endif
 
   #if defined DEBUG_SERIAL_ASCII && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
-    memset((void *)(uintptr_t)uart_buf, 0, sizeof(uart_buf));
-    sprintf((char *)(uintptr_t)uart_buf, "1:%i 2:%i 3:%i 4:%i 5:%i 6:%i 7:%i 8:%i\r\n", ch_buf[0], ch_buf[1], ch_buf[2], ch_buf[3], ch_buf[4], ch_buf[5], ch_buf[6], ch_buf[7]);
+    // memset((void *)(uintptr_t)uart_buf, 0, sizeof(uart_buf));
+    int strLength;
+    strLength = sprintf((char *)(uintptr_t)uart_buf,
+                "1:%i 2:%i 3:%i 4:%i 5:%i 6:%i 7:%i 8:%i\r\n",
+                ch_buf[0], ch_buf[1], ch_buf[2], ch_buf[3], ch_buf[4], ch_buf[5], ch_buf[6], ch_buf[7]);
 
     if(UART_DMA_CHANNEL->CNDTR == 0) {
-      UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;
-      UART_DMA_CHANNEL->CNDTR = strlen((char *)(uintptr_t)uart_buf);
-      UART_DMA_CHANNEL->CMAR  = (uint32_t)uart_buf;
-      UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;
+      UART_DMA_CHANNEL->CCR    &= ~DMA_CCR_EN;
+      UART_DMA_CHANNEL->CNDTR   = strLength;
+      UART_DMA_CHANNEL->CMAR    = (uint32_t)uart_buf;
+      UART_DMA_CHANNEL->CCR    |= DMA_CCR_EN;
     }
   #endif
 }
 
 void consoleLog(char *message)
 {
-    HAL_UART_Transmit_DMA(&huart2, (uint8_t *)message, (uint16_t)strlen(message));
+  #if defined DEBUG_SERIAL_ASCII && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
+    if(UART_DMA_CHANNEL->CNDTR == 0) {
+      UART_DMA_CHANNEL->CCR    &= ~DMA_CCR_EN;
+      UART_DMA_CHANNEL->CNDTR   = strlen((char *)(uintptr_t)message);
+      UART_DMA_CHANNEL->CMAR    = (uint32_t)message;
+      UART_DMA_CHANNEL->CCR    |= DMA_CCR_EN;
+    }
+  #endif
 }

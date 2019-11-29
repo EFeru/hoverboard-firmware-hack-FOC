@@ -6,7 +6,7 @@
 * ► smooth torque output
 * ► improved motor efficiency -> lower energy consumption
 *
-* Copyright (C) 2019 Emanuel FERU <aerdronix@gmail.com>
+* Copyright (C) 2019-2020 Emanuel FERU <aerdronix@gmail.com>
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ extern ExtY rtY_Right;                  /* External outputs */
 
 static int16_t pwm_margin = 100;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
 
-uint8_t ctrlModReq = CTRL_MOD_REQ;
+extern uint8_t ctrlModReq;
 int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
 int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
 uint8_t errCode_Left = 0;

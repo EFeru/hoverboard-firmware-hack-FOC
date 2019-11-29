@@ -4,6 +4,7 @@
 * Copyright (C) 2017-2018 Rene Hopf <renehopf@mac.com>
 * Copyright (C) 2017-2018 Nico Stute <crinq@crinq.de>
 * Copyright (C) 2017-2018 Niklas Fauth <niklas.fauth@kit.fail>
+* Copyright (C) 2019-2020 Emanuel FERU <aerdronix@gmail.com>
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -62,17 +63,43 @@ extern volatile adc_buf_t adc_buffer;
 //LCD_PCF8574_HandleTypeDef lcd;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
+static UART_HandleTypeDef huart;
 
+#if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
 typedef struct{
-   int16_t steer;
-   int16_t speed;
-   //uint32_t crc;
+  uint16_t  start;
+  int16_t   steer;
+  int16_t   speed;
+  uint16_t  checksum;
 } Serialcommand;
-
 static volatile Serialcommand command;
+static int16_t timeoutCnt   = 0   // Timeout counter for Rx Serial command
+#endif
+static uint8_t timeoutFlag  = 0;  // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
+#if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
+typedef struct{
+  uint16_t  start;
+  int16_t   cmd1;
+  int16_t   cmd2;
+  int16_t   speedR;
+  int16_t   speedL;
+  int16_t   speedR_meas;
+  int16_t   speedL_meas;
+  int16_t   batVoltage;
+  int16_t   boardTemp;
+  uint16_t  checksum;
+} SerialFeedback;
+static SerialFeedback Feedback;
+#endif
+static uint8_t serialSendCounter; // serial send counter
+
+#if defined(CONTROL_NUNCHUCK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
 static uint8_t button1, button2;
+#endif
 
+uint8_t ctrlModReq = CTRL_MOD_REQ;
 static int     cmd1;              // normalized input value. -1000 to 1000
 static int     cmd2;              // normalized input value. -1000 to 1000
 static int16_t steer;             // local variable for steering. -1000 to 1000
@@ -105,6 +132,7 @@ void poweroff(void) {
   //  if (abs(speed) < 20) {  // wait for the speed to drop, then shut down -> this is commented out for SAFETY reasons
         buzzerPattern = 0;
         enable = 0;
+        consoleLog("-- Motors disabled --\r\n");
         for (int i = 0; i < 8; i++) {
             buzzerFreq = (uint8_t)i;
             HAL_Delay(100);
@@ -143,10 +171,6 @@ int main(void) {
   MX_TIM_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
-
-  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
-    UART_Init();
-  #endif
 
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 1);
 
@@ -209,9 +233,16 @@ int main(void) {
     Nunchuck_Init();
   #endif
 
-  #ifdef CONTROL_SERIAL_USART2
-    UART_Control_Init();
-    HAL_UART_Receive_DMA(&huart2, (uint8_t *)&command, 4);
+  #if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
+    UART2_Init();
+    huart = huart2;
+  #endif
+  #if defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
+    UART3_Init();
+    huart = huart3;
+  #endif
+  #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
+    HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
   #endif
 
   #ifdef DEBUG_I2C_LCD
@@ -287,11 +318,41 @@ int main(void) {
       timeout = 0;
     #endif
 
-    #ifdef CONTROL_SERIAL_USART2
-      cmd1 = CLAMP((int16_t)command.steer, -1000, 1000);
-      cmd2 = CLAMP((int16_t)command.speed, -1000, 1000);
+    #if defined CONTROL_SERIAL_USART2 || defined CONTROL_SERIAL_USART3
 
+      // Handle received data validity, timeout and fix out-of-sync if necessary
+      if (command.start == START_FRAME && command.checksum == (command.start ^ command.steer ^ command.speed)) { 
+        if (timeoutFlag) {                      // Check for previous timeout flag  
+          if (timeoutCnt-- <= 0)                // Timeout de-qualification
+            timeoutFlag   = 0;                  // Timeout flag cleared           
+        } else {
+          cmd1            = CLAMP((int16_t)command.steer, -1000, 1000);
+          cmd2            = CLAMP((int16_t)command.speed, -1000, 1000);         
+          command.start   = 0xFFFF;             // Change the Start Frame for timeout detection in the next cycle
+          timeoutCnt      = 0;                  // Reset the timeout counter         
+        }
+      } else {
+        if (timeoutCnt++ >= SERIAL_TIMEOUT) {   // Timeout qualification
+          timeoutFlag     = 1;                  // Timeout detected
+          timeoutCnt      = SERIAL_TIMEOUT;     // Limit timout counter value
+        }
+        // Check the received Start Frame. If it is NOT OK, most probably we are out-of-sync.
+        // Try to re-sync by reseting the DMA
+        if (command.start != START_FRAME && command.start != 0xFFFF) {
+          HAL_UART_DMAStop(&huart);                
+          HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
+        }
+      }       
+
+      if (timeoutFlag) {                        // In case of timeout bring the system to a Safe State
+        ctrlModReq  = 0;                        // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
+        cmd1        = 0;
+        cmd2        = 0;
+      } else {
+        ctrlModReq  = CTRL_MOD_REQ;             // Follow the Mode request
+      }
       timeout = 0;
+
     #endif
 
 
@@ -302,6 +363,7 @@ int main(void) {
       buzzerFreq = 4; HAL_Delay(200);
       buzzerFreq = 0;
       enable = 1;                       // enable motors
+      consoleLog("-- Motors enabled --\r\n");
     }
 
     // ####### LOW-PASS FILTER #######
@@ -316,11 +378,6 @@ int main(void) {
     // speedR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), -1000, 1000);
     // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), -1000, 1000);
     mixerFcn(speedFixdt, steerFixdt, &speedR, &speedL);   // This function implements the equations above
-
-    #ifdef ADDITIONAL_CODE
-      ADDITIONAL_CODE;
-    #endif
-
 
     // ####### SET OUTPUTS (if the target change is less than +/- 50) #######
     if ((speedL > lastSpeedL-50 && speedL < lastSpeedL+50) && (speedR > lastSpeedR-50 && speedR < lastSpeedR+50) && timeout < TIMEOUT) {
@@ -340,16 +397,20 @@ int main(void) {
     lastSpeedR = speedR;
 
 
-    if (inactivity_timeout_counter % 25 == 0) {
-      // ####### CALC BOARD TEMPERATURE #######
-      filtLowPass16(adc_buffer.temp, TEMP_FILT_COEF, &board_temp_adcFixdt);
-      board_temp_adcFilt  = board_temp_adcFixdt >> 4;  // convert fixed-point to integer
-      board_temp_deg_c    = (TEMP_CAL_HIGH_DEG_C - TEMP_CAL_LOW_DEG_C) * (board_temp_adcFilt - TEMP_CAL_LOW_ADC) / (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
+    // ####### CALC BOARD TEMPERATURE #######
+    filtLowPass16(adc_buffer.temp, TEMP_FILT_COEF, &board_temp_adcFixdt);
+    board_temp_adcFilt  = board_temp_adcFixdt >> 4;  // convert fixed-point to integer
+    board_temp_deg_c    = (TEMP_CAL_HIGH_DEG_C - TEMP_CAL_LOW_DEG_C) * (board_temp_adcFilt - TEMP_CAL_LOW_ADC) / (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
 
-      // ####### DEBUG SERIAL OUT #######
+    serialSendCounter++;              // Increment the counter
+    if (serialSendCounter > 20) {     // Send data every 100 ms = 20 * 5 ms, where 5 ms is approximately the main loop duration
+      serialSendCounter = 0;          // Reset the counter
+
+    // ####### DEBUG SERIAL OUT #######
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       #ifdef CONTROL_ADC
-        setScopeChannel(0, (int)adc_buffer.l_tx2);            // 1: ADC1
-        setScopeChannel(1, (int)adc_buffer.l_rx2);            // 2: ADC2
+        setScopeChannel(0, (int16_t)adc_buffer.l_tx2);        // 1: ADC1
+        setScopeChannel(1, (int16_t)adc_buffer.l_rx2);        // 2: ADC2
       #endif
       setScopeChannel(2, (int16_t)speedR);                    // 1: output command: [-1000, 1000]
       setScopeChannel(3, (int16_t)speedL);                    // 2: output command: [-1000, 1000]
@@ -358,7 +419,29 @@ int main(void) {
       setScopeChannel(6, (int16_t)board_temp_adcFilt);        // 7: for board temperature calibration
       setScopeChannel(7, (int16_t)board_temp_deg_c);          // 8: for verifying board temperature calibration
       consoleScope();
-    }
+
+    // ####### FEEDBACK SERIAL OUT #######
+    #elif defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
+      if(UART_DMA_CHANNEL->CNDTR == 0) {
+        Feedback.start	        = (uint16_t)START_FRAME;
+        Feedback.cmd1           = (int16_t)cmd1;
+        Feedback.cmd2           = (int16_t)cmd2;
+        Feedback.speedR	        = (int16_t)speedR;
+        Feedback.speedL	        = (int16_t)speedL;
+        Feedback.speedR_meas	  = (int16_t)rtY_Left.n_mot;
+        Feedback.speedL_meas	  = (int16_t)rtY_Right.n_mot;
+        Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
+        Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
+        Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR ^ Feedback.speedL
+                                  ^ Feedback.speedR_meas ^ Feedback.speedL_meas ^ Feedback.batVoltage ^ Feedback.boardTemp); 
+
+        UART_DMA_CHANNEL->CCR  &= ~DMA_CCR_EN;
+        UART_DMA_CHANNEL->CNDTR = sizeof(Feedback);
+        UART_DMA_CHANNEL->CMAR  = (uint32_t)&Feedback;
+        UART_DMA_CHANNEL->CCR  |= DMA_CCR_EN;          
+      }
+    #endif      
+    }    
 
     HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
     // ####### POWEROFF BY POWER-BUTTON #######
@@ -385,9 +468,9 @@ int main(void) {
     } else if (batVoltage < BAT_LOW_LVL2 && batVoltage >= BAT_LOW_DEAD && BAT_LOW_LVL2_ENABLE) {  // low bat 2: fast beep
       buzzerFreq = 5;
       buzzerPattern = 6;
-    } else if (errCode_Left || errCode_Right) {  // beep in case of Motor error - fast beep
-      buzzerFreq = 6;
-      buzzerPattern = 2;
+    } else if (errCode_Left || errCode_Right || timeoutFlag) {  // beep in case of Motor error or serial timeout - fast beep
+      buzzerFreq = 12;
+      buzzerPattern = 1;
     } else if (BEEPS_BACKWARD && speed < -50) {  // backward beep
       buzzerFreq = 5;
       buzzerPattern = 1;
