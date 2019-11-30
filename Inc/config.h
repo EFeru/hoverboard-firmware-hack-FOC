@@ -142,8 +142,8 @@
 
 
 // ############################### MOTOR CONTROL (overwrite) #########################
-#define CTRL_TYP_SEL    1                       // [-] Control type selection: 0 = Commutation , 1 = FOC Field Oriented Control (default)
-#define CTRL_MOD_REQ    1                       // [-] Control mode request: 0 = Open mode, 1 = Voltage mode (default), 2 = Speed mode, 3 = Torque mode
+#define CTRL_TYP_SEL    2                       // [-] Control type selection: 0 = Commutation , 1 = Sinusoidal, 2 = FOC Field Oriented Control (default)
+#define CTRL_MOD_REQ    1                       // [-] Control mode request: 0 = Open mode, 1 = VOLTAGE mode (default), 2 = SPEED mode, 3 = TORQUE mode. Note: SPEED and TORQUE modes are only available for FOC!
 #define DIAG_ENA        1                       // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
 #define FIELD_WEAK_ENA  0                       // [-] Field Weakening enable flag: 0 = Disabled (default), 1 = Enabled
 #define I_MOT_MAX       (15 * A2BIT_CONV) << 4  // [A] Maximum motor current limit (Change only the first number, the rest is needed for fixed-point conversion, fixdt(1,16,4))

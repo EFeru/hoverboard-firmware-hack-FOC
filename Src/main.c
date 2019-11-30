@@ -74,7 +74,7 @@ typedef struct{
   uint16_t  checksum;
 } Serialcommand;
 static volatile Serialcommand command;
-static int16_t timeoutCnt   = 0   // Timeout counter for Rx Serial command
+static int16_t timeoutCnt   = 0;  // Timeout counter for Rx Serial command
 #endif
 static uint8_t timeoutFlag  = 0;  // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
@@ -99,7 +99,8 @@ static uint8_t serialSendCounter; // serial send counter
 static uint8_t button1, button2;
 #endif
 
-uint8_t ctrlModReq = CTRL_MOD_REQ;
+uint8_t ctrlModReqRaw  = CTRL_MOD_REQ;
+uint8_t ctrlModReq;               // Final control mode request
 static int     cmd1;              // normalized input value. -1000 to 1000
 static int     cmd2;              // normalized input value. -1000 to 1000
 static int16_t steer;             // local variable for steering. -1000 to 1000
@@ -349,7 +350,7 @@ int main(void) {
         cmd1        = 0;
         cmd2        = 0;
       } else {
-        ctrlModReq  = CTRL_MOD_REQ;             // Follow the Mode request
+        ctrlModReq  = ctrlModReqRaw;            // Follow the Mode request
       }
       timeout = 0;
 

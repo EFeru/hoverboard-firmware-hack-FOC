@@ -21,7 +21,7 @@ The main firmware architecture includes:
 - **Diagnostics**: implements error detection such as unconnected Hall sensor, motor blocked, MOSFET defective
 - **Control Manager**: manages the transitions between control modes (Voltage, Speed, Torque)
 - **FOC Algorithm**: implements the FOC strategy
-- **Control Type Manager**: Manages the transition between Commutation and FOC Algorithm
+- **Control Type Manager**: Manages the transition between Commutation, Sinusoidal, and FOC control type
 
 ![Firmware architecture](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FW_architecture.png)
 
@@ -29,15 +29,17 @@ The FOC algorithm architecture is illustrated in the figure below:
 
 ![FOC algorithm](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FOC_algorithm.png)
 
-In this firmware two control methods are available:
-- Commutation method
-- FOC method
+In this firmware 3 control types are available:
+- Commutation
+- SIN (Sinusoidal)
+- FOC (Field Oriented Control)
 ![Schematic representation of the available control methods](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/01_Matlab/02_Figures/control_methods.png)
 
 
-A short video showing the noise performance of the Commutation method vs Advanced control method:
-
-[►Video: Commutation method vs Advanced control](https://drive.google.com/file/d/1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD/view)
+Demo videos:
+[►Video: Commutation vs Advanced control (constant speed)](https://drive.google.com/open?id=1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD)
+[►Video: Commutation vs Advanced control (variable speed)](https://drive.google.com/open?id=1rrQ4k5VLhhAWXQzDSCar_SmEdsbM-hq2)
+[►Video: Reliable Serial Communication demo](https://drive.google.com/open?id=1mUM-p7SE6gmyTH7zhDHy5DUyczXvmy5d)
 
 ![Hoverboard wheel](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/hoverboard_wheel.JPG)
 
@@ -71,7 +73,7 @@ Each motor is constantly monitored for errors. These errors are:
 - **Error 002**: Hall sensor short circuit
 - **Error 004**: Motor NOT able to spin (Possible causes: motor phase disconnected, MOSFET defective, operational Amplifier defective, motor blocked)
 
-The error codes above are reported for each motor in the variables **errCode_Left** and **errCode_Right** for Left motor (long wired motor) and Right motor (short wired motor), respectively.
+The error codes above are reported for each motor in the variables **errCode_Left** and **errCode_Right** for Left motor (long wired motor) and Right motor (short wired motor), respectively. In case of error, the motor power is reduced to 0, while an audible (fast beep) can be heard to notify the user.
 
 
 ---
@@ -145,9 +147,6 @@ Have a look at the config.h in the Inc directory. That's where you configure to 
 Currently supported: Wii Nunchuck, analog potentiometer and PPM-Sum signal from a RC remote.
 A good example of control via UART, eg. from an Arduino or raspberryPi, can be found here:
 https://github.com/p-h-a-i-l/hoverboard-firmware-hack
-
-### Future work
- - convert all calculations and remaining filters (for the battery voltage, current, and temperature) from floating point to fixed-point. This will reduce further the SMT32 computational load -> **DONE**
 
 ---
 ## Acknowledgements

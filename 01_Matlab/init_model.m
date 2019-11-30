@@ -10,7 +10,7 @@
 % >> improved motor efficiency -> lower energy consumption
 %
 % Author: Emanuel FERU
-% Copyright © 2019 Emanuel FERU <aerdronix@gmail.com>
+% Copyright © 2019-2020 Emanuel FERU <aerdronix@gmail.com>
 %
 % This program is free software: you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -59,7 +59,8 @@ r_cos_M1            = cos((a_elecAngle_XA + 30)*(pi/180));
 %% Control Manager
 % Control type selection
 CTRL_COM            = 0;        % [-] Commutation Control
-CTRL_FOC            = 1;        % [-] Field Oriented Control (FOC)
+CTRL_SIN            = 1;        % [-] Sinusoidal Control
+CTRL_FOC            = 2;        % [-] Field Oriented Control (FOC)
 z_ctrlTypSel        = CTRL_FOC; % [-] Control Type Selection (default)
 
 % Control model request
@@ -89,7 +90,7 @@ cf_currFilt         = 0.12;     % [%] Current filter coefficient [0, 1]. Lower v
 b_diagEna           = 1;            % [-] Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
 t_errQual           = 0.6 * f_ctrl; % [s] Error qualification time
 t_errDequal         = 2.0 * f_ctrl; % [s] Error dequalification time
-r_errInpTgtThres    = 200;          % [-] Error input target threshold (for "Blocked motor" detection)
+r_errInpTgtThres    = 400;          % [-] Error input target threshold (for "Blocked motor" detection)
 
 %% F04_Field_Oriented_Control
 
@@ -146,10 +147,30 @@ iq_maxSca_M1        = sqrt(1 - iq_maxSca_XA.^2);                                
 %-------------------------------
 
 %% F05_Control_Type_Management
+
 % Commutation method
 z_commutMap_M1      = [-1 -1  0  1  1  0;   % Phase A
                         1  0 -1 -1  0  1;   % Phase B
                         0  1  1  0 -1 -1];  % Phase C  [-] Commutation method map
+                    
+% Sinusoidal method
+% The map below was experimentaly calibrated on the real motor. Objectives: minimum noise and minimum torque ripple
+a_phaAdv_M1         = [0   0   0   0   0   2   3   5   9  16   25];     % [deg] Phase advance angle
+r_phaAdv_XA         = [0 100 200 300 400 500 600 700 800 900 1000];     % [-] Scaled input target grid
+% plot(r_phaAdv_XA, a_phaAdv_M1);
+
+omega               = a_elecAngle_XA*(pi/180);
+pha_adv             = 30;       % [deg] Phase advance to mach commands with the Hall position
+r_sinPhaA_M1        = -sin(omega + pha_adv*(pi/180));
+r_sinPhaB_M1        = -sin(omega - 120*(pi/180) + pha_adv*(pi/180));
+r_sinPhaC_M1        = -sin(omega + 120*(pi/180) + pha_adv*(pi/180));
+
+% Sinusoidal 3rd armonic method
+A                   = 1.15;     % Sine amplitude (tunable to get the Saddle sin maximum to value 1000)
+sin3Arm             = -0.224*sin(3*(omega + pha_adv*(pi/180)));     % 3rd armonic
+r_sin3PhaA_M1       = sin3Arm + A*r_sinPhaA_M1;
+r_sin3PhaB_M1       = sin3Arm + A*r_sinPhaB_M1;
+r_sin3PhaC_M1       = sin3Arm + A*r_sinPhaC_M1;
 
 disp('---- BLDC_controller: Initialization OK ----');
 
@@ -158,64 +179,70 @@ show_fig            = 0;
 
 if show_fig
     
+    % Apply scaling
     sca_factor          = 1000;     % [-] scalling factor (to avoid truncation approximations on integer data type)
+    r_sinPhaA_M1sca     = sca_factor * r_sinPhaA_M1;
+    r_sinPhaB_M1sca     = sca_factor * r_sinPhaB_M1;
+    r_sinPhaC_M1sca     = sca_factor * r_sinPhaC_M1;
+    r_sin3PhaA_M1sca    = sca_factor * r_sin3PhaA_M1;
+    r_sin3PhaB_M1sca    = sca_factor * r_sin3PhaB_M1;
+    r_sin3PhaC_M1sca    = sca_factor * r_sin3PhaC_M1;
     
-    % Trapezoidal method
-    a_trapElecAngle_XA  = [0 60 120 180 240 300 360];  % [deg] Electrical angle grid
-    r_trapPhaA_M1       = sca_factor*[ 1  1  1 -1 -1 -1  1];
-    r_trapPhaB_M1       = sca_factor*[-1 -1  1  1  1 -1 -1];
-    r_trapPhaC_M1       = sca_factor*[ 1 -1 -1 -1  1  1  1];
-    
-    % Sinusoidal method
-    a_sinElecAngle_XA   = 0:10:360;
-    omega               = a_sinElecAngle_XA*(pi/180);
-    pha_adv             = 30;       % [deg] Phase advance to mach commands with the Hall position
-    r_sinPhaA_M1        = -sca_factor*sin(omega + pha_adv*(pi/180));
-    r_sinPhaB_M1        = -sca_factor*sin(omega - 120*(pi/180) + pha_adv*(pi/180));
-    r_sinPhaC_M1        = -sca_factor*sin(omega + 120*(pi/180) + pha_adv*(pi/180));
+    % Commutation method
+    a_commElecAngle_XA  = [0 60 120 180 240 300 360];  % [deg] Electrical angle grid
+    hall_A              = [0 0 0 1 1 1 1] + 4;
+    hall_B              = [1 1 0 0 0 1 1] + 2;
+    hall_C              = [0 1 1 1 0 0 0];    
     
     % SVM (Space Vector Modulation) calculation
-    SVM_vec             = [r_sinPhaA_M1; r_sinPhaB_M1; r_sinPhaC_M1];
+    SVM_vec             = [r_sinPhaA_M1sca; r_sinPhaB_M1sca; r_sinPhaC_M1sca];
     SVM_min             = min(SVM_vec);
     SVM_max             = max(SVM_vec);
     SVM_sum             = SVM_min + SVM_max;
     SVM_vec             = SVM_vec - 0.5*SVM_sum;
     SVM_vec             = (2/sqrt(3))*SVM_vec;
-    
-    hall_A = [0 0 0 1 1 1 1] + 4;
-    hall_B = [1 1 0 0 0 1 1] + 2;
-    hall_C = [0 1 1 1 0 0 0];
-    
+        
     color = ['m' 'g' 'b'];
     lw = 1.5;
     figure
-    s1 = subplot(221); hold on
-    stairs(a_trapElecAngle_XA, hall_A, color(1), 'Linewidth', lw);
-    stairs(a_trapElecAngle_XA, hall_B, color(2), 'Linewidth', lw);
-    stairs(a_trapElecAngle_XA, hall_C, color(3), 'Linewidth', lw);
-    xticks(a_trapElecAngle_XA);
+    s1 = subplot(231); hold on
+    stairs(a_commElecAngle_XA, hall_A, color(1), 'Linewidth', lw);
+    stairs(a_commElecAngle_XA, hall_B, color(2), 'Linewidth', lw);
+    stairs(a_commElecAngle_XA, hall_C, color(3), 'Linewidth', lw);
+    xticks(a_commElecAngle_XA);
     grid
     yticks(0:5);
     yticklabels({'0','1','0','1','0','1'});
     title('Hall sensors');
     legend('Phase A','Phase B','Phase C','Location','NorthEast');
     
-    s2 = subplot(222); hold on
-    stairs(a_trapElecAngle_XA, hall_A, color(1), 'Linewidth', lw);
-    stairs(a_trapElecAngle_XA, hall_B, color(2), 'Linewidth', lw);
-    stairs(a_trapElecAngle_XA, hall_C, color(3), 'Linewidth', lw);
-    xticks(a_trapElecAngle_XA);
+    s2 = subplot(232); hold on
+    stairs(a_commElecAngle_XA, hall_A, color(1), 'Linewidth', lw);
+    stairs(a_commElecAngle_XA, hall_B, color(2), 'Linewidth', lw);
+    stairs(a_commElecAngle_XA, hall_C, color(3), 'Linewidth', lw);
+    xticks(a_commElecAngle_XA);
     grid
     yticks(0:5);
     yticklabels({'0','1','0','1','0','1'});
     title('Hall sensors');
     legend('Phase A','Phase B','Phase C','Location','NorthEast');
     
-    s3 = subplot(223); hold on
-    stairs(a_trapElecAngle_XA, sca_factor*[z_commutMap_M1(1,:) z_commutMap_M1(1,1)] + 6000, color(1), 'Linewidth', lw);
-    stairs(a_trapElecAngle_XA, sca_factor*[z_commutMap_M1(2,:) z_commutMap_M1(2,1)] + 3000, color(2), 'Linewidth', lw);
-    stairs(a_trapElecAngle_XA, sca_factor*[z_commutMap_M1(3,:) z_commutMap_M1(3,1)], color(3), 'Linewidth', lw);
-    xticks(a_trapElecAngle_XA);
+    s3 = subplot(233); hold on
+    stairs(a_commElecAngle_XA, hall_A, color(1), 'Linewidth', lw);
+    stairs(a_commElecAngle_XA, hall_B, color(2), 'Linewidth', lw);
+    stairs(a_commElecAngle_XA, hall_C, color(3), 'Linewidth', lw);
+    xticks(a_commElecAngle_XA);
+    grid
+    yticks(0:5);
+    yticklabels({'0','1','0','1','0','1'});
+    title('Hall sensors');
+    legend('Phase A','Phase B','Phase C','Location','NorthEast');
+    
+    s4 = subplot(234); hold on
+    stairs(a_commElecAngle_XA, sca_factor*[z_commutMap_M1(1,:) z_commutMap_M1(1,1)] + 6000, color(1), 'Linewidth', lw);
+    stairs(a_commElecAngle_XA, sca_factor*[z_commutMap_M1(2,:) z_commutMap_M1(2,1)] + 3000, color(2), 'Linewidth', lw);
+    stairs(a_commElecAngle_XA, sca_factor*[z_commutMap_M1(3,:) z_commutMap_M1(3,1)], color(3), 'Linewidth', lw);
+    xticks(a_commElecAngle_XA);
     yticks(-1000:1000:7000);
     yticklabels({'-1000','0','1000','-1000','0','1000','-1000','0','1000'});
     ylim([-1000 7000]);
@@ -223,16 +250,27 @@ if show_fig
     title('Commutation method [0]');
     xlabel('Electrical angle [deg]');
     
-    s4 = subplot(224); hold on
-    plot(a_sinElecAngle_XA, SVM_vec(1,:), color(1), 'Linewidth', lw);
-    plot(a_sinElecAngle_XA, SVM_vec(2,:), color(2), 'Linewidth', lw);
-    plot(a_sinElecAngle_XA, SVM_vec(3,:), color(3), 'Linewidth', lw);
-    xticks(a_trapElecAngle_XA);
+    s5 = subplot(235); hold on
+    plot(a_elecAngle_XA, r_sin3PhaA_M1sca, color(1), 'Linewidth', lw);
+    plot(a_elecAngle_XA, r_sin3PhaB_M1sca, color(2), 'Linewidth', lw);
+    plot(a_elecAngle_XA, r_sin3PhaC_M1sca, color(3), 'Linewidth', lw);
+    xticks(a_commElecAngle_XA);
     ylim([-1000 1000])
     grid
-    title('FOC method [1]');
+    title('SIN method [1]');
     xlabel('Electrical angle [deg]');
-    linkaxes([s1 s2 s3 s4],'x');
+    
+    s6 = subplot(236); hold on
+    plot(a_elecAngle_XA, SVM_vec(1,:), color(1), 'Linewidth', lw);
+    plot(a_elecAngle_XA, SVM_vec(2,:), color(2), 'Linewidth', lw);
+    plot(a_elecAngle_XA, SVM_vec(3,:), color(3), 'Linewidth', lw);
+    xticks(a_commElecAngle_XA);
+    ylim([-1000 1000])
+    grid
+    title('FOC method [2]');    
+    xlabel('Electrical angle [deg]');
+    
+    linkaxes([s1 s2 s3 s4 s5 s6],'x');
     xlim([0 360]);
     
 end
