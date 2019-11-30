@@ -1,11 +1,11 @@
 [
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9340",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9991",
   "className":"Simulink.Outport",
   "icon":"WebViewIcon3",
-  "name":"r_inpTgtScaCOM",
-  "label":"r_inpTgtScaCOM",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9337",
+  "name":"r_inpTgtScaDft",
+  "label":"r_inpTgtScaDft",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9988",
   "inspector":{
    "params":[
     "Port",
@@ -80,12 +80,12 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9339",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9990",
   "className":"Simulink.ActionPort",
   "icon":"WebViewIcon3",
   "name":"Action Port",
   "label":"Action Port",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9337",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9988",
   "inspector":{
    "params":[
     "InitializeStates",
@@ -111,12 +111,12 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9338",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9989",
   "className":"Simulink.Inport",
   "icon":"WebViewIcon3",
   "name":"r_inpTgt",
   "label":"r_inpTgt",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9337",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9988",
   "inspector":{
    "params":[
     "Port",
@@ -178,12 +178,12 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9338#out:1",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9989#out:1",
   "className":"Simulink.Line",
   "icon":"WebViewIcon5",
   "name":"",
   "label":"",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9337",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9988",
   "inspector":{
    "params":[
     "SignalNameFromLabel",

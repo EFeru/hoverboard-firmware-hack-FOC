@@ -80,11 +80,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791:2709",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791:2710",
   "className":"Simulink.Outport",
   "icon":"WebViewIcon3",
-  "name":"hitMax",
-  "label":"hitMax",
+  "name":"hitMin",
+  "label":"hitMin",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791",
   "inspector":{
    "params":[
@@ -113,7 +113,7 @@
     "VectorParamsAs1DForOutWhenUnconnected"
    ],
    "values":[
-    "1",
+    "3",
     "Port number",
     "[]",
     "[]",
@@ -319,73 +319,38 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791:2710",
-  "className":"Simulink.Outport",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791:2707",
+  "className":"Simulink.RelationalOperator",
   "icon":"WebViewIcon3",
-  "name":"hitMin",
-  "label":"hitMin",
+  "name":"UpperRelop",
+  "label":"UpperRelop",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791",
   "inspector":{
    "params":[
-    "Port",
-    "IconDisplay",
-    "OutMin",
-    "OutMax",
+    "Operator",
+    "InputSameDT",
     "OutDataTypeStr",
-    "LockScale",
-    "Unit",
-    "PortDimensions",
-    "VarSizeSig",
+    "RndMeth",
     "SampleTime",
-    "SignalType",
-    "BusOutputAsStruct",
-    "EnsureOutportIsVirtual",
-    "InitialOutput",
-    "MustResolveToSignalObject",
-    "OutputWhenDisabled",
-    "OutputWhenUnConnected",
-    "OutputWhenUnconnectedValue",
-    "SignalName",
-    "SignalObject",
-    "SourceOfInitialOutputValue",
-    "StorageClass",
-    "VectorParamsAs1DForOutWhenUnconnected"
+    "ZeroCross"
    ],
    "values":[
-    "3",
-    "Port number",
-    "[]",
-    "[]",
-    "Inherit: auto",
+    "<",
     "off",
-    "inherit",
+    "boolean",
+    "Nearest",
     "-1",
-    "Inherit",
-    "-1",
-    "auto",
-    "off",
-    "off",
-    "[]",
-    "off",
-    "held",
-    "off",
-    "0",
-    "",
-    [
-    ],
-    "Dialog",
-    "Auto",
-    "off"
+    "on"
    ],
    "tabs":[
     "Main",
-    "Signal Attributes",
+    "Data Type",
     "-Other"
    ],
    "tabs_idx":[
     0,
-    2,
-    11
+    1,
+    4
    ]
   },
   "viewer":{
@@ -394,7 +359,7 @@
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"Outport",
+   "blocktype":"RelationalOperator",
    "masktype":""
   }
  },
@@ -466,38 +431,73 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791:2707",
-  "className":"Simulink.RelationalOperator",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791:2709",
+  "className":"Simulink.Outport",
   "icon":"WebViewIcon3",
-  "name":"UpperRelop",
-  "label":"UpperRelop",
+  "name":"hitMax",
+  "label":"hitMax",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9729:2791",
   "inspector":{
    "params":[
-    "Operator",
-    "InputSameDT",
+    "Port",
+    "IconDisplay",
+    "OutMin",
+    "OutMax",
     "OutDataTypeStr",
-    "RndMeth",
+    "LockScale",
+    "Unit",
+    "PortDimensions",
+    "VarSizeSig",
     "SampleTime",
-    "ZeroCross"
+    "SignalType",
+    "BusOutputAsStruct",
+    "EnsureOutportIsVirtual",
+    "InitialOutput",
+    "MustResolveToSignalObject",
+    "OutputWhenDisabled",
+    "OutputWhenUnConnected",
+    "OutputWhenUnconnectedValue",
+    "SignalName",
+    "SignalObject",
+    "SourceOfInitialOutputValue",
+    "StorageClass",
+    "VectorParamsAs1DForOutWhenUnconnected"
    ],
    "values":[
-    "<",
+    "1",
+    "Port number",
+    "[]",
+    "[]",
+    "Inherit: auto",
     "off",
-    "boolean",
-    "Nearest",
+    "inherit",
     "-1",
-    "on"
+    "Inherit",
+    "-1",
+    "auto",
+    "off",
+    "off",
+    "[]",
+    "off",
+    "held",
+    "off",
+    "0",
+    "",
+    [
+    ],
+    "Dialog",
+    "Auto",
+    "off"
    ],
    "tabs":[
     "Main",
-    "Data Type",
+    "Signal Attributes",
     "-Other"
    ],
    "tabs_idx":[
     0,
-    1,
-    4
+    2,
+    11
    ]
   },
   "viewer":{
@@ -506,7 +506,7 @@
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"RelationalOperator",
+   "blocktype":"Outport",
    "masktype":""
   }
  },

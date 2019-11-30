@@ -214,11 +214,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2839",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2837",
   "className":"Simulink.Signum",
   "icon":"WebViewIcon3",
-  "name":"SignDeltaU3",
-  "label":"SignDeltaU3",
+  "name":"SignDeltaU2",
+  "label":"SignDeltaU2",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2816",
   "inspector":{
    "params":[
@@ -290,11 +290,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2837",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2839",
   "className":"Simulink.Signum",
   "icon":"WebViewIcon3",
-  "name":"SignDeltaU2",
-  "label":"SignDeltaU2",
+  "name":"SignDeltaU3",
+  "label":"SignDeltaU3",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2816",
   "inspector":{
    "params":[
@@ -321,11 +321,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2836",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2840",
   "className":"Simulink.DataTypeConversion",
   "icon":"WebViewIcon3",
-  "name":"DataTypeConv3",
-  "label":"DataTypeConv3",
+  "name":"DataTypeConv4",
+  "label":"DataTypeConv4",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2816",
   "inspector":{
    "params":[
@@ -368,11 +368,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2840",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2836",
   "className":"Simulink.DataTypeConversion",
   "icon":"WebViewIcon3",
-  "name":"DataTypeConv4",
-  "label":"DataTypeConv4",
+  "name":"DataTypeConv3",
+  "label":"DataTypeConv3",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:9721:2816",
   "inspector":{
    "params":[
