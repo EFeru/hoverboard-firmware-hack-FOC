@@ -91,8 +91,8 @@ void Receive()
 {
 	// Check for new data availability in the Serial buffer
 	if (HoverSerial.available()) {
-		incomingByte 	  = HoverSerial.read();		                                // Read the incoming byte
-		bufStartFrame	= ((uint16_t)(incomingBytePrev) << 8) +  incomingByte;	// Construct the start marker		
+		incomingByte 	  = HoverSerial.read();		                              // Read the incoming byte
+		bufStartFrame	= ((uint16_t)(incomingBytePrev) << 8) +  incomingByte;	// Construct the start frame		
 	}
 	else {
 		return;
@@ -118,8 +118,8 @@ void Receive()
 	// Check if we reached the end of the package
 	if (idx == sizeof(SerialFeedback)) {  	
 		uint16_t checksum;
-		checksum = NewFeedback.start ^ NewFeedback.cmd1 ^ NewFeedback.cmd2 ^ NewFeedback.speedR ^ NewFeedback.speedL
-					^ NewFeedback.speedR_meas ^ NewFeedback.speedL_meas ^ NewFeedback.batVoltage ^ NewFeedback.boardTemp;
+		checksum = (uint16_t)(NewFeedback.start ^ NewFeedback.cmd1 ^ NewFeedback.cmd2 ^ NewFeedback.speedR ^ NewFeedback.speedL
+					^ NewFeedback.speedR_meas ^ NewFeedback.speedL_meas ^ NewFeedback.batVoltage ^ NewFeedback.boardTemp);
 	
 		// Check validity of the new data
 		if (NewFeedback.start == START_FRAME && checksum == NewFeedback.checksum) {
