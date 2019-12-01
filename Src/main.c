@@ -322,7 +322,7 @@ int main(void) {
     #if defined CONTROL_SERIAL_USART2 || defined CONTROL_SERIAL_USART3
 
       // Handle received data validity, timeout and fix out-of-sync if necessary
-      if (command.start == START_FRAME && command.checksum == (command.start ^ command.steer ^ command.speed)) { 
+      if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) { 
         if (timeoutFlag) {                      // Check for previous timeout flag  
           if (timeoutCnt-- <= 0)                // Timeout de-qualification
             timeoutFlag   = 0;                  // Timeout flag cleared           
