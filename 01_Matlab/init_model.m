@@ -56,7 +56,7 @@ r_cos_M1            = cos((a_elecAngle_XA + 30)*(pi/180));
 % stairs(a_elecAngle_XA, r_cos_M1);
 % legend('sin','cos');
 
-%% Control Manager
+%% Control selection
 % Control type selection
 CTRL_COM            = 0;        % [-] Commutation Control
 CTRL_SIN            = 1;        % [-] Sinusoidal Control
@@ -69,6 +69,7 @@ VLT_MODE            = 1;        % [-] Voltage mode
 SPD_MODE            = 2;        % [-] Speed mode
 TRQ_MODE            = 3;        % [-] Torque mode
 z_ctrlModReq        = VLT_MODE; % [-] Control Mode Request (default)
+
 
 %% F01_Estimations
 % Position Estimation Parameters
@@ -87,41 +88,36 @@ n_stdStillDet       = 3;        % [rpm] Speed threshold for Stand still detectio
 cf_currFilt         = 0.12;     % [%] Current filter coefficient [0, 1]. Lower values mean softer filter
 
 %% F02_Diagnostics
-b_diagEna           = 1;            % [-] Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
-t_errQual           = 0.6 * f_ctrl; % [s] Error qualification time
-t_errDequal         = 2.0 * f_ctrl; % [s] Error dequalification time
-r_errInpTgtThres    = 400;          % [-] Error input target threshold (for "Blocked motor" detection)
+b_diagEna           = 1;                % [-] Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
+t_errQual           = 0.6 * f_ctrl/3;   % [s] Error qualification time
+t_errDequal         = 2.0 * f_ctrl/3;   % [s] Error dequalification time
+r_errInpTgtThres    = 400;              % [-] Error input target threshold (for "Blocked motor" detection)
 
-%% F04_Field_Oriented_Control
+%% F03_Control_Mode_Manager
+dV_openRate         = 1000 / (f_ctrl/3);% [V/s] Rate for voltage cut-off in Open Mode (Sample Time included in the rate)
 
-% Current measurement
-b_selPhaABCurrMeas  = 1;                % [-] Measured phase currents selection: {iA,iB} = 1 (default); {iB,iC} = 0
-dV_openRate         = 1000 / f_ctrl;    % [V/s] Rate for voltage cut-off in Open Mode (Sample Time included in the rate)
-
-% Field Weakening
+%% F04_Field_Weakening
 b_fieldWeakEna      = 0;                % [-] Field weakening enable flag: 0 = disable (default), 1 = enable
-n_fieldWeakAuthHi   = 200;              % [rpm] Motor speed High for field weakening authorization
-n_fieldWeakAuthLo   = 140;              % [rpm] Motor speed Low for field weakening authorization
-id_fieldWeak_M1     = [0   0.1   0.3   0.7  1.3  2.1    3  3.8  4.4  4.8   5    5] * i_sca;  % [-] Field weakening current map
-r_fieldWeak_XA      = [570 600   630   660  690  720  750  780  810  840 870  900];          % [-] Scaled input target grid
-% figure
-% plot(r_fieldWeak_XA, id_fieldWeak_M1, '.-'); hold on
-% grid
+r_fieldWeakHi       = 1500;             % [-] Input target High threshold for reaching maximum Field Weakening / Phase Advance
+r_fieldWeakLo       = 1000;             % [-] Input target Low threshold for starting Field Weakening / Phase Advance
+n_fieldWeakAuthHi   = 400;              % [rpm] Motor speed High for field weakening authorization
+n_fieldWeakAuthLo   = 300;              % [rpm] Motor speed Low for field weakening authorization
 
-% Q axis control gains
-cf_iqKp             = 0.5;              % [-] P gain
-cf_iqKi             = 100 / f_ctrl;     % [-] I gain
+% FOC method
+id_fieldWeakMax     = 5 * i_sca;        % [A] Field weakening maximum current
 
-% D axis control gains
-cf_idKp             = 0.2;              % [-] P gain
-cf_idKi             = 60 / f_ctrl;      % [-] I gain
+% SIN method
+a_phaAdvMax         = 25;               % [deg] Maximum phase advance angle
 
-% Speed control gains
-cf_nKp              = 1.18;             % [-] P gain
-cf_nKi              = 20.4 / f_ctrl;    % [-] I gain
 
-% Limitations
-%-------------------------------
+%% F05_Field_Oriented_Control
+b_selPhaABCurrMeas  = 1;                % [-] Select measured current phases: {iA,iB} = 1 (default); {iB,iC} = 0
+
+% Motor Limitations Calibratables
+cf_iqKiLimProt      = 60 / (f_ctrl/3);  % [-] Current limit protection integral gain (only used in VLT_MODE and SPD_MODE)
+cf_nKiLimProt       = 20 / (f_ctrl/3);  % [-] Speed limit protection integral gain (only used in VLT_MODE and TRQ_MODE)
+cf_KbLimProt        = 1000 / (f_ctrl/3);% [-] Back calculation gain for integral anti-windup
+
 % Voltage Limitations
 V_margin            = 100;              % [-] Voltage margin to make sure that there is a sufficiently wide pulse for a good phase current measurement
 Vd_max              = 1000 - V_margin;
@@ -131,12 +127,9 @@ Vq_max_M1           = sqrt(Vd_max^2 - Vq_max_XA.^2);  % Circle limitations look-
 % stairs(Vq_max_XA, Vq_max_M1); legend('V_{max}');
 
 % Speed limitations
-cf_nKpLimProt       = 5;                % [-] Speed limit protection gain (only used in VLT_MODE and TRQ_MODE)
-n_max               = 800;              % [rpm] Maximum motor speed
+n_max               = 1000;             % [rpm] Maximum motor speed
 
 % Current Limitations
-cf_iqKpLimProt      = 7.2;              % [-] Current limit protection gain (only used in VLT_MODE and SPD_MODE)
-cf_iqKiLimProt      = 40.7 / f_ctrl;    % [-] Current limit protection integral gain (only used in SPD_MODE)
 i_max               = 15;               % [A] Maximum allowed motor current (continuous)
 i_max               = i_max * i_sca;
 iq_maxSca_XA        = 0:0.02:0.99;
@@ -146,18 +139,25 @@ iq_maxSca_M1        = sqrt(1 - iq_maxSca_XA.^2);                                
 % stairs(iq_maxSca_XA, iq_maxSca_M1); legend('i_{maxSca}');
 %-------------------------------
 
-%% F05_Control_Type_Management
+% Q axis control gains
+cf_iqKp             = 0.3;              % [-] P gain
+cf_iqKi             = 100 / (f_ctrl/3); % [-] I gain
+
+% D axis control gains
+cf_idKp             = 0.2;              % [-] P gain
+cf_idKi             = 60 / (f_ctrl/3);  % [-] I gain
+
+% Speed control gains
+cf_nKp              = 1.18;             % [-] P gain
+cf_nKi              = 20.4 / (f_ctrl/3);% [-] I gain
+%-------------------------------
+
+%% F06_Control_Type_Management
 
 % Commutation method
 z_commutMap_M1      = [-1 -1  0  1  1  0;   % Phase A
                         1  0 -1 -1  0  1;   % Phase B
-                        0  1  1  0 -1 -1];  % Phase C  [-] Commutation method map
-                    
-% Sinusoidal method
-% The map below was experimentaly calibrated on the real motor. Objectives: minimum noise and minimum torque ripple
-a_phaAdv_M1         = [0   0   0   0   0   2   3   5   9  16   25];     % [deg] Phase advance angle
-r_phaAdv_XA         = [0 100 200 300 400 500 600 700 800 900 1000];     % [-] Scaled input target grid
-% plot(r_phaAdv_XA, a_phaAdv_M1);
+                        0  1  1  0 -1 -1];  % Phase C  [-] Commutation method map                   
 
 omega               = a_elecAngle_XA*(pi/180);
 pha_adv             = 30;       % [deg] Phase advance to mach commands with the Hall position
@@ -165,7 +165,7 @@ r_sinPhaA_M1        = -sin(omega + pha_adv*(pi/180));
 r_sinPhaB_M1        = -sin(omega - 120*(pi/180) + pha_adv*(pi/180));
 r_sinPhaC_M1        = -sin(omega + 120*(pi/180) + pha_adv*(pi/180));
 
-% Sinusoidal 3rd armonic method
+% Sinusoidal 3rd harmonic method
 A                   = 1.15;     % Sine amplitude (tunable to get the Saddle sin maximum to value 1000)
 sin3Arm             = -0.224*sin(3*(omega + pha_adv*(pi/180)));     % 3rd armonic
 r_sin3PhaA_M1       = sin3Arm + A*r_sinPhaA_M1;

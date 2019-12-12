@@ -123,11 +123,11 @@
  * Make, flash and test it.
  */
 #define CONTROL_ADC           // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
-#define ADC1_MID_POT          // ADC1 middle resting poti: comment-out if NOT a middle resting poti
-#define ADC2_MID_POT          // ADC2 middle resting poti: comment-out if NOT a middle resting poti
+// #define ADC1_MID_POT          // ADC1 middle resting poti: comment-out if NOT a middle resting poti
 #define ADC1_MIN 0            // min ADC1-value while poti at minimum-position (0 - 4095)
 #define ADC1_MID 1963         // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
 #define ADC1_MAX 4095         // max ADC1-value while poti at maximum-position (0 - 4095)
+// #define ADC2_MID_POT          // ADC2 middle resting poti: comment-out if NOT a middle resting poti
 #define ADC2_MIN 0            // min ADC2-value while poti at minimum-position (0 - 4095)
 #define ADC2_MID 2006         // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
 #define ADC2_MAX 4095         // max ADC2-value while poti at maximum-position (0 - 4095)
@@ -141,39 +141,55 @@
 // #define CONTROL_NUNCHUCK            // use nunchuck as input. disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
 
 
-// ############################### MOTOR CONTROL (overwrite) #########################
+// ############################### MOTOR CONTROL #########################
+// Control selections
 #define CTRL_TYP_SEL    2                       // [-] Control type selection: 0 = Commutation , 1 = Sinusoidal, 2 = FOC Field Oriented Control (default)
 #define CTRL_MOD_REQ    1                       // [-] Control mode request: 0 = Open mode, 1 = VOLTAGE mode (default), 2 = SPEED mode, 3 = TORQUE mode. Note: SPEED and TORQUE modes are only available for FOC!
 #define DIAG_ENA        1                       // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
-#define FIELD_WEAK_ENA  0                       // [-] Field Weakening enable flag: 0 = Disabled (default), 1 = Enabled
-#define I_MOT_MAX       (15 * A2BIT_CONV) << 4  // [A] Maximum motor current limit (Change only the first number, the rest is needed for fixed-point conversion, fixdt(1,16,4))
-#define I_DC_MAX        (17 * A2BIT_CONV)       // [A] Maximum DC Link current limit (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A )
-#define N_MOT_MAX       800 << 4                // [rpm] Maximum motor speed (change only the first number, the rest is needed for fixed-point conversion, fixdt(1,16,4))
 
+// Limitation settings
+#define I_MOT_MAX       15                      // [A] Maximum motor current limit
+#define I_DC_MAX        17                      // [A] Maximum DC Link current limit (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A)
+#define N_MOT_MAX       1000                    // [rpm] Maximum motor speed limit
+
+// Field Weakening / Phase Advance
+#define FIELD_WEAK_ENA  0                       // [-] Field Weakening / Phase Advance enable flag: 0 = Disabled (default), 1 = Enabled
+#define FIELD_WEAK_MAX  5                       // [A] Maximum Field Weakening D axis current (only for FOC). Higher current results in higher maximum speed.
+#define PHASE_ADV_MAX   25                      // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
+#define FIELD_WEAK_HI   1500                    // [-] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
+#define FIELD_WEAK_LO   1000                    // [-] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
+
+// Data checks - Do NOT touch
+#if (FIELD_WEAK_ENA == 0)
+  #undef  FIELD_WEAK_HI                       
+  #define FIELD_WEAK_HI 1000                    // [-] This prevents the input target going beyond 1000 when Field Weakening is not enabled
+#endif
+#define INPUT_MAX   MAX( 1000, FIELD_WEAK_HI)   // [-] Defines the Input target maximum limitation        
+#define INPUT_MIN   MIN(-1000,-FIELD_WEAK_HI)   // [-] Defines the Input target minimum limitation 
+#define INPUT_MID   INPUT_MAX / 2      
 
 /* GENERAL NOTES:
  * 1. The above parameters are over-writing the default motor parameters. For all the available parameters check BLDC_controller_data.c
  * 2. The parameters are represented in fixed point data type for a more efficient code execution
  * 3. For calibrating the fixed-point parameters use the Fixed-Point Viewer tool (see <https://github.com/EmanuelFeru/FixedPointViewer>)
  * 4. For more details regarding the parameters and the working principle of the controller please consult the Simulink model
- * 5. A webview was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code
+ * 5. A webview was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code. The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge
  *
- * NOTES Field weakening:
- * 1. In BLDC_controller_data.c you can find the field weakening Map as a function of input target: MAP = id_fieldWeak_M1, XAXIS = r_fieldWeak_XA
- * 2. The default calibration was experimentally calibrated to my particular needs
- * 3. If you re-calibrate the field weakening map please take all the safety measures! The motors can spin very fast!
- * 4. During the recalibration make sure the values in XAXIS are equally spaced for a correct Map interpolation.
+ * NOTES Field Weakening / Phase Advance:
+ * 1. The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
+ * 2. The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
+ * 3. If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
  */
 
 
 // ############################### DRIVING BEHAVIOR ###############################
 
 /* Inputs:
- * - cmd1 and cmd2: analog normalized input values. -1000 to 1000
+ * - cmd1 and cmd2: analog normalized input values. INPUT_MIN to INPUT_MAX
  * - button1 and button2: digital input values. 0 or 1
  * - adc_buffer.l_tx2 and adc_buffer.l_rx2: unfiltered ADC values (you do not need them). 0 to 4095
  * Outputs:
- * - speedR and speedL: normal driving -1000 to 1000 
+ * - speedR and speedL: normal driving INPUT_MIN to INPUT_MAX 
  */
 
 // Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4

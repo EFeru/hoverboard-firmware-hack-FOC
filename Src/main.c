@@ -35,18 +35,18 @@
 
 RT_MODEL rtM_Left_;               /* Real-time model */
 RT_MODEL rtM_Right_;              /* Real-time model */
-RT_MODEL *const rtM_Left = &rtM_Left_;
-RT_MODEL *const rtM_Right = &rtM_Right_;
+RT_MODEL *const rtM_Left    = &rtM_Left_;
+RT_MODEL *const rtM_Right   = &rtM_Right_;
 
-P rtP_Left;                       /* Block parameters (auto storage) */
-DW rtDW_Left;                     /* Observable states */
-ExtU rtU_Left;                    /* External inputs */
-ExtY rtY_Left;                    /* External outputs */
+P     rtP_Left;                   /* Block parameters (auto storage) */
+DW    rtDW_Left;                  /* Observable states */
+ExtU  rtU_Left;                   /* External inputs */
+ExtY  rtY_Left;                   /* External outputs */
 
-P rtP_Right;                      /* Block parameters (auto storage) */
-DW rtDW_Right;                    /* Observable states */
-ExtU rtU_Right;                   /* External inputs */
-ExtY rtY_Right;                   /* External outputs */
+P     rtP_Right;                  /* Block parameters (auto storage) */
+DW    rtDW_Right;                 /* Observable states */
+ExtU  rtU_Right;                  /* External inputs */
+ExtY  rtY_Right;                  /* External outputs */
 
 extern uint8_t errCode_Left;      /* Global variable to handle Motor error codes */
 extern uint8_t errCode_Right;     /* Global variable to handle Motor error codes */
@@ -99,27 +99,27 @@ static uint8_t serialSendCounter; // serial send counter
 static uint8_t button1, button2;
 #endif
 
-uint8_t ctrlModReqRaw  = CTRL_MOD_REQ;
-uint8_t ctrlModReq;               // Final control mode request
-static int     cmd1;              // normalized input value. -1000 to 1000
-static int     cmd2;              // normalized input value. -1000 to 1000
-static int16_t steer;             // local variable for steering. -1000 to 1000
-static int16_t speed;             // local variable for speed. -1000 to 1000
-static int16_t steerFixdt;        // local fixed-point variable for steering low-pass filter
-static int16_t speedFixdt;        // local fixed-point variable for speed low-pass filter
-static int16_t steerRateFixdt;    // local fixed-point variable for steering rate limiter
-static int16_t speedRateFixdt;    // local fixed-point variable for speed rate limiter
+uint8_t ctrlModReqRaw = CTRL_MOD_REQ;
+uint8_t ctrlModReq    = CTRL_MOD_REQ;   // Final control mode request
+static int     cmd1;                    // normalized input value. -1000 to 1000
+static int     cmd2;                    // normalized input value. -1000 to 1000
+static int16_t steer;                   // local variable for steering. -1000 to 1000
+static int16_t speed;                   // local variable for speed. -1000 to 1000
+static int16_t steerFixdt;              // local fixed-point variable for steering low-pass filter
+static int16_t speedFixdt;              // local fixed-point variable for speed low-pass filter
+static int16_t steerRateFixdt;          // local fixed-point variable for steering rate limiter
+static int16_t speedRateFixdt;          // local fixed-point variable for speed rate limiter
 
-extern volatile int pwml;         // global variable for pwm left. -1000 to 1000
-extern volatile int pwmr;         // global variable for pwm right. -1000 to 1000
+extern volatile int pwml;               // global variable for pwm left. -1000 to 1000
+extern volatile int pwmr;               // global variable for pwm right. -1000 to 1000
 
-extern uint8_t buzzerFreq;        // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
-extern uint8_t buzzerPattern;     // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
+extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
+extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 
-extern uint8_t enable;            // global variable for motor enable
+extern uint8_t enable;                  // global variable for motor enable
 
-extern volatile uint32_t timeout; // global variable for timeout
-extern int16_t batVoltage;        // global variable for battery voltage
+extern volatile uint32_t timeout;       // global variable for timeout
+extern int16_t batVoltage;              // global variable for battery voltage
 
 static uint32_t inactivity_timeout_counter;
 
@@ -187,16 +187,24 @@ int main(void) {
   rtP_Left.b_selPhaABCurrMeas   = 1;            // Left motor measured current phases = {iA, iB} -> do NOT change
   rtP_Left.z_ctrlTypSel         = CTRL_TYP_SEL;
   rtP_Left.b_diagEna            = DIAG_ENA; 
+  rtP_Left.i_max                = (I_MOT_MAX * A2BIT_CONV) << 4;        // fixdt(1,16,4)
+  rtP_Left.n_max                = N_MOT_MAX << 4;                       // fixdt(1,16,4)
   rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA; 
-  rtP_Left.i_max                = I_MOT_MAX; 
-  rtP_Left.n_max                = N_MOT_MAX; 
+  rtP_Left.id_fieldWeakMax      = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
+  rtP_Left.a_phaAdvMax          = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
+  rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
+  rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
 
   rtP_Right.b_selPhaABCurrMeas  = 0;            // Left motor measured current phases = {iB, iC} -> do NOT change
   rtP_Right.z_ctrlTypSel        = CTRL_TYP_SEL;
   rtP_Right.b_diagEna           = DIAG_ENA; 
+  rtP_Right.i_max               = (I_MOT_MAX * A2BIT_CONV) << 4;        // fixdt(1,16,4)
+  rtP_Right.n_max               = N_MOT_MAX << 4;                       // fixdt(1,16,4)
   rtP_Right.b_fieldWeakEna      = FIELD_WEAK_ENA; 
-  rtP_Right.i_max               = I_MOT_MAX; 
-  rtP_Right.n_max               = N_MOT_MAX; 
+  rtP_Right.id_fieldWeakMax     = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
+  rtP_Right.a_phaAdvMax         = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
+  rtP_Right.r_fieldWeakHi       = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
+  rtP_Right.r_fieldWeakLo       = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
 
   /* Pack LEFT motor data into RTM */
   rtM_Left->defaultParam        = &rtP_Left;
@@ -282,34 +290,34 @@ int main(void) {
 
     #ifdef CONTROL_NUNCHUCK
       Nunchuck_Read();
-      cmd1 = CLAMP((nunchuck_data[0] - 127) * 8, -1000, 1000); // x - axis. Nunchuck joystick readings range 30 - 230
-      cmd2 = CLAMP((nunchuck_data[1] - 128) * 8, -1000, 1000); // y - axis
+      cmd1 = CLAMP((nunchuck_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuck joystick readings range 30 - 230
+      cmd2 = CLAMP((nunchuck_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
 
       button1 = (uint8_t)nunchuck_data[5] & 1;
       button2 = (uint8_t)(nunchuck_data[5] >> 1) & 1;
     #endif
 
     #ifdef CONTROL_PPM
-      cmd1 = CLAMP((ppm_captured_value[0] - 500) * 2, -1000, 1000);
-      cmd2 = CLAMP((ppm_captured_value[1] - 500) * 2, -1000, 1000);
-      button1 = ppm_captured_value[5] > 500;
+      cmd1 = CLAMP((ppm_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+      cmd2 = CLAMP((ppm_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+      button1 = ppm_captured_value[5] > INPUT_MID;
       float scale = ppm_captured_value[2] / 1000.0f;
     #endif
 
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
       #ifdef ADC1_MID_POT
-        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MID) * 1000 / (ADC1_MAX - ADC1_MID), 0, 1000) 
-              -CLAMP((ADC1_MID - adc_buffer.l_tx2) * 1000 / (ADC1_MID - ADC1_MIN), 0, 1000);    // ADC1        
+        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MID) * INPUT_MAX / (ADC1_MAX - ADC1_MID), 0, INPUT_MAX) 
+              -CLAMP((ADC1_MID - adc_buffer.l_tx2) * INPUT_MAX / (ADC1_MID - ADC1_MIN), 0, INPUT_MAX);    // ADC1        
       #else
-        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MIN) * 1000 / (ADC1_MAX - ADC1_MIN), 0, 1000);    // ADC1
+        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MIN) * INPUT_MAX / (ADC1_MAX - ADC1_MIN), 0, INPUT_MAX);    // ADC1
       #endif
 
       #ifdef ADC2_MID_POT
-        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MID) * 1000 / (ADC2_MAX - ADC2_MID), 0, 1000)  
-              -CLAMP((ADC2_MID - adc_buffer.l_rx2) * 1000 / (ADC2_MID - ADC2_MIN), 0, 1000);    // ADC2        
+        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MID) * INPUT_MAX / (ADC2_MAX - ADC2_MID), 0, INPUT_MAX)  
+              -CLAMP((ADC2_MID - adc_buffer.l_rx2) * INPUT_MAX / (ADC2_MID - ADC2_MIN), 0, INPUT_MAX);    // ADC2        
       #else
-        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN) * 1000 / (ADC2_MAX - ADC2_MIN), 0, 1000);    // ADC2
+        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN) * INPUT_MAX / (ADC2_MAX - ADC2_MIN), 0, INPUT_MAX);    // ADC2
       #endif  
 
       // use ADCs as button inputs:
@@ -327,8 +335,8 @@ int main(void) {
           if (timeoutCnt-- <= 0)                // Timeout de-qualification
             timeoutFlag   = 0;                  // Timeout flag cleared           
         } else {
-          cmd1            = CLAMP((int16_t)command.steer, -1000, 1000);
-          cmd2            = CLAMP((int16_t)command.speed, -1000, 1000);         
+          cmd1            = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
+          cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);         
           command.start   = 0xFFFF;             // Change the Start Frame for timeout detection in the next cycle
           timeoutCnt      = 0;                  // Reset the timeout counter         
         }
@@ -620,12 +628,12 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t
   tmp         = prodSpeed - prodSteer;  
   tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
   *rty_speedR = (int16_t)(tmp >> 4);        // Convert from fixed-point to int 
-  *rty_speedR = CLAMP(*rty_speedR, -1000, 1000);
+  *rty_speedR = CLAMP(*rty_speedR, INPUT_MIN, INPUT_MAX);
 
   tmp         = prodSpeed + prodSteer;
   tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
   *rty_speedL = (int16_t)(tmp >> 4);        // Convert from fixed-point to int
-  *rty_speedL = CLAMP(*rty_speedL, -1000, 1000);
+  *rty_speedL = CLAMP(*rty_speedL, INPUT_MIN, INPUT_MAX);
 }
 
 // ===========================================================
