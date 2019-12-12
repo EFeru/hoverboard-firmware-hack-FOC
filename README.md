@@ -52,15 +52,16 @@ Demo videos:
 ---
 ## General Notes
  - The C code for the controller was auto-code generated using [Matlab/Simulink](https://nl.mathworks.com/solutions/embedded-code-generation.html) from a model which I developed from scratch specifically for hoverboard control. For more details regarding the working principle of the controller please consult the [Matlab/Simulink model](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab).
- - A [webview](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code
+ - A [webview](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code. The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge.
 
-### Field weakening
+### Field Weakening / Phase Advance
 
  - By default the Field weakening is disabled. You can enable it in config.h file by setting the FIELD_WEAK_ENA = 1 
- - In BLDC_controller_data.c you can find the field weakening Map as a function of Input target: MAP = id_fieldWeak_M1, XAXIS = r_fieldWeak_XA
- - The default calibration was experimentally calibrated to my particular needs
- - If you re-calibrate the field weakening map please take all the safety measures! The motors can spin very fast!
- - During the recalibration make sure the values in XAXIS are equally spaced for a correct Map interpolation.
+ - The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
+ - The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
+ - The figure below shows different possible calibrations for Field Weakening / Phase Advance
+ ![Field Weakening](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FieldWeakening.png) 
+ - If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
 
 
 ### Parameters 
