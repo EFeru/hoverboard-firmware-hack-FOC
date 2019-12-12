@@ -80,35 +80,6 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2515",
-  "className":"Simulink.SubSystem",
-  "icon":"WebViewIcon4",
-  "name":"rst_Delay",
-  "label":"rst_Delay",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
-  "inspector":{
-   "params":[
-    "initVal"
-   ],
-   "values":[
-    "z_cntInit"
-   ],
-   "tabs":[
-   ],
-   "tabs_idx":[
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ContainerHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"SubSystem",
-   "masktype":""
-  }
- },
- {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2416",
   "className":"Simulink.Sum",
   "icon":"WebViewIcon3",
@@ -168,60 +139,46 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2414",
-  "className":"Simulink.Inport",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2415",
+  "className":"Simulink.MinMax",
   "icon":"WebViewIcon3",
-  "name":"rst",
-  "label":"rst",
+  "name":"MinMax",
+  "label":"MinMax",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
   "inspector":{
    "params":[
-    "Port",
-    "IconDisplay",
-    "OutMin",
-    "OutMax",
     "OutDataTypeStr",
+    "Function",
+    "InputSameDT",
+    "Inputs",
     "LockScale",
-    "Unit",
-    "PortDimensions",
-    "VarSizeSig",
+    "OutMax",
+    "OutMin",
+    "RndMeth",
     "SampleTime",
-    "SignalType",
-    "BusOutputAsStruct",
-    "InputConnect",
-    "Interpolate",
-    "LatchByDelayingOutsideSignal",
-    "LatchInputForFeedbackSignals",
-    "OutputFunctionCall"
+    "SaturateOnIntegerOverflow",
+    "ZeroCross"
    ],
    "values":[
-    "3",
-    "Port number",
+    "Inherit: Inherit via internal rule",
+    "min",
+    "off",
+    "2",
+    "off",
     "[]",
     "[]",
-    "Inherit: auto",
-    "off",
-    "inherit",
+    "Floor",
     "-1",
-    "Inherit",
-    "-1",
-    "auto",
     "off",
-    "",
-    "on",
-    "off",
-    "off",
-    "off"
+    "on"
    ],
    "tabs":[
-    "Main",
     "Signal Attributes",
     "-Other"
    ],
    "tabs_idx":[
     0,
-    2,
-    11
+    1
    ]
   },
   "viewer":{
@@ -230,7 +187,7 @@
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"Inport",
+   "blocktype":"MinMax",
    "masktype":""
   }
  },
@@ -302,46 +259,60 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2415",
-  "className":"Simulink.MinMax",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2414",
+  "className":"Simulink.Inport",
   "icon":"WebViewIcon3",
-  "name":"MinMax",
-  "label":"MinMax",
+  "name":"rst",
+  "label":"rst",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
   "inspector":{
    "params":[
-    "OutDataTypeStr",
-    "Function",
-    "InputSameDT",
-    "Inputs",
-    "LockScale",
-    "OutMax",
+    "Port",
+    "IconDisplay",
     "OutMin",
-    "RndMeth",
+    "OutMax",
+    "OutDataTypeStr",
+    "LockScale",
+    "Unit",
+    "PortDimensions",
+    "VarSizeSig",
     "SampleTime",
-    "SaturateOnIntegerOverflow",
-    "ZeroCross"
+    "SignalType",
+    "BusOutputAsStruct",
+    "InputConnect",
+    "Interpolate",
+    "LatchByDelayingOutsideSignal",
+    "LatchInputForFeedbackSignals",
+    "OutputFunctionCall"
    ],
    "values":[
-    "Inherit: Inherit via internal rule",
-    "min",
-    "off",
-    "2",
-    "off",
+    "3",
+    "Port number",
     "[]",
     "[]",
-    "Floor",
+    "Inherit: auto",
+    "off",
+    "inherit",
     "-1",
+    "Inherit",
+    "-1",
+    "auto",
     "off",
-    "on"
+    "",
+    "on",
+    "off",
+    "off",
+    "off"
    ],
    "tabs":[
+    "Main",
     "Signal Attributes",
     "-Other"
    ],
    "tabs_idx":[
     0,
-    1
+    2,
+    11
    ]
   },
   "viewer":{
@@ -350,7 +321,7 @@
   "obj_viewer":[
   ],
   "finder":{
-   "blocktype":"MinMax",
+   "blocktype":"Inport",
    "masktype":""
   }
  },
@@ -418,6 +389,35 @@
   ],
   "finder":{
    "blocktype":"Inport",
+   "masktype":""
+  }
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2515",
+  "className":"Simulink.SubSystem",
+  "icon":"WebViewIcon4",
+  "name":"rst_Delay",
+  "label":"rst_Delay",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
+  "inspector":{
+   "params":[
+    "initVal"
+   ],
+   "values":[
+    "z_cntInit"
+   ],
+   "tabs":[
+   ],
+   "tabs_idx":[
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ContainerHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"SubSystem",
    "masktype":""
   }
  },

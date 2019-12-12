@@ -281,11 +281,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8231",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8233",
   "className":"Simulink.UnitDelay",
   "icon":"WebViewIcon3",
-  "name":"UnitDelay1",
-  "label":"UnitDelay1",
+  "name":"UnitDelay3",
+  "label":"UnitDelay3",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8225",
   "inspector":{
    "params":[
@@ -381,11 +381,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8233",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8231",
   "className":"Simulink.UnitDelay",
   "icon":"WebViewIcon3",
-  "name":"UnitDelay3",
-  "label":"UnitDelay3",
+  "name":"UnitDelay1",
+  "label":"UnitDelay1",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8225",
   "inspector":{
    "params":[
