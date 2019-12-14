@@ -6,7 +6,7 @@
 * ► smooth torque output
 * ► improved motor efficiency -> lower energy consumption
 *
-* Copyright (C) 2019 Emanuel FERU <aerdronix@gmail.com>
+* Copyright (C) 2019-2020 Emanuel FERU <aerdronix@gmail.com>
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@ extern ExtY rtY_Right;                  /* External outputs */
 
 static int16_t pwm_margin = 100;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
 
-uint8_t ctrlModReq = CTRL_MOD_REQ;
+extern uint8_t ctrlModReq;
+static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
 int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
 int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
 uint8_t errCode_Left = 0;
@@ -116,13 +117,13 @@ void DMA1_Channel1_IRQHandler(void) {
 
   // Disable PWM when current limit is reached (current chopping)
   // This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
-  if(ABS(curL_DC) > I_DC_MAX || timeout > TIMEOUT || enable == 0) {
+  if(ABS(curL_DC) > curDC_max || timeout > TIMEOUT || enable == 0) {
     LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     LEFT_TIM->BDTR |= TIM_BDTR_MOE;
   }
 
-  if(ABS(curR_DC)  > I_DC_MAX || timeout > TIMEOUT || enable == 0) {
+  if(ABS(curR_DC)  > curDC_max || timeout > TIMEOUT || enable == 0) {
     RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     RIGHT_TIM->BDTR |= TIM_BDTR_MOE;

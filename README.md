@@ -1,6 +1,8 @@
 # hoverboard-firmware-hack-FOC
 ## with Field Oriented Control (FOC)
 [![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=feru_emanuel%40yahoo.com&currency_code=EUR&source=url)
+***If you like this project, you can give me a cup of coffee. Thanks!*** 
 
 This repository implements Field Oriented Control (FOC) for stock hoverboards. Compared to the commutation method, this new FOC control method offers superior performance featuring:
  - reduced noise and vibrations 	
@@ -21,7 +23,7 @@ The main firmware architecture includes:
 - **Diagnostics**: implements error detection such as unconnected Hall sensor, motor blocked, MOSFET defective
 - **Control Manager**: manages the transitions between control modes (Voltage, Speed, Torque)
 - **FOC Algorithm**: implements the FOC strategy
-- **Control Type Manager**: Manages the transition between Commutation and FOC Algorithm
+- **Control Type Manager**: Manages the transition between Commutation, Sinusoidal, and FOC control type
 
 ![Firmware architecture](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FW_architecture.png)
 
@@ -29,15 +31,20 @@ The FOC algorithm architecture is illustrated in the figure below:
 
 ![FOC algorithm](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FOC_algorithm.png)
 
-In this firmware two control methods are available:
-- Commutation method
-- FOC method
+In this firmware 3 control types are available:
+- Commutation
+- SIN (Sinusoidal)
+- FOC (Field Oriented Control)
 ![Schematic representation of the available control methods](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/01_Matlab/02_Figures/control_methods.png)
 
 
-A short video showing the noise performance of the Commutation method vs Advanced control method:
+Demo videos:
 
-[►Video: Commutation method vs Advanced control](https://drive.google.com/file/d/1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD/view)
+[►Video: Commutation vs Advanced control (constant speed)](https://drive.google.com/open?id=1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD)
+
+[►Video: Commutation vs Advanced control (variable speed)](https://drive.google.com/open?id=1rrQ4k5VLhhAWXQzDSCar_SmEdsbM-hq2)
+
+[►Video: Reliable Serial Communication demo](https://drive.google.com/open?id=1mUM-p7SE6gmyTH7zhDHy5DUyczXvmy5d)
 
 ![Hoverboard wheel](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/hoverboard_wheel.JPG)
 
@@ -45,15 +52,16 @@ A short video showing the noise performance of the Commutation method vs Advance
 ---
 ## General Notes
  - The C code for the controller was auto-code generated using [Matlab/Simulink](https://nl.mathworks.com/solutions/embedded-code-generation.html) from a model which I developed from scratch specifically for hoverboard control. For more details regarding the working principle of the controller please consult the [Matlab/Simulink model](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab).
- - A [webview](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code
+ - A [webview](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code. The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge.
 
-### Field weakening
+### Field Weakening / Phase Advance
 
  - By default the Field weakening is disabled. You can enable it in config.h file by setting the FIELD_WEAK_ENA = 1 
- - In BLDC_controller_data.c you can find the field weakening Map as a function of Input target: MAP = id_fieldWeak_M1, XAXIS = r_fieldWeak_XA
- - The default calibration was experimentally calibrated to my particular needs
- - If you re-calibrate the field weakening map please take all the safety measures! The motors can spin very fast!
- - During the recalibration make sure the values in XAXIS are equally spaced for a correct Map interpolation.
+ - The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
+ - The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
+ - The figure below shows different possible calibrations for Field Weakening / Phase Advance
+ ![Field Weakening](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FieldWeakening.png) 
+ - If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
 
 
 ### Parameters 
@@ -71,7 +79,7 @@ Each motor is constantly monitored for errors. These errors are:
 - **Error 002**: Hall sensor short circuit
 - **Error 004**: Motor NOT able to spin (Possible causes: motor phase disconnected, MOSFET defective, operational Amplifier defective, motor blocked)
 
-The error codes above are reported for each motor in the variables **errCode_Left** and **errCode_Right** for Left motor (long wired motor) and Right motor (short wired motor), respectively.
+The error codes above are reported for each motor in the variables **errCode_Left** and **errCode_Right** for Left motor (long wired motor) and Right motor (short wired motor), respectively. In case of error, the motor power is reduced to 0, while an audible (fast beep) can be heard to notify the user.
 
 
 ---
@@ -145,9 +153,6 @@ Have a look at the config.h in the Inc directory. That's where you configure to 
 Currently supported: Wii Nunchuck, analog potentiometer and PPM-Sum signal from a RC remote.
 A good example of control via UART, eg. from an Arduino or raspberryPi, can be found here:
 https://github.com/p-h-a-i-l/hoverboard-firmware-hack
-
-### Future work
- - convert all calculations and remaining filters (for the battery voltage, current, and temperature) from floating point to fixed-point. This will reduce further the SMT32 computational load -> **DONE**
 
 ---
 ## Acknowledgements

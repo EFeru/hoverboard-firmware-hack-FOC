@@ -1,50 +1,5 @@
 [
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:1",
-  "className":"Stateflow.State",
-  "icon":"WebViewIcon7",
-  "name":"OPEN",
-  "label":"OPEN",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8603",
-  "inspector":{
-   "params":[
-    "HasOutputData",
-    "InlineOption",
-    "LabelString",
-    "DataLogging",
-    "TestPoint",
-    "Description",
-    "Document"
-   ],
-   "values":[
-    false,
-    "Auto",
-    "OPEN\n\nentry:\nz_ctrlMod = OPEN_MODE;",
-    false,
-    false,
-    "",
-    ""
-   ],
-   "tabs":[
-    "General",
-    "Logging",
-    "Documentation"
-   ],
-   "tabs_idx":[
-    0,
-    3,
-    5
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":[
-  ]
- },
- {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:3",
   "className":"Stateflow.State",
   "icon":"WebViewIcon7",
@@ -225,6 +180,39 @@
   ]
  },
  {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:33",
+  "className":"Stateflow.Transition",
+  "icon":"WebViewIcon8",
+  "name":"",
+  "label":"",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8603",
+  "inspector":{
+   "params":[
+    "ExecutionOrder",
+    "LabelString",
+    "Description",
+    "Document"
+   ],
+   "values":[
+    1,
+    "",
+    "",
+    ""
+   ],
+   "tabs":[
+    "Parameter Attributes"
+   ],
+   "tabs_idx":0
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":[
+  ]
+ },
+ {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:30",
   "className":"Stateflow.Transition",
   "icon":"WebViewIcon8",
@@ -258,11 +246,11 @@
   ]
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:33",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:32",
   "className":"Stateflow.Transition",
   "icon":"WebViewIcon8",
   "name":"",
-  "label":"",
+  "label":"[b_toSpdMod]",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8603",
   "inspector":{
    "params":[
@@ -273,7 +261,7 @@
    ],
    "values":[
     1,
-    "",
+    "[b_toSpdMod]",
     "",
     ""
    ],
@@ -390,62 +378,41 @@
   ]
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:32",
-  "className":"Stateflow.Transition",
-  "icon":"WebViewIcon8",
-  "name":"",
-  "label":"[b_toSpdMod]",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:1",
+  "className":"Stateflow.State",
+  "icon":"WebViewIcon7",
+  "name":"OPEN",
+  "label":"OPEN",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8603",
   "inspector":{
    "params":[
-    "ExecutionOrder",
+    "HasOutputData",
+    "InlineOption",
     "LabelString",
+    "DataLogging",
+    "TestPoint",
     "Description",
     "Document"
    ],
    "values":[
-    1,
-    "[b_toSpdMod]",
+    false,
+    "Auto",
+    "OPEN\n\nentry:\nz_ctrlMod = OPEN_MODE;",
+    false,
+    false,
     "",
     ""
    ],
    "tabs":[
-    "Parameter Attributes"
+    "General",
+    "Logging",
+    "Documentation"
    ],
-   "tabs_idx":0
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":[
-  ]
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:13",
-  "className":"Stateflow.Transition",
-  "icon":"WebViewIcon8",
-  "name":"",
-  "label":"[b_toActive]",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8603",
-  "inspector":{
-   "params":[
-    "ExecutionOrder",
-    "LabelString",
-    "Description",
-    "Document"
-   ],
-   "values":[
-    1,
-    "[b_toActive]",
-    "",
-    ""
-   ],
-   "tabs":[
-    "Parameter Attributes"
-   ],
-   "tabs_idx":0
+   "tabs_idx":[
+    0,
+    3,
+    5
+   ]
   },
   "viewer":{
    "jshandler":"webview/handlers/ElementHandler"
@@ -505,6 +472,39 @@
    "values":[
     1,
     "[b_toOpen]",
+    "",
+    ""
+   ],
+   "tabs":[
+    "Parameter Attributes"
+   ],
+   "tabs_idx":0
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":[
+  ]
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8603:13",
+  "className":"Stateflow.Transition",
+  "icon":"WebViewIcon8",
+  "name":"",
+  "label":"[b_toActive]",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8603",
+  "inspector":{
+   "params":[
+    "ExecutionOrder",
+    "LabelString",
+    "Description",
+    "Document"
+   ],
+   "values":[
+    1,
+    "[b_toActive]",
     "",
     ""
    ],
