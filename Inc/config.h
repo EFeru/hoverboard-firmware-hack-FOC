@@ -2,7 +2,7 @@
 #include "stm32f1xx_hal.h"
 
 // ############################### DEFINE FIRMWARE VARIANT ###############################
-#define TRANSPOTTER                   // Uncomment this line for TRANSPORTER configuration
+// #define TRANSPOTTER                   // Uncomment this line for TRANSPORTER configuration
 
 // ############################### DO-NOT-TOUCH SETTINGS ###############################
 
