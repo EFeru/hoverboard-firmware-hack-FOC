@@ -241,11 +241,7 @@ void I2C_Init(void)
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
   hi2c2.Instance = I2C2;
-#ifdef TRANSPOTTER
   hi2c2.Init.ClockSpeed = 200000;
-#else
-  hi2c2.Init.ClockSpeed = 100000;
-#endif
   hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
