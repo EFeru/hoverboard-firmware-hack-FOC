@@ -162,3 +162,9 @@ void filtLowPass16(int16_t u, uint16_t coef, int16_t *y);
 void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
 void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t *rty_speedL);
 void rateLimiter16(int16_t u, int16_t rate, int16_t *y);
+
+// Define I2C and Nunchuck functions
+void I2C_Init(void);
+void Nunchuck_Init(void);
+void Nunchuck_Read(void);
+uint8_t Nunchuck_Ping(void);
