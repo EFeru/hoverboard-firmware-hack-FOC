@@ -88,7 +88,7 @@ extern I2C_HandleTypeDef hi2c2;
 
   void saveConfig(void);
   void longBeep(void);
-  void shortBeep(void);
+  void shortBeep(uint8_t freq);
 
   /* Virtual address defined by the user: 0xFFFF value is prohibited */
   uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1337};
@@ -371,7 +371,7 @@ int main(void) {
         while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
           HAL_Delay(10);
         }
-        shortBeep();
+        shortBeep(5);
         HAL_Delay(300);
         if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
           while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
@@ -385,6 +385,7 @@ int main(void) {
           if (setDistance > 2.6) {
             setDistance = 0.5;
           }
+          shortBeep(setDistance / 0.25);
           saveValue = setDistance * 1000;
           saveConfig();
         }
@@ -741,8 +742,8 @@ int main(void) {
       buzzerFreq = 0;
   }
 
-  void shortBeep(){
-      buzzerFreq = 5;
+  void shortBeep(uint8_t freq){
+      buzzerFreq = freq;
       HAL_Delay(100);
       buzzerFreq = 0;
   }
