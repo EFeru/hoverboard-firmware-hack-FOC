@@ -40,6 +40,9 @@ Src/setup.c \
 Src/control.c \
 Src/main.c \
 Src/bldc.c \
+Src/eeprom.c \
+Src/hd44780.c \
+Src/pcf8574.c \
 Src/comms.c \
 Src/stm32f1xx_it.c \
 Src/BLDC_controller_data.c \

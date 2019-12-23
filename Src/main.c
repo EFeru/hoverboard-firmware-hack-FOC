@@ -26,7 +26,14 @@
 #include "setup.h"
 #include "config.h"
 #include "comms.h"
-//#include "hd44780.h"
+
+#if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
+  #include "hd44780.h"
+#endif
+
+#ifdef TRANSPOTTER
+  #include "eeprom.h"
+#endif
 
 // Matlab includes and defines - from auto-code generation
 // ###############################################################################
@@ -60,11 +67,37 @@ extern TIM_HandleTypeDef htim_right;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern volatile adc_buf_t adc_buffer;
-//LCD_PCF8574_HandleTypeDef lcd;
+#if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
+  LCD_PCF8574_HandleTypeDef lcd;
+#endif
 extern I2C_HandleTypeDef hi2c2;
-extern UART_HandleTypeDef huart2;
-extern UART_HandleTypeDef huart3;
-static UART_HandleTypeDef huart;
+#ifndef TRANSPOTTER
+  extern UART_HandleTypeDef huart2;
+  extern UART_HandleTypeDef huart3;
+  static UART_HandleTypeDef huart;
+#endif
+
+#if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
+  extern uint8_t LCDerrorFlag;
+#endif
+
+#ifdef TRANSPOTTER
+  uint8_t nunchuck_connected = 0;
+  float steering;
+  int feedforward;
+
+  void saveConfig(void);
+
+  /* Virtual address defined by the user: 0xFFFF value is prohibited */
+  uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1337};
+  uint16_t VarDataTab[NB_OF_VAR] = {0};
+  uint16_t VarValue = 0;
+  uint16_t saveValue = 0;
+
+  uint16_t counter = 0;
+#else
+  uint8_t nunchuck_connected = 1;
+#endif
 
 #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
 typedef struct{
@@ -95,20 +128,22 @@ static SerialFeedback Feedback;
 #endif
 static uint8_t serialSendCounter; // serial send counter
 
-#if defined(CONTROL_NUNCHUCK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
+#if defined(CONTROL_NUNCHUCK) || defined(SUPPORT_NUNCHUCK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
 static uint8_t button1, button2;
 #endif
 
 uint8_t ctrlModReqRaw = CTRL_MOD_REQ;
 uint8_t ctrlModReq    = CTRL_MOD_REQ;   // Final control mode request
-static int     cmd1;                    // normalized input value. -1000 to 1000
-static int     cmd2;                    // normalized input value. -1000 to 1000
-static int16_t steer;                   // local variable for steering. -1000 to 1000
-static int16_t speed;                   // local variable for speed. -1000 to 1000
-static int16_t steerFixdt;              // local fixed-point variable for steering low-pass filter
-static int16_t speedFixdt;              // local fixed-point variable for speed low-pass filter
-static int16_t steerRateFixdt;          // local fixed-point variable for steering rate limiter
-static int16_t speedRateFixdt;          // local fixed-point variable for speed rate limiter
+static int        cmd1;                 // normalized input value. -1000 to 1000
+static int        cmd2;                 // normalized input value. -1000 to 1000
+static int16_t    speed;                // local variable for speed. -1000 to 1000
+#ifndef TRANSPOTTER
+  static int16_t  steer;                // local variable for steering. -1000 to 1000
+  static int16_t  steerFixdt;           // local fixed-point variable for steering low-pass filter
+  static int16_t  speedFixdt;           // local fixed-point variable for speed low-pass filter
+  static int16_t  steerRateFixdt;       // local fixed-point variable for steering rate limiter
+  static int16_t  speedRateFixdt;       // local fixed-point variable for speed rate limiter
+#endif
 
 extern volatile int pwml;               // global variable for pwm left. -1000 to 1000
 extern volatile int pwmr;               // global variable for pwm right. -1000 to 1000
@@ -232,6 +267,24 @@ int main(void) {
 
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
 
+  #ifdef TRANSPOTTER
+    int  lastDistance = 0;
+    enable = 1;
+    uint8_t checkRemote = 0;
+
+    HAL_FLASH_Unlock();
+
+    /* EEPROM Init */
+    EE_Init();
+
+    EE_ReadVariable(VirtAddVarTab[0], &saveValue);
+
+    HAL_FLASH_Lock();
+    float setDistance = saveValue / 1000.0;
+    if (setDistance < 0.2) {
+      setDistance = 1.0;
+    }
+  #endif
 
   #ifdef CONTROL_PPM
     PPM_Init();
@@ -254,7 +307,7 @@ int main(void) {
     HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
   #endif
 
-  #ifdef DEBUG_I2C_LCD
+  #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
     I2C_Init();
     HAL_Delay(50);
     lcd.pcf8574.PCF_I2C_ADDRESS = 0x27;
@@ -271,11 +324,33 @@ int main(void) {
     LCD_ClearDisplay(&lcd);
     HAL_Delay(5);
     LCD_SetLocation(&lcd, 0, 0);
-    LCD_WriteString(&lcd, "Hover V2.0");
+    #ifdef TRANSPOTTER
+      LCD_WriteString(&lcd, "TranspOtter V2.1");
+    #else
+      LCD_WriteString(&lcd, "Hover V2.0");
+    #endif
     LCD_SetLocation(&lcd, 0, 1);
     LCD_WriteString(&lcd, "Initializing...");
   #endif
 
+  #if defined(TRANSPOTTER) && defined(SUPPORT_LCD)
+    LCD_ClearDisplay(&lcd);
+    HAL_Delay(5);
+    LCD_SetLocation(&lcd, 0, 1);
+    LCD_WriteString(&lcd, "Bat:");
+    LCD_SetLocation(&lcd, 8, 1);
+    LCD_WriteString(&lcd, "V");
+
+    LCD_SetLocation(&lcd, 15, 1);
+    LCD_WriteString(&lcd, "A");
+
+    LCD_SetLocation(&lcd, 0, 0);
+    LCD_WriteString(&lcd, "Len:");
+    LCD_SetLocation(&lcd, 8, 0);
+    LCD_WriteString(&lcd, "m(");
+    LCD_SetLocation(&lcd, 14, 0);
+    LCD_WriteString(&lcd, "m)");
+  #endif
 
   int16_t lastSpeedL = 0, lastSpeedR = 0;
   int16_t speedL = 0, speedR = 0;
@@ -288,13 +363,92 @@ int main(void) {
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
 
-    #ifdef CONTROL_NUNCHUCK
-      Nunchuck_Read();
-      cmd1 = CLAMP((nunchuck_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuck joystick readings range 30 - 230
-      cmd2 = CLAMP((nunchuck_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
+    #ifdef TRANSPOTTER
+      if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
+        enable = 0;
+        while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
+          HAL_Delay(10);
+        }
+        shortBeep(5);
+        HAL_Delay(300);
+        if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
+          while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
+            HAL_Delay(10);
+          }
+          longBeep(5);
+          HAL_Delay(350);
+          poweroff();
+        } else {
+          setDistance += 0.25;
+          if (setDistance > 2.6) {
+            setDistance = 0.5;
+          }
+          shortBeep(setDistance / 0.25);
+          saveValue = setDistance * 1000;
+          saveConfig();
+        }
+      }
 
-      button1 = (uint8_t)nunchuck_data[5] & 1;
-      button2 = (uint8_t)(nunchuck_data[5] >> 1) & 1;
+      #ifdef GAMETRAK_CONNECTION_NORMAL
+        uint16_t distance = CLAMP((adc_buffer.l_rx2) - 180, 0, 4095);
+        steering = (adc_buffer.l_tx2 - 2048) / 2048.0;
+      #endif
+      #ifdef GAMETRAK_CONNECTION_ALTERNATE
+        uint16_t distance = CLAMP((adc_buffer.l_tx2) - 180, 0, 4095);
+        steering = (adc_buffer.l_rx2 - 2048) / 2048.0;
+      #endif
+
+      feedforward = ((distance - (int)(setDistance * 1345)));
+
+      if (nunchuck_connected == 0) {
+        speedL = speedL * 0.8f + (CLAMP(feedforward +  ((steering)*((float)MAX(ABS(feedforward), 50)) * ROT_P), -850, 850) * -0.2f);
+        speedR = speedR * 0.8f + (CLAMP(feedforward -  ((steering)*((float)MAX(ABS(feedforward), 50)) * ROT_P), -850, 850) * -0.2f);
+        if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50)) {
+          if (distance - (int)(setDistance * 1345) > 0) {
+            enable = 1;
+          }
+          if (distance - (int)(setDistance * 1345) > -300) {
+            #ifdef INVERT_R_DIRECTION
+              pwmr = -speedR;
+            #endif
+            #ifndef INVERT_R_DIRECTION
+              pwmr = speedR;
+            #endif
+
+            #ifdef INVERT_L_DIRECTION
+              pwml = -speedL;
+            #endif
+            #ifndef INVERT_L_DIRECTION
+              pwml = speedL;
+            #endif
+
+            if (checkRemote) {
+              if (!HAL_GPIO_ReadPin(LED_PORT, LED_PIN)) {
+                //enable = 1;
+              } else {
+                enable = 0;
+              }
+            }
+          } else {
+            enable = 0;
+          }
+        }
+        lastSpeedL = speedL;
+        lastSpeedR = speedR;
+
+        timeout = 0;
+      }
+    #endif
+
+    #if defined(CONTROL_NUNCHUCK) || defined(SUPPORT_NUNCHUCK)
+      if (nunchuck_connected != 0) {
+        Nunchuck_Read();
+        cmd1 = CLAMP((nunchuck_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuck joystick readings range 30 - 230
+        cmd2 = CLAMP((nunchuck_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
+
+        button1 = (uint8_t)nunchuck_data[5] & 1;
+        button2 = (uint8_t)(nunchuck_data[5] >> 1) & 1;
+      }
     #endif
 
     #ifdef CONTROL_PPM
@@ -364,46 +518,122 @@ int main(void) {
 
     #endif
 
+    #ifndef TRANSPOTTER
+      // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
+      if (enable == 0 && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
+        shortBeep(6);                     // make 2 beeps indicating the motor enable
+        shortBeep(4); HAL_Delay(100);
+        enable = 1;                       // enable motors
+      }
 
-    // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-    if (enable == 0 && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
-      buzzerPattern = 0;
-      buzzerFreq = 6; HAL_Delay(100);   // make 2 beeps indicating the motor enable
-      buzzerFreq = 4; HAL_Delay(200);
-      buzzerFreq = 0;
-      enable = 1;                       // enable motors
-      consoleLog("-- Motors enabled --\r\n");
-    }
+      // ####### LOW-PASS FILTER #######
+      rateLimiter16(cmd1, RATE, &steerRateFixdt);
+      rateLimiter16(cmd2, RATE, &speedRateFixdt);
+      filtLowPass16(steerRateFixdt >> 4, FILTER, &steerFixdt);
+      filtLowPass16(speedRateFixdt >> 4, FILTER, &speedFixdt);
+      steer = steerFixdt >> 4;  // convert fixed-point to integer
+      speed = speedFixdt >> 4;  // convert fixed-point to integer    
 
-    // ####### LOW-PASS FILTER #######
-    rateLimiter16(cmd1, RATE, &steerRateFixdt);
-    rateLimiter16(cmd2, RATE, &speedRateFixdt);
-    filtLowPass16(steerRateFixdt >> 4, FILTER, &steerFixdt);
-    filtLowPass16(speedRateFixdt >> 4, FILTER, &speedFixdt);
-    steer = steerFixdt >> 4;  // convert fixed-point to integer
-    speed = speedFixdt >> 4;  // convert fixed-point to integer    
+      // ####### MIXER #######
+      // speedR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), -1000, 1000);
+      // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), -1000, 1000);
+      mixerFcn(speedFixdt, steerFixdt, &speedR, &speedL);   // This function implements the equations above
 
-    // ####### MIXER #######
-    // speedR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), -1000, 1000);
-    // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), -1000, 1000);
-    mixerFcn(speedFixdt, steerFixdt, &speedR, &speedL);   // This function implements the equations above
-
-    // ####### SET OUTPUTS (if the target change is less than +/- 50) #######
-    if ((speedL > lastSpeedL-50 && speedL < lastSpeedL+50) && (speedR > lastSpeedR-50 && speedR < lastSpeedR+50) && timeout < TIMEOUT) {
-      #ifdef INVERT_R_DIRECTION
-        pwmr = speedR;
-      #else
-        pwmr = -speedR;
+      #ifdef ADDITIONAL_CODE
+        ADDITIONAL_CODE;
       #endif
-      #ifdef INVERT_L_DIRECTION
-        pwml = -speedL;
-      #else
-        pwml = speedL;
-      #endif
-    }
+
+
+      // ####### SET OUTPUTS (if the target change is less than +/- 50) #######
+      if ((speedL > lastSpeedL-50 && speedL < lastSpeedL+50) && (speedR > lastSpeedR-50 && speedR < lastSpeedR+50) && timeout < TIMEOUT) {
+        #ifdef INVERT_R_DIRECTION
+          pwmr = speedR;
+        #else
+          pwmr = -speedR;
+        #endif
+        #ifdef INVERT_L_DIRECTION
+          pwml = -speedL;
+        #else
+          pwml = speedL;
+        #endif
+      }
+    #endif
 
     lastSpeedL = speedL;
     lastSpeedR = speedR;
+
+    #ifdef TRANSPOTTER
+      if (timeout > TIMEOUT) {
+        pwml = 0;
+        pwmr = 0;
+        enable = 0;
+        #ifdef SUPPORT_LCD
+          LCD_SetLocation(&lcd, 0, 0);
+          LCD_WriteString(&lcd, "Len:");
+          LCD_SetLocation(&lcd, 8, 0);
+          LCD_WriteString(&lcd, "m(");
+          LCD_SetLocation(&lcd, 14, 0);
+          LCD_WriteString(&lcd, "m)");
+        #endif
+
+        HAL_Delay(1000);
+
+        nunchuck_connected = 0;
+      }
+
+      if ((distance / 1345.0) - setDistance > 0.5 && (lastDistance / 1345.0) - setDistance > 0.5) { // Error, robot too far away!
+        enable = 0;
+        longBeep(5);
+        #ifdef SUPPORT_LCD
+          LCD_ClearDisplay(&lcd);
+          HAL_Delay(5);
+          LCD_SetLocation(&lcd, 0, 0);
+          LCD_WriteString(&lcd, "Emergency Off!");
+          LCD_SetLocation(&lcd, 0, 1);
+          LCD_WriteString(&lcd, "Keeper too fast.");
+        #endif
+        poweroff();
+      }
+
+      #ifdef SUPPORT_NUNCHUCK
+        if (counter % 500 == 0) {
+          if (nunchuck_connected == 0 && enable == 0) {
+            if (Nunchuck_Ping()) {
+              HAL_Delay(500);
+              Nunchuck_Init();
+              #ifdef SUPPORT_LCD
+                LCD_SetLocation(&lcd, 0, 0);
+                LCD_WriteString(&lcd, "Nunchuck Control");
+              #endif
+              timeout = 0;
+              HAL_Delay(1000);
+              nunchuck_connected = 1;
+            }
+          }
+        }   
+      #endif
+
+      #ifdef SUPPORT_LCD
+        if (counter % 100 == 0) {
+          if (LCDerrorFlag == 1 && enable == 0) {
+
+          } else {
+            if (nunchuck_connected == 0) {
+              LCD_SetLocation(&lcd, 4, 0);
+              LCD_WriteFloat(&lcd,distance/1345.0,2);
+              LCD_SetLocation(&lcd, 10, 0);
+              LCD_WriteFloat(&lcd,setDistance,2);
+            }
+            LCD_SetLocation(&lcd, 4, 1);
+            LCD_WriteFloat(&lcd,batVoltage, 1);
+            LCD_SetLocation(&lcd, 11, 1);
+            //LCD_WriteFloat(&lcd,MAX(ABS(currentR), ABS(currentL)),2);
+          }
+        }
+      #endif
+
+      counter++;
+    #endif
 
 
     // ####### CALC BOARD TEMPERATURE #######
@@ -415,41 +645,41 @@ int main(void) {
     if (serialSendCounter > 20) {     // Send data every 100 ms = 20 * 5 ms, where 5 ms is approximately the main loop duration
       serialSendCounter = 0;          // Reset the counter
 
-    // ####### DEBUG SERIAL OUT #######
-    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
-      #ifdef CONTROL_ADC
-        setScopeChannel(0, (int16_t)adc_buffer.l_tx2);        // 1: ADC1
-        setScopeChannel(1, (int16_t)adc_buffer.l_rx2);        // 2: ADC2
-      #endif
-      setScopeChannel(2, (int16_t)speedR);                    // 1: output command: [-1000, 1000]
-      setScopeChannel(3, (int16_t)speedL);                    // 2: output command: [-1000, 1000]
-      setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
-      setScopeChannel(5, (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC)); // 6: for verifying battery voltage calibration
-      setScopeChannel(6, (int16_t)board_temp_adcFilt);        // 7: for board temperature calibration
-      setScopeChannel(7, (int16_t)board_temp_deg_c);          // 8: for verifying board temperature calibration
-      consoleScope();
+      // ####### DEBUG SERIAL OUT #######
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+        #ifdef CONTROL_ADC
+          setScopeChannel(0, (int16_t)adc_buffer.l_tx2);        // 1: ADC1
+          setScopeChannel(1, (int16_t)adc_buffer.l_rx2);        // 2: ADC2
+        #endif
+        setScopeChannel(2, (int16_t)speedR);                    // 1: output command: [-1000, 1000]
+        setScopeChannel(3, (int16_t)speedL);                    // 2: output command: [-1000, 1000]
+        setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
+        setScopeChannel(5, (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC)); // 6: for verifying battery voltage calibration
+        setScopeChannel(6, (int16_t)board_temp_adcFilt);        // 7: for board temperature calibration
+        setScopeChannel(7, (int16_t)board_temp_deg_c);          // 8: for verifying board temperature calibration
+        consoleScope();
 
-    // ####### FEEDBACK SERIAL OUT #######
-    #elif defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
-      if(UART_DMA_CHANNEL->CNDTR == 0) {
-        Feedback.start	        = (uint16_t)START_FRAME;
-        Feedback.cmd1           = (int16_t)cmd1;
-        Feedback.cmd2           = (int16_t)cmd2;
-        Feedback.speedR	        = (int16_t)speedR;
-        Feedback.speedL	        = (int16_t)speedL;
-        Feedback.speedR_meas	  = (int16_t)rtY_Left.n_mot;
-        Feedback.speedL_meas	  = (int16_t)rtY_Right.n_mot;
-        Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
-        Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
-        Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR ^ Feedback.speedL
-                                  ^ Feedback.speedR_meas ^ Feedback.speedL_meas ^ Feedback.batVoltage ^ Feedback.boardTemp); 
+      // ####### FEEDBACK SERIAL OUT #######
+      #elif defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
+        if(UART_DMA_CHANNEL->CNDTR == 0) {
+          Feedback.start	        = (uint16_t)START_FRAME;
+          Feedback.cmd1           = (int16_t)cmd1;
+          Feedback.cmd2           = (int16_t)cmd2;
+          Feedback.speedR	        = (int16_t)speedR;
+          Feedback.speedL	        = (int16_t)speedL;
+          Feedback.speedR_meas	  = (int16_t)rtY_Left.n_mot;
+          Feedback.speedL_meas	  = (int16_t)rtY_Right.n_mot;
+          Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
+          Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
+          Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR ^ Feedback.speedL
+                                    ^ Feedback.speedR_meas ^ Feedback.speedL_meas ^ Feedback.batVoltage ^ Feedback.boardTemp); 
 
-        UART_DMA_CHANNEL->CCR  &= ~DMA_CCR_EN;
-        UART_DMA_CHANNEL->CNDTR = sizeof(Feedback);
-        UART_DMA_CHANNEL->CMAR  = (uint32_t)&Feedback;
-        UART_DMA_CHANNEL->CCR  |= DMA_CCR_EN;          
-      }
-    #endif      
+          UART_DMA_CHANNEL->CCR  &= ~DMA_CCR_EN;
+          UART_DMA_CHANNEL->CNDTR = sizeof(Feedback);
+          UART_DMA_CHANNEL->CMAR  = (uint32_t)&Feedback;
+          UART_DMA_CHANNEL->CCR  |= DMA_CCR_EN;          
+        }
+      #endif      
     }    
 
     HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
@@ -501,50 +731,25 @@ int main(void) {
   }
 }
 
-/** System Clock Configuration
-*/
-void SystemClock_Config(void) {
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_PeriphCLKInitTypeDef PeriphClkInit;
+#ifdef TRANSPOTTER
+  void saveConfig() {
+    HAL_FLASH_Unlock();
+    EE_WriteVariable(VirtAddVarTab[0], saveValue);
+    HAL_FLASH_Lock();
+  }
+#endif
 
-  /**Initializes the CPU, AHB and APB busses clocks
-    */
-  RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState            = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSI_DIV2;
-  RCC_OscInitStruct.PLL.PLLMUL          = RCC_PLL_MUL16;
-  HAL_RCC_OscConfig(&RCC_OscInitStruct);
-
-  /**Initializes the CPU, AHB and APB busses clocks
-    */
-  RCC_ClkInitStruct.ClockType           = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource        = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider       = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider      = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider      = RCC_HCLK_DIV1;
-
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
-
-  PeriphClkInit.PeriphClockSelection    = RCC_PERIPHCLK_ADC;
-  // PeriphClkInit.AdcClockSelection    = RCC_ADCPCLK2_DIV8;  // 8 MHz
-  PeriphClkInit.AdcClockSelection       = RCC_ADCPCLK2_DIV4;  // 16 MHz
-  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-
-  /**Configure the Systick interrupt time
-    */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-
-  /**Configure the Systick
-    */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+void longBeep(uint8_t freq){
+    buzzerFreq = freq;
+    HAL_Delay(500);
+    buzzerFreq = 0;
 }
 
+void shortBeep(uint8_t freq){
+    buzzerFreq = freq;
+    HAL_Delay(100);
+    buzzerFreq = 0;
+}
 
 // ===========================================================
   /* Low pass filter fixed-point 16 bits: fixdt(1,16,4)
@@ -662,3 +867,47 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y)
 }
 
 // ===========================================================
+
+/** System Clock Configuration
+*/
+void SystemClock_Config(void) {
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInit;
+
+  /**Initializes the CPU, AHB and APB busses clocks
+    */
+  RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState            = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL          = RCC_PLL_MUL16;
+  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+  /**Initializes the CPU, AHB and APB busses clocks
+    */
+  RCC_ClkInitStruct.ClockType           = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource        = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider       = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider      = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider      = RCC_HCLK_DIV1;
+
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
+
+  PeriphClkInit.PeriphClockSelection    = RCC_PERIPHCLK_ADC;
+  // PeriphClkInit.AdcClockSelection    = RCC_ADCPCLK2_DIV8;  // 8 MHz
+  PeriphClkInit.AdcClockSelection       = RCC_ADCPCLK2_DIV4;  // 16 MHz
+  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+
+  /**Configure the Systick interrupt time
+    */
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
+
+  /**Configure the Systick
+    */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+}

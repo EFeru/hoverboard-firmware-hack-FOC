@@ -84,6 +84,13 @@ void PPM_Init(void) {
 }
 #endif
 
+uint8_t Nunchuck_Ping(void) {
+  if (HAL_I2C_Master_Receive(&hi2c2,0xA4,(uint8_t*)nunchuck_data, 1, 10) == HAL_OK) {
+    return 1;
+  }
+  return 0;
+}
+
 void Nunchuck_Init(void) {
     //-- START -- init WiiNunchuck
   i2cBuffer[0] = 0xF0;
@@ -101,18 +108,20 @@ void Nunchuck_Init(void) {
 
 void Nunchuck_Read(void) {
   i2cBuffer[0] = 0x00;
-  HAL_I2C_Master_Transmit(&hi2c2,0xA4,(uint8_t*)i2cBuffer, 1, 100);
-  HAL_Delay(5);
-  if (HAL_I2C_Master_Receive(&hi2c2,0xA4,(uint8_t*)nunchuck_data, 6, 100) == HAL_OK) {
+  HAL_I2C_Master_Transmit(&hi2c2,0xA4,(uint8_t*)i2cBuffer, 1, 10);
+  HAL_Delay(3);
+  if (HAL_I2C_Master_Receive(&hi2c2,0xA4,(uint8_t*)nunchuck_data, 6, 10) == HAL_OK) {
     timeout = 0;
   } else {
     timeout++;
   }
 
+#ifndef TRANSPOTTER
   if (timeout > 3) {
     HAL_Delay(50);
     Nunchuck_Init();
   }
+#endif
 
   //setScopeChannel(0, (int)nunchuck_data[0]);
   //setScopeChannel(1, (int)nunchuck_data[1]);
