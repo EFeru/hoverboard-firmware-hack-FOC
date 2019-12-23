@@ -157,6 +157,10 @@ typedef struct {
   uint16_t l_rx2;
 } adc_buf_t;
 
+// Define Beep functions
+void longBeep(uint8_t freq);
+void shortBeep(uint8_t freq);
+
 // Define low-pass filter functions. Implementation is in main.c
 void filtLowPass16(int16_t u, uint16_t coef, int16_t *y);
 void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
