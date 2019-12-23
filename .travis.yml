@@ -43,8 +43,8 @@ matrix:
       - export PATH=$HOME/arm-gcc-toolchain/bin:$PATH
       before_script: arm-none-eabi-gcc --version
 
-    - name: pio genericSTM32F103RC
-      script: platformio run -e genericSTM32F103RC
+    - name: platformio
+      script: platformio run -e VARIANT_ADC -e VARIANT_USART3 -e TRANSPOTTER
       language: python
       python:
         - "2.7"

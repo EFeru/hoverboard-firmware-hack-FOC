@@ -2,7 +2,13 @@
 #include "stm32f1xx_hal.h"
 
 // ############################### DEFINE FIRMWARE VARIANT ###############################
-// #define TRANSPOTTER                   // Uncomment this line for TRANSPORTER configuration
+// For variant selection, check platformio.ini 
+// For any particular needs, feel free to change this file according to your needs.
+
+// Select the VARIANT_ADC as default variant, in case NO variant is defined
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(TRANSPOTTER)
+  #define VARIANT_ADC                  
+#endif
 
 // ############################### DO-NOT-TOUCH SETTINGS ###############################
 
@@ -100,16 +106,25 @@
 
 #define USART2_BAUD             38400                   // UART2 baud rate (long wired cable)
 #define USART2_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
-// #define CONTROL_SERIAL_USART2                           // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-// #define FEEDBACK_SERIAL_USART2                          // left sensor board cable, disable if ADC or PPM is used!
-// #define DEBUG_SERIAL_USART2                             // left sensor board cable, disable if ADC or PPM is used!
+#define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
+#define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 
-#ifndef TRANSPOTTER
-  #define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
-  #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
-  // #define CONTROL_SERIAL_USART3                           // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
-  // #define FEEDBACK_SERIAL_USART3                          // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
-  #define DEBUG_SERIAL_USART3                             // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+#if defined(VARIANT_ADC)
+  // #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  // #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
+  // #define DEBUG_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
+
+  // #define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
+  // #define FEEDBACK_SERIAL_USART3                     // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+  #define DEBUG_SERIAL_USART3                           // right sensor board cable, disable if I2C (nunchuck or lcd) is used!  
+#elif defined(VARIANT_USART3)
+  // #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  // #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
+  // #define DEBUG_SERIAL_USART2                           // left sensor board cable, disable if ADC or PPM is used!
+
+  #define CONTROL_SERIAL_USART3                         // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
+  #define FEEDBACK_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+  // #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
 #endif
 
 #if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
@@ -133,7 +148,7 @@
  * For middle resting potis: Let the potis in the middle resting position, write value 1 to ADC1_MID and value 2 to ADC2_MID
  * Make, flash and test it.
  */
-#ifndef TRANSPOTTER
+#ifdef VARIANT_ADC
   #define CONTROL_ADC           // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   // #define ADC1_MID_POT          // ADC1 middle resting poti: comment-out if NOT a middle resting poti
   #define ADC1_MIN 0            // min ADC1-value while poti at minimum-position (0 - 4095)
