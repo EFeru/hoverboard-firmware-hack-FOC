@@ -214,6 +214,37 @@
   }
  },
  {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2839",
+  "className":"Simulink.Signum",
+  "icon":"WebViewIcon3",
+  "name":"SignDeltaU3",
+  "label":"SignDeltaU3",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2816",
+  "inspector":{
+   "params":[
+    "ZeroCross",
+    "SampleTime"
+   ],
+   "values":[
+    "on",
+    "-1"
+   ],
+   "tabs":[
+    "Parameter Attributes"
+   ],
+   "tabs_idx":0
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"Signum",
+   "masktype":""
+  }
+ },
+ {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2840",
   "className":"Simulink.DataTypeConversion",
   "icon":"WebViewIcon3",
@@ -308,6 +339,37 @@
   }
  },
  {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2837",
+  "className":"Simulink.Signum",
+  "icon":"WebViewIcon3",
+  "name":"SignDeltaU2",
+  "label":"SignDeltaU2",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2816",
+  "inspector":{
+   "params":[
+    "ZeroCross",
+    "SampleTime"
+   ],
+   "values":[
+    "on",
+    "-1"
+   ],
+   "tabs":[
+    "Parameter Attributes"
+   ],
+   "tabs_idx":0
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"Signum",
+   "masktype":""
+  }
+ },
+ {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2843",
   "className":"Simulink.Inport",
   "icon":"WebViewIcon3",
@@ -375,37 +437,6 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2839",
-  "className":"Simulink.Signum",
-  "icon":"WebViewIcon3",
-  "name":"SignDeltaU3",
-  "label":"SignDeltaU3",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2816",
-  "inspector":{
-   "params":[
-    "ZeroCross",
-    "SampleTime"
-   ],
-   "values":[
-    "on",
-    "-1"
-   ],
-   "tabs":[
-    "Parameter Attributes"
-   ],
-   "tabs_idx":0
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"Signum",
-   "masktype":""
-  }
- },
- {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2841",
   "className":"Simulink.RelationalOperator",
   "icon":"WebViewIcon3",
@@ -447,37 +478,6 @@
   ],
   "finder":{
    "blocktype":"RelationalOperator",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2837",
-  "className":"Simulink.Signum",
-  "icon":"WebViewIcon3",
-  "name":"SignDeltaU2",
-  "label":"SignDeltaU2",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:10455:2816",
-  "inspector":{
-   "params":[
-    "ZeroCross",
-    "SampleTime"
-   ],
-   "values":[
-    "on",
-    "-1"
-   ],
-   "tabs":[
-    "Parameter Attributes"
-   ],
-   "tabs_idx":0
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"Signum",
    "masktype":""
   }
  },

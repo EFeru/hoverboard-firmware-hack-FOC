@@ -245,56 +245,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2841",
-  "className":"Simulink.RelationalOperator",
-  "icon":"WebViewIcon3",
-  "name":"Equal1",
-  "label":"Equal1",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2816",
-  "inspector":{
-   "params":[
-    "Operator",
-    "InputSameDT",
-    "OutDataTypeStr",
-    "RndMeth",
-    "SampleTime",
-    "ZeroCross"
-   ],
-   "values":[
-    "==",
-    "on",
-    "Inherit: Logical (see Configuration Parameters: Optimization)",
-    "Zero",
-    "-1",
-    "on"
-   ],
-   "tabs":[
-    "Main",
-    "Data Type",
-    "-Other"
-   ],
-   "tabs_idx":[
-    0,
-    1,
-    4
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ElementHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"RelationalOperator",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2836",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2840",
   "className":"Simulink.DataTypeConversion",
   "icon":"WebViewIcon3",
-  "name":"DataTypeConv3",
-  "label":"DataTypeConv3",
+  "name":"DataTypeConv4",
+  "label":"DataTypeConv4",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2816",
   "inspector":{
    "params":[
@@ -337,11 +292,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2840",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2836",
   "className":"Simulink.DataTypeConversion",
   "icon":"WebViewIcon3",
-  "name":"DataTypeConv4",
-  "label":"DataTypeConv4",
+  "name":"DataTypeConv3",
+  "label":"DataTypeConv3",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2816",
   "inspector":{
    "params":[
@@ -478,6 +433,51 @@
   ],
   "finder":{
    "blocktype":"Inport",
+   "masktype":""
+  }
+ },
+ {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2841",
+  "className":"Simulink.RelationalOperator",
+  "icon":"WebViewIcon3",
+  "name":"Equal1",
+  "label":"Equal1",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:10828:2816",
+  "inspector":{
+   "params":[
+    "Operator",
+    "InputSameDT",
+    "OutDataTypeStr",
+    "RndMeth",
+    "SampleTime",
+    "ZeroCross"
+   ],
+   "values":[
+    "==",
+    "on",
+    "Inherit: Logical (see Configuration Parameters: Optimization)",
+    "Zero",
+    "-1",
+    "on"
+   ],
+   "tabs":[
+    "Main",
+    "Data Type",
+    "-Other"
+   ],
+   "tabs_idx":[
+    0,
+    1,
+    4
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ElementHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"RelationalOperator",
    "masktype":""
   }
  },

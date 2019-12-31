@@ -499,32 +499,32 @@
             <!--RAWSTRING-->
           </g>
           <!--RAWSTRING-->
-          <g data-tags="portannotationpanel PortDataTypeString">
-            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,287,263)">
-              <path d="M0,-12 L21.4844,-12 L21.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
-            </g>
-            <defs>
-              <clipPath id="clip89">
-                <path d="M-144.922,-187 L148,-187 L148,87 L-144.922,87 L-144.922,-187 z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#clip89)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,287,251)">
-              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="19.4844" x="1" xml:space="preserve" y="9">uint8</text>
-            </g>
-            <!--RAWSTRING-->
-          </g>
-          <!--RAWSTRING-->
           <g data-tags="blk">
             <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,275,279)">
               <path d="M-11.9531,0 L11.9531,0 L11.9531,14 L-11.9531,14 L-11.9531,0 z" fill-rule="evenodd" vector-effect="none"/>
             </g>
             <defs>
-              <clipPath id="clip90">
+              <clipPath id="clip89">
                 <path d="M-120.969,-215 L171.953,-215 L171.953,59 L-120.969,59 L-120.969,-215 z"/>
               </clipPath>
             </defs>
-            <g clip-path="url(#clip90)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="0.6" stroke-width="1" transform="matrix(1,0,0,1,263.047,279)">
+            <g clip-path="url(#clip89)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="0.6" stroke-width="1" transform="matrix(1,0,0,1,263.047,279)">
               <text fill="#000000" fill-opacity="0.6" font-family="Arial" font-size="10" font-style="normal" font-weight="400" stroke="none" textLength="21.9062" x="1" xml:space="preserve" y="10">Ini=0</text>
+            </g>
+            <!--RAWSTRING-->
+          </g>
+          <!--RAWSTRING-->
+          <g data-tags="portannotationpanel PortDataTypeString">
+            <g clip-path="none" fill="none" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,287,263)">
+              <path d="M0,-12 L21.4844,-12 L21.4844,0 L0,0 L0,-12 z" fill-rule="evenodd" vector-effect="none"/>
+            </g>
+            <defs>
+              <clipPath id="clip90">
+                <path d="M-144.922,-187 L148,-187 L148,87 L-144.922,87 L-144.922,-187 z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#clip90)" fill="none" opacity="1" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,287,251)">
+              <text fill="#000000" fill-opacity="1" font-family="Arial" font-size="9" font-style="normal" font-weight="400" stroke="none" textLength="19.4844" x="1" xml:space="preserve" y="9">uint8</text>
             </g>
             <!--RAWSTRING-->
           </g>
@@ -537,7 +537,7 @@
         <!--RAWSTRING-->
         <g id="BLDCmotorControl_FOC_R2017b_fixdt:9634">
           <g clip-path="none" fill="none" opacity="0.65098" stroke="#000000" stroke-linecap="square" stroke-linejoin="bevel" stroke-opacity="1" stroke-width="1" transform="matrix(1,0,0,1,324,65)">
-            <image height="271" preserveAspectRatio="none" width="43" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACsAAAEPCAYAAADbFz1UAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAC6ElEQVR4nO3csW7aQACH8T8VyZI1XbJk6sNUHSv1Jdu1T5MsWVhgMAMMMKSDL6pLjWJhPsNF3086mUSn8OlkHHxBmSX5nuRzkvtynNoyyaocu2N1OHGeNvChM6Z2l+S2PN4n2SZZ902cp13RhySPZUztphx3STZJms73/tFd2cckX6ao67FPG7pOewr0xn6asmgsYynGUoylVBU7HzDnd5JZGV+PzHlK8txzfO7MeT09szUk9tvYJzmXqk4DYynGUoylDLnOPg2Y85JkkfZdfpP2Pmo/oqvXkNjn96dkUcYq7a3JxWKHrGz3drpJez+1G9HV61wr26Rd0SYXPg2GrOy2jE3neLXn7L6MXefx1cZOoqrrrLEUYynGUqqKHfJL4RSj9wj6VLWyxlKMpQy5GiCv7FNUtbLGUoylGEs51ybHEKM/HjDlvsEkseda2WN/Qxusqh2ZKVd2tA+3slcTW9V11liKsRRjKd7dUoylGEsxllJVrLfiR3grfuhq7sG8FadUFVvVddZYirEUYylVxfoZGYqxFGMpxlKqinUzmWIsxViKsRT3Z49wf/bQ1WzMuT9LqWplq7rOGksxlmIsxXddR/iu65DvDU7x4Vb2amKrus4aSzGWYizFWIqxFGMpxlKMpRhLqSrWD0dQjKVUFTvlC2w29gcMif059kmKH2N/wIeL/TX2Sc6lqheYsRRjKcZSjKUYSzGWYizFWIqxFGMpxlKMpRhLMZZiLMVYirEUYynGUoylGEsxlmIsxViKsRRjKcZSjKUYSzGWYizFWIqxFGMpxlKMpRhLMZZiLMVYirEUYynGUoylGEsxlmIsxViK/6GHYizFWIqxlHmSZZK7JDcXanhJsigdTZJtkn3fxHmSVZLb8nXvJNiijFWSdd6JXZbHuySbKeoOLNOGvq3sprT85y12XyatJwrsasrzNhlwGizLhCZ/V3lK2zI2nWNv7CzJfdpz9iaXeZHty9h1Hr8NSVP5A2ugmm3zv2PbAAAAAElFTkSuQmCC" y="0"/>
+            <image height="271" preserveAspectRatio="none" width="43" x="0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACsAAAEPCAYAAADbFz1UAAAACXBIWXMAAA7EAAAOxAGVKw4bAAADGklEQVR4nO3cMW/TQByG8Tco6dK1LF068WEQCxKfkYmFhU/TLl2yJIMzJEM8wOCLMMZWT7bfs//V85NODshqHp0cN3eNspH0TdJHSQ/pWNpB0jEd2+PYPXGrJvCxNUq7l3SXHteSLpJOfSdu1czoo6SnNErbpeNV0llS1fq/f7Rn9knSpxJ1PWo1oSc1l0Bv7IeSRVMR60KsC7EuoWK3Gef8krRJ4/PAOc+SXnqOL61zfo/PbOTEfpn6JHMJdRkQ60KsC7EuOffZ54xzXiXt1bzLr9Sso+oJXb1yYl/ePkX7NI5qliaLxebMbHs5XalZT10ndPWaa2YrNTNaaeHLIGdmL2mcW8fVXrN1GtfW49XGFhHqPkusC7EuxLqEis35pTDG5D2CPqFmllgXYl1y7gaWV/YYoWaWWBdiXYh1mWuTo8vyUQDXvsFisWNmdujvZZOE2pFxzazFu5vZ1cSGus8S60KsC7EurG5diHUh1oVYl1CxJZc1k1e8JVcKRWLnmtnJy/NQazCW4i6hYkPdZ4l1IdaFWJdQsXxGxoVYF2JdiHUJFctmsguxLsS6EOvC/uwA9me7VrMxx/6sS6iZDXWfJdaFWBdiXXjXNYB3XV28NxiDmXUJdZ8l1iXnmv0503N9nfoDcmJ/TH2SJFTs96k/ICd29m/aGSvUC4xYl1B/WmKlMICVQhfvZ8d4dzO7mthQvxSIdSHWhVgXYl2IdSHWJdSCMdTMEutCrAuxLux1DWCvq2s1mxzsdbmEig11nyXWhVgXYl2IdQkVyyaHC7EuxLoQ68ImxwA2ObpWs7plk8MlVGyo+yyxLsS6EOtCrAuxLsS6EOtCrAuxLsS6EOtCrAuxLsS6EOtCrAuxLsS6EOtCrAuxLsS6EOtCrAuxLsS6EOvCp+ldiHUh1oVYl62kg6R7SbuFGl4l7VNHJemige+83Uo6SrpL/17ii3H3aRwlnfRG7CE9vko6l6jrOKgJvc3sObX85xZbp5NOhQLbqvS8lTIug0M6odLfWS7pksa5deyN3Uh6UHPN7rTMi6xO49p6fBsASvkDzK+w7LxofSAAAAAASUVORK5CYII=" y="0"/>
           </g>
           <g clip-path="none" fill="#ffffff" fill-opacity="1" opacity="1" stroke="none" stroke-opacity="0" transform="matrix(1,0,0,1,325,66)">
             <path d="M0,0 L35,0 L35,263 L0,263 L0,0 z" fill-rule="evenodd" vector-effect="none"/>
@@ -757,5 +757,5 @@
       <!--RAWSTRING-->
     </g>
   </g>
-  <!--generated on windows @ 2019-12-12 20:22:42 W. Europe Standard Time-->
+  <!--generated on windows @ 2019-12-30 21:36:24 W. Europe Standard Time-->
 </svg>

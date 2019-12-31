@@ -80,6 +80,35 @@
   }
  },
  {
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2515",
+  "className":"Simulink.SubSystem",
+  "icon":"WebViewIcon4",
+  "name":"rst_Delay",
+  "label":"rst_Delay",
+  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
+  "inspector":{
+   "params":[
+    "initVal"
+   ],
+   "values":[
+    "z_cntInit"
+   ],
+   "tabs":[
+   ],
+   "tabs_idx":[
+   ]
+  },
+  "viewer":{
+   "jshandler":"webview/handlers/ContainerHandler"
+  },
+  "obj_viewer":[
+  ],
+  "finder":{
+   "blocktype":"SubSystem",
+   "masktype":""
+  }
+ },
+ {
   "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2416",
   "className":"Simulink.Sum",
   "icon":"WebViewIcon3",
@@ -192,11 +221,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2413",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2414",
   "className":"Simulink.Inport",
   "icon":"WebViewIcon3",
-  "name":"max",
-  "label":"max",
+  "name":"rst",
+  "label":"rst",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
   "inspector":{
    "params":[
@@ -219,7 +248,7 @@
     "OutputFunctionCall"
    ],
    "values":[
-    "2",
+    "3",
     "Port number",
     "[]",
     "[]",
@@ -259,11 +288,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2414",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2413",
   "className":"Simulink.Inport",
   "icon":"WebViewIcon3",
-  "name":"rst",
-  "label":"rst",
+  "name":"max",
+  "label":"max",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
   "inspector":{
    "params":[
@@ -286,7 +315,7 @@
     "OutputFunctionCall"
    ],
    "values":[
-    "3",
+    "2",
     "Port number",
     "[]",
     "[]",
@@ -389,35 +418,6 @@
   ],
   "finder":{
    "blocktype":"Inport",
-   "masktype":""
-  }
- },
- {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8272:2515",
-  "className":"Simulink.SubSystem",
-  "icon":"WebViewIcon4",
-  "name":"rst_Delay",
-  "label":"rst_Delay",
-  "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8272",
-  "inspector":{
-   "params":[
-    "initVal"
-   ],
-   "values":[
-    "z_cntInit"
-   ],
-   "tabs":[
-   ],
-   "tabs_idx":[
-   ]
-  },
-  "viewer":{
-   "jshandler":"webview/handlers/ContainerHandler"
-  },
-  "obj_viewer":[
-  ],
-  "finder":{
-   "blocktype":"SubSystem",
    "masktype":""
   }
  },
