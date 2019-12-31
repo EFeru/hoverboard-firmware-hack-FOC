@@ -89,9 +89,9 @@ cf_currFilt         = 0.12;     % [%] Current filter coefficient [0, 1]. Lower v
 
 %% F02_Diagnostics
 b_diagEna           = 1;                % [-] Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
-t_errQual           = 0.6 * f_ctrl/3;   % [s] Error qualification time
-t_errDequal         = 2.0 * f_ctrl/3;   % [s] Error dequalification time
-r_errInpTgtThres    = 400;              % [-] Error input target threshold (for "Blocked motor" detection)
+t_errQual           = 0.24 * f_ctrl/3;  % [s] Error qualification time
+t_errDequal         = 1.80 * f_ctrl/3;  % [s] Error dequalification time
+r_errInpTgtThres    = 600;              % [-] Error input target threshold (for "Blocked motor" detection)
 
 %% F03_Control_Mode_Manager
 dV_openRate         = 1000 / (f_ctrl/3);% [V/s] Rate for voltage cut-off in Open Mode (Sample Time included in the rate)

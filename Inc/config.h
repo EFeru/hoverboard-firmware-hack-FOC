@@ -6,14 +6,14 @@
 // For any particular needs, feel free to change this file according to your needs.
 
 // Select the VARIANT_ADC as default variant, in case NO variant is defined
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(TRANSPOTTER)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(HOVERCAR) && !defined(TRANSPOTTER)
   #define VARIANT_ADC                  
 #endif
 
 // ############################### DO-NOT-TOUCH SETTINGS ###############################
 
 #define PWM_FREQ            16000     // PWM frequency in Hz
-#define DEAD_TIME              32     // PWM deadtime
+#define DEAD_TIME              48     // PWM deadtime
 #ifdef TRANSPOTTER
   #define DELAY_IN_MAIN_LOOP    2
 #else
@@ -55,8 +55,8 @@
  * Then you can verify voltage on value 6 (to get calibrated voltage multiplied by 100).
  */
 #define BAT_FILT_COEF           655       // battery voltage filter coefficient in fixed-point. coef_fixedPoint = coef_floatingPoint * 2^16. In this case 655 = 0.01 * 2^16
-#define BAT_CALIB_REAL_VOLTAGE  4300      // input voltage measured by multimeter (multiplied by 100). In this case 43.00 V * 100 = 4300
-#define BAT_CALIB_ADC           1704      // adc-value measured by mainboard (value nr 5 on UART debug output)
+#define BAT_CALIB_REAL_VOLTAGE  3970      // input voltage measured by multimeter (multiplied by 100). In this case 43.00 V * 100 = 4300
+#define BAT_CALIB_ADC           1492      // adc-value measured by mainboard (value nr 5 on UART debug output)
 
 #define BAT_CELLS               10        // battery number of cells. Normal Hoverboard battery: 10s
 #define BAT_LOW_LVL1_ENABLE     0         // to beep or not to beep, 1 or 0
@@ -109,7 +109,7 @@
 #define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
 #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 
-#if defined(VARIANT_ADC)
+#if defined(VARIANT_ADC) || defined(HOVERCAR)
   // #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
   // #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
   // #define DEBUG_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
@@ -149,15 +149,28 @@
  * Make, flash and test it.
  */
 #ifdef VARIANT_ADC
-  #define CONTROL_ADC           // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
-  // #define ADC1_MID_POT          // ADC1 middle resting poti: comment-out if NOT a middle resting poti
-  #define ADC1_MIN 0            // min ADC1-value while poti at minimum-position (0 - 4095)
-  #define ADC1_MID 1963         // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
-  #define ADC1_MAX 4095         // max ADC1-value while poti at maximum-position (0 - 4095)
-  // #define ADC2_MID_POT          // ADC2 middle resting poti: comment-out if NOT a middle resting poti
-  #define ADC2_MIN 0            // min ADC2-value while poti at minimum-position (0 - 4095)
-  #define ADC2_MID 2006         // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
-  #define ADC2_MAX 4095         // max ADC2-value while poti at maximum-position (0 - 4095)
+  #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
+  // #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
+  #define ADC_PROTECT_TIMEOUT 30        // ADC Protection: number of wrong / missing input commands before safety state is taken
+  #define ADC_PROTECT_THRESH  400       // ADC Protection threshold below/above the MIN/MAX ADC values
+  // #define ADC1_MID_POT                  // ADC1 middle resting poti: comment-out if NOT a middle resting poti
+  #define ADC1_MIN            0         // min ADC1-value while poti at minimum-position (0 - 4095)
+  #define ADC1_MID            2048      // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
+  #define ADC1_MAX            4095      // max ADC1-value while poti at maximum-position (0 - 4095)
+  // #define ADC2_MID_POT                  // ADC2 middle resting poti: comment-out if NOT a middle resting poti
+  #define ADC2_MIN            0         // min ADC2-value while poti at minimum-position (0 - 4095)
+  #define ADC2_MID            2048      // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
+  #define ADC2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
+#endif
+#ifdef HOVERCAR
+  #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
+  #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
+  #define ADC_PROTECT_TIMEOUT 30        // ADC Protection: number of wrong / missing input commands before safety state is taken
+  #define ADC_PROTECT_THRESH  400       // ADC Protection threshold below/above the MIN/MAX ADC values
+  #define ADC1_MIN            1000      // min ADC1-value while poti at minimum-position (0 - 4095)
+  #define ADC1_MAX            2500      // max ADC1-value while poti at maximum-position (0 - 4095)
+  #define ADC2_MIN            500       // min ADC2-value while poti at minimum-position (0 - 4095)
+  #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
 #endif
 
 // ###### CONTROL VIA NINTENDO NUNCHUCK ######
@@ -221,16 +234,22 @@
  */
 
 // Beep in Reverse
-#define BEEPS_BACKWARD      0     // 0 or 1
+#define BEEPS_BACKWARD        1     // 0 or 1
+
+// Multiple tap detection: default DOUBLE Tap (4 pulses)
+#define MULTIPLE_TAP_NR       2 * 2 // [-] Define tap number: MULTIPLE_TAP_NR = number_of_taps * 2, number_of_taps = 1 (for single taping), 2 (for double tapping), 3 (for triple tapping), etc...
+#define MULTIPLE_TAP_HI       600   // [-] Multiple tap detection High hysteresis threshold
+#define MULTIPLE_TAP_LO       200   // [-] Multiple tap detection Low hysteresis threshold
+#define MULTIPLE_TAP_TIMEOUT  2000  // [ms] Multiple tap detection Timeout period. The taps need to happen within this time window to be accepted.
 
 // Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
-#define RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
+#define RATE                  480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
 
 // Value of FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
-#define FILTER              6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
+#define FILTER                6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
 
 // ################################# DEFAULT SETTINGS ############################
-#ifndef TRANSPOTTER
+#if !defined(HOVERCAR) && !defined(TRANSPOTTER)
   // Value of COEFFICIENT is in fixdt(1,16,14)
   // If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
   // If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
@@ -239,6 +258,15 @@
 
   #define INVERT_R_DIRECTION
   #define INVERT_L_DIRECTION
+#endif
+
+// ################################# HOVERCAR SETTINGS ############################
+#ifdef HOVERCAR
+  #define SPEED_COEFFICIENT  16384  //  1.0f
+  #define STEER_COEFFICIENT  0      //  0.0f
+  
+  // #define INVERT_R_DIRECTION
+  // #define INVERT_L_DIRECTION
 #endif
 
 // ################################# TRANSPOTTER SETTINGS ############################
@@ -252,7 +280,7 @@
 
   #define ROT_P          1.2          // P coefficient for the direction controller. Positive / Negative values to invert gametrak steering direction.  
 
-  //#define INVERT_R_DIRECTION        // Invert right motor
+  #define INVERT_R_DIRECTION          // Invert right motor
   #define INVERT_L_DIRECTION          // Invert left motor
 
   // during nunchuck control (only relevant when activated)
@@ -311,4 +339,14 @@
 
 #if defined(CONTROL_PPM) && defined(CONTROL_ADC) && defined(CONTROL_NUNCHUCK) || defined(CONTROL_PPM) && defined(CONTROL_ADC) || defined(CONTROL_ADC) && defined(CONTROL_NUNCHUCK) || defined(CONTROL_PPM) && defined(CONTROL_NUNCHUCK)
   #error only 1 input method allowed. use CONTROL_PPM or CONTROL_ADC or CONTROL_NUNCHUCK.
+#endif
+
+#if defined(ADC_PROTECT_ENA) && ((ADC1_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC1_MAX + ADC_PROTECT_THRESH) >= 4096)
+  #warning ADC1 Protection NOT possible! Adjust the ADC thresholds.
+  #undef ADC_PROTECT_ENA
+#endif
+
+#if defined(ADC_PROTECT_ENA) && ((ADC2_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC2_MAX + ADC_PROTECT_THRESH) >= 4096)
+  #warning ADC2 Protection NOT possible! Adjust the ADC thresholds.
+  #undef ADC_PROTECT_ENA
 #endif

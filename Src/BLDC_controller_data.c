@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1249
+ * Model version                  : 1.1256
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Thu Dec 12 20:22:31 2019
+ * C/C++ source code generated on : Mon Dec 30 21:36:12 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -184,12 +184,12 @@ P rtP_Left = {
   /* Variable: t_errDequal
    * Referenced by: '<S3>/t_errDequal'
    */
-  10667U,
+  9600U,
 
   /* Variable: t_errQual
    * Referenced by: '<S3>/t_errQual'
    */
-  3200U,
+  1280U,
 
   /* Variable: Vd_max
    * Referenced by:
@@ -266,7 +266,7 @@ P rtP_Left = {
   /* Variable: r_errInpTgtThres
    * Referenced by: '<S3>/r_errInpTgtThres'
    */
-  6400,
+  9600,
 
   /* Variable: r_fieldWeakHi
    * Referenced by: '<S5>/r_fieldWeakHi'

@@ -149,10 +149,13 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 ---
 ## Examples
 
-Have a look at the config.h in the Inc directory. That's where you configure to firmware to match your project.
-Currently supported: Wii Nunchuck, analog potentiometer and PPM-Sum signal from a RC remote.
-A good example of control via UART, eg. from an Arduino or raspberryPi, can be found here:
-https://github.com/p-h-a-i-l/hoverboard-firmware-hack
+This firmware offers currently 4 variants (selectable in platformio.ino):
+- **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
+- **VARIANT_USART3**: In this variant the motors are controlled via Serial protocol on USART3 Right sensor cable (short wired). The commands can be sent from an Arduino. Check out the [hoverserial.ino](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/02_Arduino/hoverserial) as an example sketch.
+- **HOVERCAR**: In this variant the motors are controlled by two pedals Brake and Throttle. Reverse is engaged by double tapping on the Brake pedal at standstill.
+- **TRANSPOTTER**: This build is for Transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
+
+Of course the firmware can be further customized for other needs or projects.
 
 ---
 ## Acknowledgements

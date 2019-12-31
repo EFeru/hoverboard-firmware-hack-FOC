@@ -136,7 +136,7 @@
 #define STEP(from, to, step) (((from) < (to)) ? (MIN((from) + (step), (to))) : (MAX((from) - (step), (to))))
 #define DEG(a) ((a)*M_PI / 180.0f)
 #define RAD(a) ((a)*180.0f / M_PI)
-#define SIGN(a) (((a) < 0.0f) ? (-1.0f) : (((a) > 0.0f) ? (1.0f) : (0.0f)))
+#define SIGN(a) (((a) < 0) ? (-1) : (((a) > 0) ? (1) : (0)))
 #define CLAMP(x, low, high) (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 #define SCALE(value, high, max) MIN(MAX(((max) - (value)) / ((max) - (high)), 0.0f), 1.0f)
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -157,15 +157,22 @@ typedef struct {
   uint16_t l_rx2;
 } adc_buf_t;
 
+typedef struct {
+  uint32_t 	t_timePrev;
+  uint8_t 	z_pulseCntPrev;
+  uint8_t 	b_hysteresis;
+  uint8_t 	b_multipleTap;
+} MultipleTap;
+
 // Define Beep functions
 void longBeep(uint8_t freq);
 void shortBeep(uint8_t freq);
 
-// Define low-pass filter functions. Implementation is in main.c
-void filtLowPass16(int16_t u, uint16_t coef, int16_t *y);
-void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
+// Define additional functions. Implementation is in main.c
+void filtLowPass32(int16_t u, uint16_t coef, int32_t *y);
 void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t *rty_speedL);
 void rateLimiter16(int16_t u, int16_t rate, int16_t *y);
+void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x);
 
 // Define I2C and Nunchuck functions
 void I2C_Init(void);

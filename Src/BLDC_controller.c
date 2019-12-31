@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1249
+ * Model version                  : 1.1256
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Thu Dec 12 20:22:31 2019
+ * C/C++ source code generated on : Mon Dec 30 21:36:12 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -354,41 +354,66 @@ void PI_clamp_fixdt(int16_T rtu_err, uint16_T rtu_P, uint16_T rtu_I, int16_T
 /* System reset for atomic system: '<S41>/Low_Pass_Filter' */
 void Low_Pass_Filter_Reset(DW_Low_Pass_Filter *localDW)
 {
-  /* InitializeConditions for UnitDelay: '<S50>/UnitDelay3' */
-  localDW->UnitDelay3_DSTATE[0] = 0;
-  localDW->UnitDelay3_DSTATE[1] = 0;
+  /* InitializeConditions for UnitDelay: '<S50>/UnitDelay1' */
+  localDW->UnitDelay1_DSTATE[0] = 0;
+  localDW->UnitDelay1_DSTATE[1] = 0;
 }
 
 /* Output and update for atomic system: '<S41>/Low_Pass_Filter' */
 void Low_Pass_Filter(const int16_T rtu_u[2], uint16_T rtu_coef, int16_T rty_y[2],
                      DW_Low_Pass_Filter *localDW)
 {
-  uint16_T rtb_Sum5;
+  int32_T rtb_Sum3_g;
 
-  /* Sum: '<S50>/Sum5' */
-  rtb_Sum5 = (uint16_T)(65535U - rtu_coef);
-
-  /* Sum: '<S50>/Sum1' incorporates:
-   *  Product: '<S50>/Divide1'
-   *  Product: '<S50>/Divide2'
-   *  UnitDelay: '<S50>/UnitDelay3'
+  /* Sum: '<S50>/Sum2' incorporates:
+   *  UnitDelay: '<S50>/UnitDelay1'
    */
-  rty_y[0] = (int16_T)(((rtu_u[0] * rtu_coef) >> 16) +
-                       ((localDW->UnitDelay3_DSTATE[0] * rtb_Sum5) >> 16));
+  rtb_Sum3_g = rtu_u[0] - (localDW->UnitDelay1_DSTATE[0] >> 16);
+  if (rtb_Sum3_g > 32767) {
+    rtb_Sum3_g = 32767;
+  } else {
+    if (rtb_Sum3_g < -32768) {
+      rtb_Sum3_g = -32768;
+    }
+  }
 
-  /* Update for UnitDelay: '<S50>/UnitDelay3' */
-  localDW->UnitDelay3_DSTATE[0] = rty_y[0];
-
-  /* Sum: '<S50>/Sum1' incorporates:
-   *  Product: '<S50>/Divide1'
-   *  Product: '<S50>/Divide2'
-   *  UnitDelay: '<S50>/UnitDelay3'
+  /* Sum: '<S50>/Sum3' incorporates:
+   *  Product: '<S50>/Divide3'
+   *  Sum: '<S50>/Sum2'
+   *  UnitDelay: '<S50>/UnitDelay1'
    */
-  rty_y[1] = (int16_T)(((rtu_u[1] * rtu_coef) >> 16) +
-                       ((localDW->UnitDelay3_DSTATE[1] * rtb_Sum5) >> 16));
+  rtb_Sum3_g = rtu_coef * rtb_Sum3_g + localDW->UnitDelay1_DSTATE[0];
 
-  /* Update for UnitDelay: '<S50>/UnitDelay3' */
-  localDW->UnitDelay3_DSTATE[1] = rty_y[1];
+  /* DataTypeConversion: '<S50>/Data Type Conversion' */
+  rty_y[0] = (int16_T)(rtb_Sum3_g >> 16);
+
+  /* Update for UnitDelay: '<S50>/UnitDelay1' */
+  localDW->UnitDelay1_DSTATE[0] = rtb_Sum3_g;
+
+  /* Sum: '<S50>/Sum2' incorporates:
+   *  UnitDelay: '<S50>/UnitDelay1'
+   */
+  rtb_Sum3_g = rtu_u[1] - (localDW->UnitDelay1_DSTATE[1] >> 16);
+  if (rtb_Sum3_g > 32767) {
+    rtb_Sum3_g = 32767;
+  } else {
+    if (rtb_Sum3_g < -32768) {
+      rtb_Sum3_g = -32768;
+    }
+  }
+
+  /* Sum: '<S50>/Sum3' incorporates:
+   *  Product: '<S50>/Divide3'
+   *  Sum: '<S50>/Sum2'
+   *  UnitDelay: '<S50>/UnitDelay1'
+   */
+  rtb_Sum3_g = rtu_coef * rtb_Sum3_g + localDW->UnitDelay1_DSTATE[1];
+
+  /* DataTypeConversion: '<S50>/Data Type Conversion' */
+  rty_y[1] = (int16_T)(rtb_Sum3_g >> 16);
+
+  /* Update for UnitDelay: '<S50>/UnitDelay1' */
+  localDW->UnitDelay1_DSTATE[1] = rtb_Sum3_g;
 }
 
 /*
@@ -1502,10 +1527,10 @@ void BLDC_controller_step(RT_MODEL *const rtM)
     /* Disable for If: '<S6>/If2' */
     if (rtDW->If2_ActiveSubsystem_a == 0) {
       /* Disable for Outport: '<S41>/iq' */
-      rtDW->Sum1[0] = 0;
+      rtDW->DataTypeConversion[0] = 0;
 
       /* Disable for Outport: '<S41>/id' */
-      rtDW->Sum1[1] = 0;
+      rtDW->DataTypeConversion[1] = 0;
     }
 
     rtDW->If2_ActiveSubsystem_a = -1;
@@ -1518,10 +1543,10 @@ void BLDC_controller_step(RT_MODEL *const rtM)
     rtDW->Gain4[2] = 0;
 
     /* Disable for Outport: '<S6>/r_devSignal1' */
-    rtDW->Sum1[0] = 0;
+    rtDW->DataTypeConversion[0] = 0;
 
     /* Disable for Outport: '<S6>/r_devSignal2' */
-    rtDW->Sum1[1] = 0;
+    rtDW->DataTypeConversion[1] = 0;
   }
 
   if (UnitDelay3 == 0) {
@@ -1639,10 +1664,10 @@ void BLDC_controller_step(RT_MODEL *const rtM)
     rtDW->If2_ActiveSubsystem_a = UnitDelay3;
     if ((rtb_Sum2_h != UnitDelay3) && (rtb_Sum2_h == 0)) {
       /* Disable for Outport: '<S41>/iq' */
-      rtDW->Sum1[0] = 0;
+      rtDW->DataTypeConversion[0] = 0;
 
       /* Disable for Outport: '<S41>/id' */
-      rtDW->Sum1[1] = 0;
+      rtDW->DataTypeConversion[1] = 0;
     }
 
     if (UnitDelay3 == 0) {
@@ -1715,7 +1740,7 @@ void BLDC_controller_step(RT_MODEL *const rtM)
 
       /* Outputs for Atomic SubSystem: '<S41>/Low_Pass_Filter' */
       Low_Pass_Filter(rtb_TmpSignalConversionAtLow_Pa, rtP->cf_currFilt,
-                      rtDW->Sum1, &rtDW->Low_Pass_Filter_m);
+                      rtDW->DataTypeConversion, &rtDW->Low_Pass_Filter_m);
 
       /* End of Outputs for SubSystem: '<S41>/Low_Pass_Filter' */
 
@@ -1805,10 +1830,10 @@ void BLDC_controller_step(RT_MODEL *const rtM)
       switch (rtDW->z_ctrlMod) {
        case 1:
         /* Abs: '<S6>/Abs5' */
-        if (rtDW->Sum1[0] < 0) {
-          rtb_Merge_f_idx_1 = (int16_T)-rtDW->Sum1[0];
+        if (rtDW->DataTypeConversion[0] < 0) {
+          rtb_Merge_f_idx_1 = (int16_T)-rtDW->DataTypeConversion[0];
         } else {
-          rtb_Merge_f_idx_1 = rtDW->Sum1[0];
+          rtb_Merge_f_idx_1 = rtDW->DataTypeConversion[0];
         }
 
         /* End of Abs: '<S6>/Abs5' */
@@ -1843,13 +1868,13 @@ void BLDC_controller_step(RT_MODEL *const rtM)
          *  RelationalOperator: '<S74>/UpperRelop'
          *  Switch: '<S74>/Switch'
          */
-        if (rtDW->Sum1[0] > rtDW->Divide1_a) {
+        if (rtDW->DataTypeConversion[0] > rtDW->Divide1_a) {
           rtb_Merge_f_idx_1 = rtDW->Divide1_a;
-        } else if (rtDW->Sum1[0] < rtDW->Gain1) {
+        } else if (rtDW->DataTypeConversion[0] < rtDW->Gain1) {
           /* Switch: '<S74>/Switch' */
           rtb_Merge_f_idx_1 = rtDW->Gain1;
         } else {
-          rtb_Merge_f_idx_1 = rtDW->Sum1[0];
+          rtb_Merge_f_idx_1 = rtDW->DataTypeConversion[0];
         }
 
         /* End of Switch: '<S74>/Switch2' */
@@ -1858,8 +1883,8 @@ void BLDC_controller_step(RT_MODEL *const rtM)
          *  Constant: '<S71>/cf_iqKiLimProt'
          *  Sum: '<S71>/Sum3'
          */
-        rtDW->Divide1 = (int16_T)(rtb_Merge_f_idx_1 - rtDW->Sum1[0]) *
-          rtP->cf_iqKiLimProt;
+        rtDW->Divide1 = (int16_T)(rtb_Merge_f_idx_1 - rtDW->DataTypeConversion[0])
+          * rtP->cf_iqKiLimProt;
 
         /* End of Outputs for SubSystem: '<S45>/Speed_Mode_Protection' */
         break;
@@ -1924,7 +1949,7 @@ void BLDC_controller_step(RT_MODEL *const rtM)
         /* End of Switch: '<S66>/Switch2' */
 
         /* Sum: '<S54>/Sum3' */
-        rtb_Gain3 = rtb_toNegative - rtDW->Sum1[1];
+        rtb_Gain3 = rtb_toNegative - rtDW->DataTypeConversion[1];
         if (rtb_Gain3 > 32767) {
           rtb_Gain3 = 32767;
         } else {
@@ -2055,7 +2080,7 @@ void BLDC_controller_step(RT_MODEL *const rtM)
         /* End of Switch: '<S61>/Switch2' */
 
         /* Sum: '<S53>/Sum2' */
-        rtb_Gain3 = rtb_Merge_f_idx_1 - rtDW->Sum1[0];
+        rtb_Gain3 = rtb_Merge_f_idx_1 - rtDW->DataTypeConversion[0];
         if (rtb_Gain3 > 32767) {
           rtb_Gain3 = 32767;
         } else {
@@ -2476,12 +2501,12 @@ void BLDC_controller_step(RT_MODEL *const rtM)
   /* Outport: '<Root>/r_devSignal1' incorporates:
    *  DataTypeConversion: '<S1>/Data Type Conversion4'
    */
-  rtY->r_devSignal1 = (int16_T)(rtDW->Sum1[0] >> 4);
+  rtY->r_devSignal1 = (int16_T)(rtDW->DataTypeConversion[0] >> 4);
 
   /* Outport: '<Root>/r_devSignal2' incorporates:
    *  DataTypeConversion: '<S1>/Data Type Conversion5'
    */
-  rtY->r_devSignal2 = (int16_T)(rtDW->Sum1[1] >> 4);
+  rtY->r_devSignal2 = (int16_T)(rtDW->DataTypeConversion[1] >> 4);
 
   /* End of Outputs for SubSystem: '<Root>/BLDC_controller' */
 }

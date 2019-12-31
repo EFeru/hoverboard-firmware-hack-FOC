@@ -99,6 +99,11 @@ extern I2C_HandleTypeDef hi2c2;
   uint8_t nunchuck_connected = 1;
 #endif
 
+#if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
+static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
+#endif
+static uint8_t timeoutFlagADC  = 0;  // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
+
 #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
 typedef struct{
   uint16_t  start;
@@ -107,9 +112,9 @@ typedef struct{
   uint16_t  checksum;
 } Serialcommand;
 static volatile Serialcommand command;
-static int16_t timeoutCnt   = 0;  // Timeout counter for Rx Serial command
+static int16_t timeoutCntSerial   = 0;  // Timeout counter for Rx Serial command
 #endif
-static uint8_t timeoutFlag  = 0;  // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+static uint8_t timeoutFlagSerial  = 0;  // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
 #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
 typedef struct{
@@ -126,7 +131,7 @@ typedef struct{
 } SerialFeedback;
 static SerialFeedback Feedback;
 #endif
-static uint8_t serialSendCounter; // serial send counter
+static uint8_t serialSendCnt;           // serial send counter
 
 #if defined(CONTROL_NUNCHUCK) || defined(SUPPORT_NUNCHUCK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
 static uint8_t button1, button2;
@@ -139,11 +144,16 @@ static int        cmd2;                 // normalized input value. -1000 to 1000
 static int16_t    speed;                // local variable for speed. -1000 to 1000
 #ifndef TRANSPOTTER
   static int16_t  steer;                // local variable for steering. -1000 to 1000
-  static int16_t  steerFixdt;           // local fixed-point variable for steering low-pass filter
-  static int16_t  speedFixdt;           // local fixed-point variable for speed low-pass filter
   static int16_t  steerRateFixdt;       // local fixed-point variable for steering rate limiter
   static int16_t  speedRateFixdt;       // local fixed-point variable for speed rate limiter
+  static int32_t  steerFixdt;           // local fixed-point variable for steering low-pass filter
+  static int32_t  speedFixdt;           // local fixed-point variable for speed low-pass filter
 #endif
+#ifdef HOVERCAR
+  static MultipleTap MultipleTapBreak;  // define multiple tap functionality for the Break pedal
+#endif
+static int16_t    speedAvg;             // average measured speed
+static int16_t    speedAvgAbs;          // average measured speed in absolute
 
 extern volatile int pwml;               // global variable for pwm left. -1000 to 1000
 extern volatile int pwmr;               // global variable for pwm right. -1000 to 1000
@@ -217,8 +227,6 @@ int main(void) {
 // ###############################################################################
   
   /* Set BLDC controller parameters */ 
-  rtP_Right                     = rtP_Left;     // Copy the Left motor parameters to the Right motor parameters
-
   rtP_Left.b_selPhaABCurrMeas   = 1;            // Left motor measured current phases = {iA, iB} -> do NOT change
   rtP_Left.z_ctrlTypSel         = CTRL_TYP_SEL;
   rtP_Left.b_diagEna            = DIAG_ENA; 
@@ -230,16 +238,8 @@ int main(void) {
   rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
   rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
 
+  rtP_Right                     = rtP_Left;     // Copy the Left motor parameters to the Right motor parameters
   rtP_Right.b_selPhaABCurrMeas  = 0;            // Left motor measured current phases = {iB, iC} -> do NOT change
-  rtP_Right.z_ctrlTypSel        = CTRL_TYP_SEL;
-  rtP_Right.b_diagEna           = DIAG_ENA; 
-  rtP_Right.i_max               = (I_MOT_MAX * A2BIT_CONV) << 4;        // fixdt(1,16,4)
-  rtP_Right.n_max               = N_MOT_MAX << 4;                       // fixdt(1,16,4)
-  rtP_Right.b_fieldWeakEna      = FIELD_WEAK_ENA; 
-  rtP_Right.id_fieldWeakMax     = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
-  rtP_Right.a_phaAdvMax         = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
-  rtP_Right.r_fieldWeakHi       = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
-  rtP_Right.r_fieldWeakLo       = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
 
   /* Pack LEFT motor data into RTM */
   rtM_Left->defaultParam        = &rtP_Left;
@@ -355,7 +355,7 @@ int main(void) {
   int16_t lastSpeedL = 0, lastSpeedR = 0;
   int16_t speedL = 0, speedR = 0;
 
-  int16_t board_temp_adcFixdt = adc_buffer.temp << 4;  // Fixed-point filter output initialized with current ADC converted to fixed-point
+  int32_t board_temp_adcFixdt = adc_buffer.temp << 20;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
@@ -409,12 +409,11 @@ int main(void) {
           }
           if (distance - (int)(setDistance * 1345) > -300) {
             #ifdef INVERT_R_DIRECTION
-              pwmr = -speedR;
-            #endif
-            #ifndef INVERT_R_DIRECTION
               pwmr = speedR;
             #endif
-
+            #ifndef INVERT_R_DIRECTION
+              pwmr = -speedR;
+            #endif
             #ifdef INVERT_L_DIRECTION
               pwml = -speedL;
             #endif
@@ -472,7 +471,32 @@ int main(void) {
               -CLAMP((ADC2_MID - adc_buffer.l_rx2) * INPUT_MAX / (ADC2_MID - ADC2_MIN), 0, INPUT_MAX);    // ADC2        
       #else
         cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN) * INPUT_MAX / (ADC2_MAX - ADC2_MIN), 0, INPUT_MAX);    // ADC2
-      #endif  
+      #endif
+
+      #ifdef ADC_PROTECT_ENA
+        if (adc_buffer.l_tx2 >= (ADC1_MIN - ADC_PROTECT_THRESH) && adc_buffer.l_tx2 <= (ADC1_MAX + ADC_PROTECT_THRESH) && 
+            adc_buffer.l_rx2 >= (ADC2_MIN - ADC_PROTECT_THRESH) && adc_buffer.l_rx2 <= (ADC2_MAX + ADC_PROTECT_THRESH)) {
+          if (timeoutFlagADC) {                         // Check for previous timeout flag  
+            if (timeoutCntADC-- <= 0)                   // Timeout de-qualification
+              timeoutFlagADC  = 0;                      // Timeout flag cleared           
+          } else {
+            timeoutCntADC     = 0;                      // Reset the timeout counter         
+          }
+        } else {
+          if (timeoutCntADC++ >= ADC_PROTECT_TIMEOUT) { // Timeout qualification
+            timeoutFlagADC    = 1;                      // Timeout detected
+            timeoutCntADC     = ADC_PROTECT_TIMEOUT;    // Limit timout counter value
+          }
+        }
+
+        if (timeoutFlagADC) {                           // In case of timeout bring the system to a Safe State
+          ctrlModReq  = 0;                              // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
+          cmd1        = 0;
+          cmd2        = 0;
+        } else {
+          ctrlModReq  = ctrlModReqRaw;                  // Follow the Mode request
+        }
+      #endif
 
       // use ADCs as button inputs:
       button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
@@ -485,19 +509,19 @@ int main(void) {
 
       // Handle received data validity, timeout and fix out-of-sync if necessary
       if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) { 
-        if (timeoutFlag) {                      // Check for previous timeout flag  
-          if (timeoutCnt-- <= 0)                // Timeout de-qualification
-            timeoutFlag   = 0;                  // Timeout flag cleared           
+        if (timeoutFlagSerial) {                      // Check for previous timeout flag  
+          if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
+            timeoutFlagSerial   = 0;                  // Timeout flag cleared           
         } else {
           cmd1            = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
           cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);         
-          command.start   = 0xFFFF;             // Change the Start Frame for timeout detection in the next cycle
-          timeoutCnt      = 0;                  // Reset the timeout counter         
+          command.start   = 0xFFFF;                   // Change the Start Frame for timeout detection in the next cycle
+          timeoutCntSerial      = 0;                  // Reset the timeout counter         
         }
       } else {
-        if (timeoutCnt++ >= SERIAL_TIMEOUT) {   // Timeout qualification
-          timeoutFlag     = 1;                  // Timeout detected
-          timeoutCnt      = SERIAL_TIMEOUT;     // Limit timout counter value
+        if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
+          timeoutFlagSerial     = 1;                  // Timeout detected
+          timeoutCntSerial      = SERIAL_TIMEOUT;     // Limit timout counter value
         }
         // Check the received Start Frame. If it is NOT OK, most probably we are out-of-sync.
         // Try to re-sync by reseting the DMA
@@ -507,7 +531,7 @@ int main(void) {
         }
       }       
 
-      if (timeoutFlag) {                        // In case of timeout bring the system to a Safe State
+      if (timeoutFlagSerial) {                        // In case of timeout bring the system to a Safe State
         ctrlModReq  = 0;                        // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
         cmd1        = 0;
         cmd2        = 0;
@@ -518,26 +542,76 @@ int main(void) {
 
     #endif
 
+    // Calculate measured average speed. The minus sign (-) is beacause motors spin in opposite directions
+    #if   !defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
+      speedAvg    = ( rtY_Left.n_mot - rtY_Right.n_mot) / 2;
+    #elif !defined(INVERT_L_DIRECTION) &&  defined(INVERT_R_DIRECTION)
+      speedAvg    = ( rtY_Left.n_mot + rtY_Right.n_mot) / 2;
+    #elif  defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
+      speedAvg    = (-rtY_Left.n_mot - rtY_Right.n_mot) / 2;
+    #elif  defined(INVERT_L_DIRECTION) &&  defined(INVERT_R_DIRECTION)
+      speedAvg    = (-rtY_Left.n_mot + rtY_Right.n_mot) / 2;
+    #endif
+
+    // Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
+    if ((SPEED_COEFFICIENT & (1 << 16)) >> 16) {
+      speedAvg    = -speedAvg;
+    } 
+    speedAvgAbs   = abs(speedAvg);
+
     #ifndef TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-      if (enable == 0 && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
+      if (enable == 0 && (!errCode_Left && !errCode_Right) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
         shortBeep(6);                     // make 2 beeps indicating the motor enable
         shortBeep(4); HAL_Delay(100);
         enable = 1;                       // enable motors
       }
 
+      // ####### HOVERCAR #######
+      #ifdef HOVERCAR
+        // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
+        uint16_t speedBlend;       
+        speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,30,90) - 30) << 15) / 60);     // speedBlend [0,1] is within [30 rpm, 90rpm]
+
+        // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
+        if (speedAvgAbs < 20) {
+          multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBreak);   // Break pedal in this case is "cmd1" variable
+        }
+
+        // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving          
+        if (cmd1 > 20) {
+          cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);
+        }
+
+        // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
+        if (speedAvg > 0) {
+          cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
+        } else {
+          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);          
+        }
+      #endif
+
       // ####### LOW-PASS FILTER #######
       rateLimiter16(cmd1, RATE, &steerRateFixdt);
       rateLimiter16(cmd2, RATE, &speedRateFixdt);
-      filtLowPass16(steerRateFixdt >> 4, FILTER, &steerFixdt);
-      filtLowPass16(speedRateFixdt >> 4, FILTER, &speedFixdt);
-      steer = steerFixdt >> 4;  // convert fixed-point to integer
-      speed = speedFixdt >> 4;  // convert fixed-point to integer    
+      filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
+      filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
+      steer = (int16_t)(steerFixdt >> 20);  // convert fixed-point to integer
+      speed = (int16_t)(speedFixdt >> 20);  // convert fixed-point to integer    
+
+      // ####### HOVERCAR #######
+      #ifdef HOVERCAR        
+        if (!MultipleTapBreak.b_multipleTap) {  // Check driving direction
+          speed = steer + speed;                // Forward driving          
+        } else {
+          speed = steer - speed;                // Reverse driving
+        }
+      #endif
 
       // ####### MIXER #######
       // speedR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), -1000, 1000);
       // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), -1000, 1000);
-      mixerFcn(speedFixdt, steerFixdt, &speedR, &speedL);   // This function implements the equations above
+      mixerFcn(speed << 4, steer << 4, &speedR, &speedL);   // This function implements the equations above
 
       #ifdef ADDITIONAL_CODE
         ADDITIONAL_CODE;
@@ -637,13 +711,13 @@ int main(void) {
 
 
     // ####### CALC BOARD TEMPERATURE #######
-    filtLowPass16(adc_buffer.temp, TEMP_FILT_COEF, &board_temp_adcFixdt);
-    board_temp_adcFilt  = board_temp_adcFixdt >> 4;  // convert fixed-point to integer
+    filtLowPass32(adc_buffer.temp, TEMP_FILT_COEF, &board_temp_adcFixdt);
+    board_temp_adcFilt  = (int16_t)(board_temp_adcFixdt >> 20);  // convert fixed-point to integer
     board_temp_deg_c    = (TEMP_CAL_HIGH_DEG_C - TEMP_CAL_LOW_DEG_C) * (board_temp_adcFilt - TEMP_CAL_LOW_ADC) / (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
 
-    serialSendCounter++;              // Increment the counter
-    if (serialSendCounter > 20) {     // Send data every 100 ms = 20 * 5 ms, where 5 ms is approximately the main loop duration
-      serialSendCounter = 0;          // Reset the counter
+    serialSendCnt++;              // Increment the counter
+    if (serialSendCnt > 20) {     // Send data every 100 ms = 20 * 5 ms, where 5 ms is approximately the main loop duration
+      serialSendCnt = 0;          // Reset the counter
 
       // ####### DEBUG SERIAL OUT #######
       #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
@@ -651,8 +725,8 @@ int main(void) {
           setScopeChannel(0, (int16_t)adc_buffer.l_tx2);        // 1: ADC1
           setScopeChannel(1, (int16_t)adc_buffer.l_rx2);        // 2: ADC2
         #endif
-        setScopeChannel(2, (int16_t)speedR);                    // 1: output command: [-1000, 1000]
-        setScopeChannel(3, (int16_t)speedL);                    // 2: output command: [-1000, 1000]
+        setScopeChannel(2, (int16_t)speedR);                    // 3: output command: [-1000, 1000]
+        setScopeChannel(3, (int16_t)speedL);                    // 4: output command: [-1000, 1000]
         setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
         setScopeChannel(5, (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC)); // 6: for verifying battery voltage calibration
         setScopeChannel(6, (int16_t)board_temp_adcFilt);        // 7: for board temperature calibration
@@ -696,25 +770,29 @@ int main(void) {
 
 
     // ####### BEEP AND EMERGENCY POWEROFF #######
-    if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && abs(speed) < 20) || (batVoltage < BAT_LOW_DEAD && abs(speed) < 20)) {  // poweroff before mainboard burns OR low bat 3
+    if (errCode_Left || errCode_Right) {    // disable motors and beep in case of Motor error - fast beep
+      enable        = 0;
+      buzzerFreq    = 8;
+      buzzerPattern = 1;
+    } else if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_LOW_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
       poweroff();
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {  // beep if mainboard gets hot
-      buzzerFreq = 4;
+      buzzerFreq    = 4;
       buzzerPattern = 1;
     } else if (batVoltage < BAT_LOW_LVL1 && batVoltage >= BAT_LOW_LVL2 && BAT_LOW_LVL1_ENABLE) {  // low bat 1: slow beep
-      buzzerFreq = 5;
+      buzzerFreq    = 5;
       buzzerPattern = 42;
     } else if (batVoltage < BAT_LOW_LVL2 && batVoltage >= BAT_LOW_DEAD && BAT_LOW_LVL2_ENABLE) {  // low bat 2: fast beep
-      buzzerFreq = 5;
+      buzzerFreq    = 5;
       buzzerPattern = 6;
-    } else if (errCode_Left || errCode_Right || timeoutFlag) {  // beep in case of Motor error or serial timeout - fast beep
-      buzzerFreq = 12;
+    } else if (timeoutFlagADC || timeoutFlagSerial) {  // beep in case of ADC or Serial timeout - fast beep      
+      buzzerFreq    = 24;
       buzzerPattern = 1;
-    } else if (BEEPS_BACKWARD && speed < -50) {  // backward beep
-      buzzerFreq = 5;
+    } else if (BEEPS_BACKWARD && speed < -50 && speedAvg < 0) {  // backward beep
+      buzzerFreq    = 5;
       buzzerPattern = 1;
     } else {  // do not beep
-      buzzerFreq = 0;
+      buzzerFreq    = 0;
       buzzerPattern = 0;
     }
 
@@ -752,67 +830,27 @@ void shortBeep(uint8_t freq){
 }
 
 // ===========================================================
-  /* Low pass filter fixed-point 16 bits: fixdt(1,16,4)
+  /* Low pass filter fixed-point 32 bits: fixdt(1,32,20)
   * Max:  2047.9375
   * Min: -2048
   * Res:  0.0625
   * 
   * Inputs:       u     = int16
-  * Outputs:      y     = fixdt(1,16,4)
+  * Outputs:      y     = fixdt(1,32,20)
   * Parameters:   coef  = fixdt(0,16,16) = [0,65535U]
   * 
   * Example: 
   * If coef = 0.8 (in floating point), then coef = 0.8 * 2^16 = 52429 (in fixed-point)
   * filtLowPass16(u, 52429, &y);
-  * yint = y >> 4; // the integer output is the fixed-point ouput shifted by 4 bits
+  * yint = (int16_t)(y >> 20); // the integer output is the fixed-point ouput shifted by 20 bits
   */
-void filtLowPass16(int16_t u, uint16_t coef, int16_t *y)
+void filtLowPass32(int16_t u, uint16_t coef, int32_t *y)
 {
   int32_t tmp;
-
-  tmp = (((int16_t)(u << 4) * coef) >> 16) + 
-        (((int32_t)(65535U - coef) * (*y)) >> 16);
-
-  // Overflow protection
-  tmp = CLAMP(tmp, -32768, 32767);
-
-  *y = (int16_t)tmp;
-}
-
-// ===========================================================
-  /* Low pass filter fixed-point 32 bits: fixdt(1,32,16)
-  * Max:  32767.99998474121
-  * Min: -32768
-  * Res:  1.52587890625e-5
-  * 
-  * Inputs:       u     = int32
-  * Outputs:      y     = fixdt(1,32,16)
-  * Parameters:   coef  = fixdt(0,16,16) = [0,65535U]
-  * 
-  * Example: 
-  * If coef = 0.8 (in floating point), then coef = 0.8 * 2^16 = 52429 (in fixed-point)
-  * filtLowPass16(u, 52429, &y);
-  * yint = y >> 16;  // the integer output is the fixed-point ouput shifted by 16 bits
-  */
-void filtLowPass32(int32_t u, uint16_t coef, int32_t *y)
-{
-  int32_t q0;
-  int32_t q1;
-  int32_t tmp;
-
-  q0 = (int32_t)(((int64_t)(u << 16) * coef) >> 16);
-  q1 = (int32_t)(((int64_t)(65535U - coef) * (*y)) >> 16);
-
-  // Overflow protection
-  if ((q0 < 0) && (q1 < MIN_int32_T - q0)) {
-    tmp = MIN_int32_T;
-  } else if ((q0 > 0) && (q1 > MAX_int32_T - q0)) {
-    tmp = MAX_int32_T;
-  } else {
-    tmp = q0 + q1;
-  }
-
-  *y = tmp;
+  
+  tmp = (int16_t)(u << 4) - (*y >> 16);  
+  tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection  
+  *y  = coef * tmp + (*y);
 }
 
 // ===========================================================
@@ -864,6 +902,67 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y)
   }
 
   *y = q0 + *y;
+}
+
+// ===========================================================
+  /* multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x)
+  * This function detects multiple tap presses, such as double tapping, triple tapping, etc.
+  * Inputs:       u = int16_t (input signal); timeNow = uint32_t (current time)  
+  * Outputs:      x->b_multipleTap (get the output here)
+  */
+void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x)
+{
+  uint8_t 	b_timeout;
+  uint8_t 	b_hyst;
+  uint8_t 	b_pulse;
+  uint8_t 	z_pulseCnt;
+  uint8_t   z_pulseCntRst;
+  uint32_t 	t_time; 
+
+  // Detect hysteresis
+  if (x->b_hysteresis) {
+    b_hyst = (u > MULTIPLE_TAP_LO);
+  } else {
+    b_hyst = (u > MULTIPLE_TAP_HI);
+  }
+
+  // Detect pulse
+  b_pulse = (b_hyst != x->b_hysteresis);
+
+  // Save time when first pulse is detected
+  if (b_hyst && b_pulse && (x->z_pulseCntPrev == 0)) {
+    t_time = timeNow;
+  } else {
+    t_time = x->t_timePrev;
+  }
+
+  // Create timeout boolean
+  b_timeout = (timeNow - t_time > MULTIPLE_TAP_TIMEOUT);
+
+  // Create pulse counter
+  if ((!b_hyst) && (x->z_pulseCntPrev == 0)) {
+    z_pulseCnt = 0U;
+  } else {
+    z_pulseCnt = b_pulse;
+  }
+
+  // Reset counter if we detected complete tap presses OR there is a timeout
+  if ((x->z_pulseCntPrev >= MULTIPLE_TAP_NR) || b_timeout) {
+    z_pulseCntRst = 0U;
+  } else {
+    z_pulseCntRst = x->z_pulseCntPrev;
+  }
+  z_pulseCnt = z_pulseCnt + z_pulseCntRst;
+
+  // Check if complete tap presses are detected AND no timeout
+  if ((z_pulseCnt >= MULTIPLE_TAP_NR) && (!b_timeout)) {
+    x->b_multipleTap = !x->b_multipleTap;	// Toggle output
+  }
+
+  // Update states
+  x->z_pulseCntPrev = z_pulseCnt;
+  x->b_hysteresis 	= b_hyst;
+  x->t_timePrev 	  = t_time;
 }
 
 // ===========================================================

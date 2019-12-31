@@ -78,7 +78,7 @@ static int16_t offsetdcl    = 2000;
 static int16_t offsetdcr    = 2000;
 
 int16_t        batVoltage       = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
-static int16_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 4;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
+static int32_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 20;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
 
 // =================================
 // DMA interrupt frequency =~ 16 kHz
@@ -101,8 +101,8 @@ void DMA1_Channel1_IRQHandler(void) {
   }
 
   if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time -> not any more, everything converted to fixed-point
-    filtLowPass16(adc_buffer.batt1, BAT_FILT_COEF, &batVoltageFixdt);
-    batVoltage = batVoltageFixdt >> 4;  // convert fixed-point to integer
+    filtLowPass32(adc_buffer.batt1, BAT_FILT_COEF, &batVoltageFixdt);
+    batVoltage = (int16_t)(batVoltageFixdt >> 20);  // convert fixed-point to integer
   }
 
   // Get Left motor currents

@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1249
+ * Model version                  : 1.1256
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Thu Dec 12 20:22:31 2019
+ * C/C++ source code generated on : Mon Dec 30 21:36:12 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -43,7 +43,7 @@ typedef struct {
 
 /* Block signals and states (auto storage) for system '<S41>/Low_Pass_Filter' */
 typedef struct {
-  int16_T UnitDelay3_DSTATE[2];        /* '<S50>/UnitDelay3' */
+  int32_T UnitDelay1_DSTATE[2];        /* '<S50>/UnitDelay1' */
 } DW_Low_Pass_Filter;
 
 /* Block signals and states (auto storage) for system '<S73>/I_backCalc_fixdt' */
@@ -85,7 +85,7 @@ typedef struct {
   int32_T Divide1;                     /* '<S71>/Divide1' */
   int32_T UnitDelay_DSTATE;            /* '<S36>/UnitDelay' */
   int16_T Gain4[3];                    /* '<S43>/Gain4' */
-  int16_T Sum1[2];                     /* '<S50>/Sum1' */
+  int16_T DataTypeConversion[2];       /* '<S50>/Data Type Conversion' */
   int16_T z_counterRawPrev;            /* '<S15>/z_counterRawPrev' */
   int16_T Merge1;                      /* '<S29>/Merge1' */
   int16_T Divide3;                     /* '<S5>/Divide3' */
