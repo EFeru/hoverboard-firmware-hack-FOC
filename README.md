@@ -46,6 +46,8 @@ Demo videos:
 
 [►Video: Reliable Serial Communication demo](https://drive.google.com/open?id=1mUM-p7SE6gmyTH7zhDHy5DUyczXvmy5d)
 
+[►Video: HOVERCAR demo](https://drive.google.com/open?id=18IvRJVdQSsjTg1I0Wedlg19e0FuDjfdS)
+
 ![Hoverboard wheel](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/hoverboard_wheel.JPG)
 
 
