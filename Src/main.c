@@ -31,7 +31,7 @@
   #include "hd44780.h"
 #endif
 
-#ifdef TRANSPOTTER
+#ifdef VARIANT_TRANSPOTTER
   #include "eeprom.h"
 #endif
 
@@ -71,7 +71,7 @@ extern volatile adc_buf_t adc_buffer;
   LCD_PCF8574_HandleTypeDef lcd;
 #endif
 extern I2C_HandleTypeDef hi2c2;
-#ifndef TRANSPOTTER
+#ifndef VARIANT_TRANSPOTTER
   extern UART_HandleTypeDef huart2;
   extern UART_HandleTypeDef huart3;
   static UART_HandleTypeDef huart;
@@ -81,7 +81,7 @@ extern I2C_HandleTypeDef hi2c2;
   extern uint8_t LCDerrorFlag;
 #endif
 
-#ifdef TRANSPOTTER
+#ifdef VARIANT_TRANSPOTTER
   uint8_t nunchuck_connected = 0;
   float steering;
   int feedforward;
@@ -142,14 +142,14 @@ uint8_t ctrlModReq    = CTRL_MOD_REQ;   // Final control mode request
 static int        cmd1;                 // normalized input value. -1000 to 1000
 static int        cmd2;                 // normalized input value. -1000 to 1000
 static int16_t    speed;                // local variable for speed. -1000 to 1000
-#ifndef TRANSPOTTER
+#ifndef VARIANT_TRANSPOTTER
   static int16_t  steer;                // local variable for steering. -1000 to 1000
   static int16_t  steerRateFixdt;       // local fixed-point variable for steering rate limiter
   static int16_t  speedRateFixdt;       // local fixed-point variable for speed rate limiter
   static int32_t  steerFixdt;           // local fixed-point variable for steering low-pass filter
   static int32_t  speedFixdt;           // local fixed-point variable for speed low-pass filter
 #endif
-#ifdef HOVERCAR
+#ifdef VARIANT_HOVERCAR
   static MultipleTap MultipleTapBreak;  // define multiple tap functionality for the Break pedal
 #endif
 static int16_t    speedAvg;             // average measured speed
@@ -267,7 +267,7 @@ int main(void) {
 
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
 
-  #ifdef TRANSPOTTER
+  #ifdef VARIANT_TRANSPOTTER
     int  lastDistance = 0;
     enable = 1;
     uint8_t checkRemote = 0;
@@ -324,7 +324,7 @@ int main(void) {
     LCD_ClearDisplay(&lcd);
     HAL_Delay(5);
     LCD_SetLocation(&lcd, 0, 0);
-    #ifdef TRANSPOTTER
+    #ifdef VARIANT_TRANSPOTTER
       LCD_WriteString(&lcd, "TranspOtter V2.1");
     #else
       LCD_WriteString(&lcd, "Hover V2.0");
@@ -333,7 +333,7 @@ int main(void) {
     LCD_WriteString(&lcd, "Initializing...");
   #endif
 
-  #if defined(TRANSPOTTER) && defined(SUPPORT_LCD)
+  #if defined(VARIANT_TRANSPOTTER) && defined(SUPPORT_LCD)
     LCD_ClearDisplay(&lcd);
     HAL_Delay(5);
     LCD_SetLocation(&lcd, 0, 1);
@@ -363,7 +363,7 @@ int main(void) {
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
 
-    #ifdef TRANSPOTTER
+    #ifdef VARIANT_TRANSPOTTER
       if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
         enable = 0;
         while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
@@ -559,7 +559,7 @@ int main(void) {
     } 
     speedAvgAbs   = abs(speedAvg);
 
-    #ifndef TRANSPOTTER
+    #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
       if (enable == 0 && (!errCode_Left && !errCode_Right) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
         shortBeep(6);                     // make 2 beeps indicating the motor enable
@@ -567,8 +567,8 @@ int main(void) {
         enable = 1;                       // enable motors
       }
 
-      // ####### HOVERCAR #######
-      #ifdef HOVERCAR
+      // ####### VARIANT_HOVERCAR #######
+      #ifdef VARIANT_HOVERCAR
         // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
         uint16_t speedBlend;       
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,30,90) - 30) << 15) / 60);     // speedBlend [0,1] is within [30 rpm, 90rpm]
@@ -599,8 +599,8 @@ int main(void) {
       steer = (int16_t)(steerFixdt >> 20);  // convert fixed-point to integer
       speed = (int16_t)(speedFixdt >> 20);  // convert fixed-point to integer    
 
-      // ####### HOVERCAR #######
-      #ifdef HOVERCAR        
+      // ####### VARIANT_HOVERCAR #######
+      #ifdef VARIANT_HOVERCAR        
         if (!MultipleTapBreak.b_multipleTap) {  // Check driving direction
           speed = steer + speed;                // Forward driving          
         } else {
@@ -636,7 +636,7 @@ int main(void) {
     lastSpeedL = speedL;
     lastSpeedR = speedR;
 
-    #ifdef TRANSPOTTER
+    #ifdef VARIANT_TRANSPOTTER
       if (timeout > TIMEOUT) {
         pwml = 0;
         pwmr = 0;
@@ -809,7 +809,7 @@ int main(void) {
   }
 }
 
-#ifdef TRANSPOTTER
+#ifdef VARIANT_TRANSPOTTER
   void saveConfig() {
     HAL_FLASH_Unlock();
     EE_WriteVariable(VirtAddVarTab[0], saveValue);

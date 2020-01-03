@@ -146,6 +146,8 @@ Nunchuck not working: Use the right one of the 2 types of nunchucks. Use i2c pul
 
 Nunchuck or PPM working bad: The i2c bus and PPM signal are very sensitive to emv distortions of the motor controller. They get stronger the faster you are. Keep cables short, use shielded cable, use ferrits, stabilize voltage in nunchuck or reviever, add i2c pullups. To many errors leads to very high accelerations which triggers the protection board within the battery to shut everything down.
 
+Recommendation: Nunchuck Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
+
 Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
 
 ---

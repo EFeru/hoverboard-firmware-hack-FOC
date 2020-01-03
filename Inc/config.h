@@ -3,18 +3,24 @@
 
 // ############################### DEFINE FIRMWARE VARIANT ###############################
 // For variant selection, check platformio.ini 
-// For any particular needs, feel free to change this file according to your needs.
+// or define the desired build variant here if you want to use make 
 
-// Select the VARIANT_ADC as default variant, in case NO variant is defined
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(HOVERCAR) && !defined(TRANSPOTTER)
-  #define VARIANT_ADC                  
+#if !defined(PLATFORMIO)
+  //#define VARIANT_ADC         // Variant for control via ADC input
+  //#define VARIANT_USART3      // Variant for Serial control via USART3 input
+  //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
+  //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
+  //#define VARIANT_NUNCHUCK    // Variant for Nunchuck controlled vehicle build
+  //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
 #endif
+
+// For any particular needs, feel free to change this file according to your needs.
 
 // ############################### DO-NOT-TOUCH SETTINGS ###############################
 
 #define PWM_FREQ            16000     // PWM frequency in Hz
 #define DEAD_TIME              48     // PWM deadtime
-#ifdef TRANSPOTTER
+#ifdef VARIANT_TRANSPOTTER
   #define DELAY_IN_MAIN_LOOP    2
 #else
   #define DELAY_IN_MAIN_LOOP    5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
@@ -92,9 +98,9 @@
 
 // ############################### SERIAL DEBUG ###############################
 
-#ifndef TRANSPOTTER
+#ifndef VARIANT_TRANSPOTTER
   //#define DEBUG_SERIAL_SERVOTERM
-  #define DEBUG_SERIAL_ASCII          // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
+  //#define DEBUG_SERIAL_ASCII          // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
 #endif
 
 
@@ -109,36 +115,38 @@
 #define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
 #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 
-#if defined(VARIANT_ADC) || defined(HOVERCAR)
+#if defined(VARIANT_ADC) || defined(VARIANT_HOVERCAR)
   // #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
   // #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
   // #define DEBUG_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
 
   // #define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
   // #define FEEDBACK_SERIAL_USART3                     // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
-  #define DEBUG_SERIAL_USART3                           // right sensor board cable, disable if I2C (nunchuck or lcd) is used!  
+  #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!  
 #elif defined(VARIANT_USART3)
   // #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
   // #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
-  // #define DEBUG_SERIAL_USART2                           // left sensor board cable, disable if ADC or PPM is used!
+  // #define DEBUG_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
 
-  #define CONTROL_SERIAL_USART3                         // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+  #define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
+  #define FEEDBACK_SERIAL_USART3                     // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
   // #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
 #endif
 
 #if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
-#define UART_DMA_CHANNEL DMA1_Channel7
+  #define UART_DMA_CHANNEL DMA1_Channel7
 #endif
 
 #if defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
-#define UART_DMA_CHANNEL DMA1_Channel2
+  #define UART_DMA_CHANNEL DMA1_Channel2
 #endif
 
+#ifdef VARIANT_PPM
 // ###### CONTROL VIA RC REMOTE ######
 // left sensor board cable. Channel 1: steering, Channel 2: speed.
-//#define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
+#define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
 //#define PPM_NUM_CHANNELS 6          // total number of PPM channels to receive, even if they are not used.
+#endif 
 
 // ###### CONTROL VIA TWO POTENTIOMETERS ######
 /* ADC-calibration to cover the full poti-range:
@@ -162,7 +170,7 @@
   #define ADC2_MID            2048      // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
   #define ADC2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
 #endif
-#ifdef HOVERCAR
+#ifdef VARIANT_HOVERCAR
   #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
   #define ADC_PROTECT_TIMEOUT 30        // ADC Protection: number of wrong / missing input commands before safety state is taken
@@ -173,14 +181,16 @@
   #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
 #endif
 
-// ###### CONTROL VIA NINTENDO NUNCHUCK ######
-/* left sensor board cable.
- * keep cable short, use shielded cable, use ferrits, stabalize voltage in nunchuck,
- * use the right one of the 2 types of nunchucks, add i2c pullups.
- * use original nunchuck. most clones does not work very well.
- */
-// #define CONTROL_NUNCHUCK            // use nunchuck as input. disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
-
+#ifdef VARIANT_NUNCHUCK
+  // ###### CONTROL VIA NINTENDO NUNCHUCK ######
+  /* left sensor board cable.
+  * keep cable short, use shielded cable, use ferrits, stabalize voltage in nunchuck,
+  * use the right one of the 2 types of nunchucks, add i2c pullups.
+  * use original nunchuck. most clones does not work very well.
+  * Recommendation: Nunchuck Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
+  */
+  #define CONTROL_NUNCHUCK            // use nunchuck as input. disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
+#endif
 
 // ############################### MOTOR CONTROL #########################
 // Control selections
@@ -246,10 +256,12 @@
 #define RATE                  480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
 
 // Value of FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
-#define FILTER                6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
+#ifndef VARIANT_NUNCHUCK
+  #define FILTER                6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
+#endif
 
 // ################################# DEFAULT SETTINGS ############################
-#if !defined(HOVERCAR) && !defined(TRANSPOTTER)
+#if !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUCK)
   // Value of COEFFICIENT is in fixdt(1,16,14)
   // If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
   // If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
@@ -260,8 +272,8 @@
   #define INVERT_L_DIRECTION
 #endif
 
-// ################################# HOVERCAR SETTINGS ############################
-#ifdef HOVERCAR
+// ################################# VARIANT_HOVERCAR SETTINGS ############################
+#ifdef VARIANT_HOVERCAR
   #define SPEED_COEFFICIENT  16384  //  1.0f
   #define STEER_COEFFICIENT  0      //  0.0f
   
@@ -269,8 +281,8 @@
   // #define INVERT_L_DIRECTION
 #endif
 
-// ################################# TRANSPOTTER SETTINGS ############################
-#ifdef TRANSPOTTER
+// ################################# VARIANT_TRANSPOTTER SETTINGS ############################
+#ifdef VARIANT_TRANSPOTTER
   #define CONTROL_GAMETRAK
   #define SUPPORT_LCD
   #define SUPPORT_NUNCHUCK
@@ -288,18 +300,26 @@
   #define STEER_COEFFICIENT   8192   // 0.5f - higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
 #endif
 
+// ################################# VARIANT_NUNCHUCK SETTINGS ############################
+#ifdef VARIANT_NUNCHUCK
+  // # ARMCHAIR #
+  #define FILTER             3276    //  0.05f
+  #define SPEED_COEFFICIENT  8192    //  0.5f
+  #define STEER_COEFFICIENT  62259   // -0.2f
+
+#endif
+
 // ################################# SIMPLE BOBBYCAR #################################
 // for better bobbycar code see: https://github.com/larsmm/hoverboard-firmware-hack-bbcar
 // #define FILTER             6553    //  0.1f 
 // #define SPEED_COEFFICIENT  49152   // -1.0f
 // #define STEER_COEFFICIENT  0       //  0.0f
 
-// ################################# ARMCHAIR #################################
-// #define FILTER             3276    //  0.05f
-// #define SPEED_COEFFICIENT  8192    //  0.5f
-// #define STEER_COEFFICIENT  62259   // -0.2f
-
 // ############################### VALIDATE SETTINGS ###############################
+
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUCK) && !defined(VARIANT_PPM)
+  #error Variant not defined! Please check platformio.ini or inc/config.h for available variants.
+#endif
 
 #if defined(CONTROL_SERIAL_USART2) && defined(CONTROL_SERIAL_USART3)
   #error CONTROL_SERIAL_USART2 and CONTROL_SERIAL_USART3 not allowed, choose one.
@@ -349,4 +369,8 @@
 #if defined(ADC_PROTECT_ENA) && ((ADC2_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC2_MAX + ADC_PROTECT_THRESH) >= 4096)
   #warning ADC2 Protection NOT possible! Adjust the ADC thresholds.
   #undef ADC_PROTECT_ENA
+#endif
+
+#if defined(CONTROL_PPM) && !defined(PPM_NUM_CHANNELS)
+  #error Total number of PPM channels needs to be set
 #endif

@@ -44,7 +44,7 @@ matrix:
       before_script: arm-none-eabi-gcc --version
 
     - name: platformio
-      script: platformio run -e VARIANT_ADC -e VARIANT_USART3 -e HOVERCAR -e TRANSPOTTER
+      script: platformio run -e VARIANT_ADC -e VARIANT_USART3 -e VARIANT_HOVERCAR -e VARIANT_TRANSPOTTER -e VARIANT_NUNCHUCK -e VARIANT_PPM
       language: python
       python:
         - "2.7"
