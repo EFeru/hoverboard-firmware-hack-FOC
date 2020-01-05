@@ -1,15 +1,14 @@
 notifications:
   email: true
 
-os: linux
 sudo: false
 
-jobs:
+matrix:
   fast_finish: true
   include:
 
     - name: make (gcc-arm-none-eabi-7)
-      script: make
+      script: make -e VARIANT=VARIANT_ADC
       language: c
       addons:
         apt:
@@ -27,7 +26,7 @@ jobs:
       before_script: arm-none-eabi-gcc --version
 
     - name: make (gcc-arm-none-eabi-5)
-      script: make -e VARIANT=VARIANT_ADC
+      script: make
       language: c
       addons:
         apt:
