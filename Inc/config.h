@@ -145,7 +145,7 @@
 // ###### CONTROL VIA RC REMOTE ######
 // left sensor board cable. Channel 1: steering, Channel 2: speed.
 #define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
-//#define PPM_NUM_CHANNELS 6          // total number of PPM channels to receive, even if they are not used.
+#define PPM_NUM_CHANNELS 6          // total number of PPM channels to receive, even if they are not used.
 #endif 
 
 // ###### CONTROL VIA TWO POTENTIOMETERS ######
@@ -318,7 +318,7 @@
 // ############################### VALIDATE SETTINGS ###############################
 
 #if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUCK) && !defined(VARIANT_PPM)
-  #error Variant not defined! Please check platformio.ini or inc/config.h for available variants.
+  #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
 #if defined(CONTROL_SERIAL_USART2) && defined(CONTROL_SERIAL_USART3)
