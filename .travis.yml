@@ -8,7 +8,8 @@ matrix:
   include:
 
     - name: make (gcc-arm-none-eabi-7)
-      script: make -e VARIANT=VARIANT_ADC
+      script: make
+      env: VARIANT=VARIANT_ADC
       language: c
       addons:
         apt:
@@ -27,6 +28,7 @@ matrix:
 
     - name: make (gcc-arm-none-eabi-5)
       script: make
+      env: VARIANT=VARIANT_ADC
       language: c
       addons:
         apt:
