@@ -1,9 +1,9 @@
 notifications:
   email: true
 
-sudo: false
+os: linux
 
-matrix:
+jobs:
   fast_finish: true
   include:
 
@@ -49,7 +49,7 @@ matrix:
       script: platformio run
       language: python
       python:
-        - "2.7"
+      - "2.7"
       install:
       - pip install -U platformio
       - platformio update
