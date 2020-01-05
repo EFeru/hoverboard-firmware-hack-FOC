@@ -2,6 +2,7 @@ notifications:
   email: true
 
 os: linux
+sudo: false
 
 jobs:
   fast_finish: true
