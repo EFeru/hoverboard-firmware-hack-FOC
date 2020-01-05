@@ -1,6 +1,6 @@
 notifications:
   email: true
-  
+
 os: linux
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
       before_script: arm-none-eabi-gcc --version
 
     - name: make (gcc-arm-none-eabi-5)
-      script: make
+      script: make -e VARIANT_ADC
       language: c
       addons:
         apt:
@@ -46,7 +46,7 @@ jobs:
     - name: platformio
       script: platformio run -e VARIANT_ADC -e VARIANT_USART3 -e VARIANT_HOVERCAR -e VARIANT_TRANSPOTTER -e VARIANT_NUNCHUCK -e VARIANT_PPM
       env: 
-        - default_envs=VARIANT_ADC
+        - PLATFORMIO_DEFAULT_ENVS=VARIANT_ADC
       language: python
       python:
         - "2.7"
