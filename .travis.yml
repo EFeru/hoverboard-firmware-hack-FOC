@@ -1,6 +1,7 @@
 notifications:
   email: true
-  
+
+os: linux
 sudo: false
 
 jobs:
@@ -8,7 +9,7 @@ jobs:
   include:
 
     - name: make (gcc-arm-none-eabi-7)
-      script: make -e VARIANT=VARIANT_ADC
+      script: make
       language: c
       addons:
         apt:
