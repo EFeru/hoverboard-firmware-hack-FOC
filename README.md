@@ -153,7 +153,7 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 ---
 ## Example variants 
 
-This firmware offers currently these variants (selectable in [platformio.ini](//platformio.ini) and / or config.h):
+This firmware offers currently these variants (selectable in [platformio.ini](platformio.ini) and / or [config.h](/Inc/config.h)):
 - **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
 - **VARIANT_USART3**: In this variant the motors are controlled via serial protocol on USART3 right sensor cable (short wired). The commands can be sent from an Arduino. Check out the [hoverserial.ino](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/02_Arduino/hoverserial) as an example sketch.
 - **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
