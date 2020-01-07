@@ -133,6 +133,21 @@
   // #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
 #endif
 
+#ifdef VARIANT_IBUS
+  // ###### CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL ######
+  // left sensor board cable. Channel 1: steering, Channel 2: speed.
+  #define CONTROL_IBUS                 // use IBUS as input
+  #define IBUS_NUM_CHANNELS 14         // total number of IBUS channels to receive, even if they are not used.
+  #define IBUS_LENGTH 0x20
+  #define IBUS_COMMAND 0x40
+
+  #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
+  #undef  USART2_BAUD
+  #define USART2_BAUD 115200
+#endif
+
+
 #if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
   #define UART_DMA_CHANNEL DMA1_Channel7
 #endif
@@ -142,11 +157,11 @@
 #endif
 
 #ifdef VARIANT_PPM
-// ###### CONTROL VIA RC REMOTE ######
-// left sensor board cable. Channel 1: steering, Channel 2: speed.
-#define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
-#define PPM_NUM_CHANNELS 6          // total number of PPM channels to receive, even if they are not used.
-#endif 
+  // ###### CONTROL VIA RC REMOTE ######
+  // left sensor board cable. Channel 1: steering, Channel 2: speed.
+  #define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
+  #define PPM_NUM_CHANNELS 6          // total number of PPM channels to receive, even if they are not used.
+#endif
 
 // ###### CONTROL VIA TWO POTENTIOMETERS ######
 /* ADC-calibration to cover the full poti-range:
@@ -317,7 +332,7 @@
 
 // ############################### VALIDATE SETTINGS ###############################
 
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUCK) && !defined(VARIANT_PPM)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUCK) && !defined(VARIANT_PPM)&& !defined(VARIANT_IBUS)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 

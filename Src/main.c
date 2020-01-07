@@ -106,12 +106,25 @@ static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
 static uint8_t timeoutFlagADC  = 0;  // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
 
 #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-typedef struct{
-  uint16_t  start;
-  int16_t   steer;
-  int16_t   speed;
-  uint16_t  checksum;
-} Serialcommand;
+  #ifdef CONTROL_IBUS
+    static uint16_t ibus_chksum;
+    static uint16_t ibus_captured_value[IBUS_NUM_CHANNELS];
+    
+    typedef struct{
+      uint8_t  start;
+      uint8_t  type; 
+      uint8_t  channels[IBUS_NUM_CHANNELS*2];
+      uint8_t  checksuml;
+      uint8_t  checksumh;    
+    } Serialcommand;
+  #elif
+    typedef struct{
+      uint16_t  start; 
+      int16_t   steer;
+      int16_t   speed;
+      uint16_t  checksum;    
+    } Serialcommand;
+  #endif
 static volatile Serialcommand command;
 static int16_t timeoutCntSerial   = 0;  // Timeout counter for Rx Serial command
 #endif
@@ -510,13 +523,29 @@ int main(void) {
     #if defined CONTROL_SERIAL_USART2 || defined CONTROL_SERIAL_USART3
 
       // Handle received data validity, timeout and fix out-of-sync if necessary
-      if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) { 
+      #ifdef CONTROL_IBUS
+      ibus_chksum = 0xFFFF - IBUS_LENGTH - IBUS_COMMAND;
+      for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i ++) {
+        ibus_chksum -= command.channels[i];
+      }
+      if (command.start == IBUS_LENGTH && command.type == IBUS_COMMAND && ibus_chksum == ( command.checksumh << 8) + command.checksuml ) {
+      #elif
+      if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
+      #endif   
         if (timeoutFlagSerial) {                      // Check for previous timeout flag  
           if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
             timeoutFlagSerial   = 0;                  // Timeout flag cleared           
         } else {
+          #ifdef CONTROL_IBUS
+          for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i +=2) {
+            ibus_captured_value[(i/2)] = CLAMP( command.channels[i] + (command.channels[i+1] << 8) - 1000, INPUT_MIN, INPUT_MAX);
+          }
+          cmd1 = CLAMP((ibus_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+          cmd2 = CLAMP((ibus_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+          #elif
           cmd1            = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
-          cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);         
+          cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
+          #endif         
           command.start   = 0xFFFF;                   // Change the Start Frame for timeout detection in the next cycle
           timeoutCntSerial      = 0;                  // Reset the timeout counter         
         }
