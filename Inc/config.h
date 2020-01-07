@@ -8,10 +8,10 @@
 #if !defined(PLATFORMIO)
   //#define VARIANT_ADC         // Variant for control via ADC input
   //#define VARIANT_USART3      // Variant for Serial control via USART3 input
-  //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
-  //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
   //#define VARIANT_NUNCHUCK    // Variant for Nunchuck controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
+  //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
+  //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
 #endif
 
 // For any particular needs, feel free to change this file according to your needs.

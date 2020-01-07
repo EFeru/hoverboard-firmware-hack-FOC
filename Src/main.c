@@ -71,7 +71,8 @@ extern volatile adc_buf_t adc_buffer;
   LCD_PCF8574_HandleTypeDef lcd;
 #endif
 extern I2C_HandleTypeDef hi2c2;
-#ifndef VARIANT_TRANSPOTTER
+#if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) \
+ || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) 
   extern UART_HandleTypeDef huart2;
   extern UART_HandleTypeDef huart3;
   static UART_HandleTypeDef huart;
@@ -454,7 +455,8 @@ int main(void) {
       cmd1 = CLAMP((ppm_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
       cmd2 = CLAMP((ppm_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
       button1 = ppm_captured_value[5] > INPUT_MID;
-      float scale = ppm_captured_value[2] / 1000.0f;
+      button2 = 0;
+      // float scale = ppm_captured_value[2] / 1000.0f;     // not used for now, uncomment if needed
     #endif
 
     #ifdef CONTROL_ADC
