@@ -538,7 +538,7 @@ int main(void) {
         } else {
           #ifdef CONTROL_IBUS
           for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i +=2) {
-            ibus_captured_value[(i/2)] = CLAMP( command.channels[i] + (command.channels[i+1] << 8) - 1000, INPUT_MIN, INPUT_MAX);
+            ibus_captured_value[(i/2)] = CLAMP( command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
           }
           cmd1 = CLAMP((ibus_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
           cmd2 = CLAMP((ibus_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
