@@ -25,17 +25,17 @@ The main firmware architecture includes:
 - **FOC Algorithm**: implements the FOC strategy
 - **Control Type Manager**: Manages the transition between Commutation, Sinusoidal, and FOC control type
 
-![Firmware architecture](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FW_architecture.png)
+![Firmware architecture](/docs/pictures/FW_architecture.png)
 
 The FOC algorithm architecture is illustrated in the figure below:
 
-![FOC algorithm](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FOC_algorithm.png)
+![FOC algorithm](/docs/pictures/FOC_algorithm.png)
 
 In this firmware 3 control types are available:
 - Commutation
 - SIN (Sinusoidal)
 - FOC (Field Oriented Control)
-![Schematic representation of the available control methods](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/01_Matlab/02_Figures/control_methods.png)
+![Schematic representation of the available control methods](/01_Matlab/02_Figures/control_methods.png)
 
 
 Demo videos:
@@ -48,13 +48,13 @@ Demo videos:
 
 [►Video: HOVERCAR demo](https://drive.google.com/open?id=18IvRJVdQSsjTg1I0Wedlg19e0FuDjfdS)
 
-![Hoverboard wheel](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/hoverboard_wheel.JPG)
+![Hoverboard wheel](/docs/pictures/hoverboard_wheel.JPG)
 
 
 ---
 ## General Notes
- - The C code for the controller was auto-code generated using [Matlab/Simulink](https://nl.mathworks.com/solutions/embedded-code-generation.html) from a model which I developed from scratch specifically for hoverboard control. For more details regarding the working principle of the controller please consult the [Matlab/Simulink model](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab).
- - A [webview](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code. The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge.
+ - The C code for the controller was auto-code generated using [Matlab/Simulink](https://nl.mathworks.com/solutions/embedded-code-generation.html) from a model which I developed from scratch specifically for hoverboard control. For more details regarding the working principle of the controller please consult the [Matlab/Simulink model](/01_Matlab).
+ - A [webview](/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code. The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge.
 
 ### Field Weakening / Phase Advance
 
@@ -62,7 +62,7 @@ Demo videos:
  - The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
  - The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
  - The figure below shows different possible calibrations for Field Weakening / Phase Advance
- ![Field Weakening](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/FieldWeakening.png) 
+ ![Field Weakening](/docs/pictures/FieldWeakening.png) 
  - If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
 
 
@@ -72,7 +72,7 @@ Demo videos:
  - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EmanuelFeru/FixedPointViewer) tool
  - The parameters data Fixed-point types are given in the following table:
 
-![Parameters table](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/blob/master/docs/pictures/paramTable.png)
+![Parameters table](/docs/pictures/paramTable.png)
 
 
 ### Diagnostics
@@ -146,16 +146,20 @@ Nunchuck not working: Use the right one of the 2 types of nunchucks. Use i2c pul
 
 Nunchuck or PPM working bad: The i2c bus and PPM signal are very sensitive to emv distortions of the motor controller. They get stronger the faster you are. Keep cables short, use shielded cable, use ferrits, stabilize voltage in nunchuck or reviever, add i2c pullups. To many errors leads to very high accelerations which triggers the protection board within the battery to shut everything down.
 
+Recommendation: Nunchuck Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
+
 Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
 
 ---
-## Examples
+## Example variants 
 
-This firmware offers currently 4 variants (selectable in platformio.ino):
+This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) and / or [/Inc/config.h](/Inc/config.h)):
 - **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
-- **VARIANT_USART3**: In this variant the motors are controlled via Serial protocol on USART3 Right sensor cable (short wired). The commands can be sent from an Arduino. Check out the [hoverserial.ino](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/tree/master/02_Arduino/hoverserial) as an example sketch.
-- **HOVERCAR**: In this variant the motors are controlled by two pedals Brake and Throttle. Reverse is engaged by double tapping on the Brake pedal at standstill.
-- **TRANSPOTTER**: This build is for Transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
+- **VARIANT_USART3**: In this variant the motors are controlled via serial protocol on USART3 right sensor cable (short wired). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
+- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
+- **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
+- **VARIANT_NUNCHUCK**: Wii Nunchuck offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
+- **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum singnal 
 
 Of course the firmware can be further customized for other needs or projects.
 

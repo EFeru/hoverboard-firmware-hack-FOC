@@ -56,6 +56,7 @@ startup_stm32f103xe.s
 # binaries
 #######################################
 PREFIX = arm-none-eabi-
+#PREFIX = gcc-arm-none-eabi-7/bin/arm-none-eabi-
 CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
@@ -110,9 +111,15 @@ ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
 endif
 
-
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
+
+# Choose variant from env var
+# make -e VARIANT=VARIANT_ADC
+
+ifneq ($(VARIANT), )
+CFLAGS += -D $(VARIANT)
+endif
 
 
 #######################################

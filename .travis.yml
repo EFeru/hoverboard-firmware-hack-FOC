@@ -1,14 +1,15 @@
 notifications:
   email: true
 
-sudo: false
+os: linux
 
-matrix:
+jobs:
   fast_finish: true
   include:
 
     - name: make (gcc-arm-none-eabi-7)
       script: make
+      env: VARIANT=VARIANT_ADC
       language: c
       addons:
         apt:
@@ -27,6 +28,7 @@ matrix:
 
     - name: make (gcc-arm-none-eabi-5)
       script: make
+      env: VARIANT=VARIANT_ADC
       language: c
       addons:
         apt:
@@ -44,10 +46,10 @@ matrix:
       before_script: arm-none-eabi-gcc --version
 
     - name: platformio
-      script: platformio run -e VARIANT_ADC -e VARIANT_USART3 -e HOVERCAR -e TRANSPOTTER
+      script: platformio run
       language: python
       python:
-        - "2.7"
+      - "2.7"
       install:
       - pip install -U platformio
       - platformio update
