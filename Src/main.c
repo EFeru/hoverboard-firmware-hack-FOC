@@ -117,7 +117,7 @@ static uint8_t timeoutFlagADC  = 0;  // Timeout Flag for for ADC Protection: 0 =
       uint8_t  checksuml;
       uint8_t  checksumh;    
     } Serialcommand;
-  #elif
+  #else
     typedef struct{
       uint16_t  start; 
       int16_t   steer;
@@ -529,7 +529,7 @@ int main(void) {
         ibus_chksum -= command.channels[i];
       }
       if (command.start == IBUS_LENGTH && command.type == IBUS_COMMAND && ibus_chksum == ( command.checksumh << 8) + command.checksuml ) {
-      #elif
+      #else
       if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
       #endif   
         if (timeoutFlagSerial) {                      // Check for previous timeout flag  
@@ -542,7 +542,7 @@ int main(void) {
           }
           cmd1 = CLAMP((ibus_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
           cmd2 = CLAMP((ibus_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
-          #elif
+          #else
           cmd1            = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
           cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
           #endif         
