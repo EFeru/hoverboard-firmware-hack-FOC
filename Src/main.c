@@ -145,7 +145,6 @@ typedef struct{
 } SerialFeedback;
 static SerialFeedback Feedback;
 #endif
-static uint8_t serialSendCnt;           // serial send counter
 
 #if defined(CONTROL_NUNCHUCK) || defined(SUPPORT_NUNCHUCK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
 static uint8_t button1, button2;
@@ -181,6 +180,7 @@ extern volatile uint32_t timeout;       // global variable for timeout
 extern int16_t batVoltage;              // global variable for battery voltage
 
 static uint32_t inactivity_timeout_counter;
+static uint32_t main_loop_counter;
 
 extern uint8_t nunchuck_data[6];
 #ifdef CONTROL_PPM
@@ -524,50 +524,64 @@ int main(void) {
 
       // Handle received data validity, timeout and fix out-of-sync if necessary
       #ifdef CONTROL_IBUS
-      ibus_chksum = 0xFFFF - IBUS_LENGTH - IBUS_COMMAND;
-      for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i ++) {
-        ibus_chksum -= command.channels[i];
-      }
-      if (command.start == IBUS_LENGTH && command.type == IBUS_COMMAND && ibus_chksum == ( command.checksumh << 8) + command.checksuml ) {
-      #else
-      if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
-      #endif   
-        if (timeoutFlagSerial) {                      // Check for previous timeout flag  
-          if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
-            timeoutFlagSerial   = 0;                  // Timeout flag cleared           
-        } else {
-          #ifdef CONTROL_IBUS
-          for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i +=2) {
-            ibus_captured_value[(i/2)] = CLAMP( command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
+        ibus_chksum = 0xFFFF - IBUS_LENGTH - IBUS_COMMAND;
+        for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i++) {
+          ibus_chksum -= command.channels[i];
+        }
+        if (command.start == IBUS_LENGTH && command.type == IBUS_COMMAND && ibus_chksum == (uint16_t)((command.checksumh << 8) + command.checksuml)) {
+          if (timeoutFlagSerial) {                      // Check for previous timeout flag  
+            if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
+              timeoutFlagSerial = 0;                    // Timeout flag cleared           
+          } else {         
+            for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
+              ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
+            }
+            cmd1              = CLAMP((ibus_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+            cmd2              = CLAMP((ibus_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+            command.start     = 0xFF;                   // Change the Start Frame for timeout detection in the next cycle
+            timeoutCntSerial  = 0;                      // Reset the timeout counter
           }
-          cmd1 = CLAMP((ibus_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
-          cmd2 = CLAMP((ibus_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
-          #else
-          cmd1            = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
-          cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
-          #endif         
-          command.start   = 0xFFFF;                   // Change the Start Frame for timeout detection in the next cycle
-          timeoutCntSerial      = 0;                  // Reset the timeout counter         
+        } else {
+          if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
+            timeoutFlagSerial = 1;                      // Timeout detected
+            timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
+          }
+          // Check periodically the received Start Frame. If it is NOT OK, most probably we are out-of-sync. Try to re-sync by reseting the DMA
+          if (main_loop_counter % 25 == 0 && command.start != IBUS_LENGTH && command.start != 0xFF) {
+            HAL_UART_DMAStop(&huart);                
+            HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
+          }
+        }  
+      #else
+        if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
+          if (timeoutFlagSerial) {                      // Check for previous timeout flag  
+            if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
+              timeoutFlagSerial = 0;                    // Timeout flag cleared           
+          } else {
+            cmd1              = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
+            cmd2              = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
+            command.start     = 0xFFFF;                 // Change the Start Frame for timeout detection in the next cycle
+            timeoutCntSerial  = 0;                      // Reset the timeout counter         
+          }
+        } else {
+          if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
+            timeoutFlagSerial = 1;                      // Timeout detected
+            timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
+          }
+          // Check periodically the received Start Frame. If it is NOT OK, most probably we are out-of-sync. Try to re-sync by reseting the DMA
+          if (main_loop_counter % 25 == 0 && command.start != START_FRAME && command.start != 0xFFFF) {
+            HAL_UART_DMAStop(&huart);                
+            HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
+          }
         }
-      } else {
-        if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
-          timeoutFlagSerial     = 1;                  // Timeout detected
-          timeoutCntSerial      = SERIAL_TIMEOUT;     // Limit timout counter value
-        }
-        // Check the received Start Frame. If it is NOT OK, most probably we are out-of-sync.
-        // Try to re-sync by reseting the DMA
-        if (command.start != START_FRAME && command.start != 0xFFFF) {
-          HAL_UART_DMAStop(&huart);                
-          HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
-        }
-      }       
+      #endif     
 
-      if (timeoutFlagSerial) {                        // In case of timeout bring the system to a Safe State
-        ctrlModReq  = 0;                        // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
+      if (timeoutFlagSerial) {                          // In case of timeout bring the system to a Safe State
+        ctrlModReq  = 0;                                // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
         cmd1        = 0;
         cmd2        = 0;
       } else {
-        ctrlModReq  = ctrlModReqRaw;            // Follow the Mode request
+        ctrlModReq  = ctrlModReqRaw;                    // Follow the Mode request
       }
       timeout = 0;
 
@@ -746,9 +760,7 @@ int main(void) {
     board_temp_adcFilt  = (int16_t)(board_temp_adcFixdt >> 20);  // convert fixed-point to integer
     board_temp_deg_c    = (TEMP_CAL_HIGH_DEG_C - TEMP_CAL_LOW_DEG_C) * (board_temp_adcFilt - TEMP_CAL_LOW_ADC) / (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
 
-    serialSendCnt++;              // Increment the counter
-    if (serialSendCnt > 20) {     // Send data every 100 ms = 20 * 5 ms, where 5 ms is approximately the main loop duration
-      serialSendCnt = 0;          // Reset the counter
+    if (main_loop_counter % 25 == 0) {    // Send data periodically
 
       // ####### DEBUG SERIAL OUT #######
       #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
@@ -837,6 +849,9 @@ int main(void) {
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
       poweroff();
     }
+
+    main_loop_counter++;
+    timeout++;
   }
 }
 

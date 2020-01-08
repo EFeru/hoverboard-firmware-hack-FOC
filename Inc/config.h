@@ -10,6 +10,7 @@
   //#define VARIANT_USART3      // Variant for Serial control via USART3 input
   //#define VARIANT_NUNCHUCK    // Variant for Nunchuck controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
+  //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
 #endif
@@ -61,7 +62,7 @@
  * Then you can verify voltage on value 6 (to get calibrated voltage multiplied by 100).
  */
 #define BAT_FILT_COEF           655       // battery voltage filter coefficient in fixed-point. coef_fixedPoint = coef_floatingPoint * 2^16. In this case 655 = 0.01 * 2^16
-#define BAT_CALIB_REAL_VOLTAGE  3970      // input voltage measured by multimeter (multiplied by 100). In this case 43.00 V * 100 = 4300
+#define BAT_CALIB_REAL_VOLTAGE  3970      // input voltage measured by multimeter (multiplied by 100). For example 43.00 V * 100 = 4300
 #define BAT_CALIB_ADC           1492      // adc-value measured by mainboard (value nr 5 on UART debug output)
 
 #define BAT_CELLS               10        // battery number of cells. Normal Hoverboard battery: 10s
@@ -133,18 +134,18 @@
   // #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
 #endif
 
-#ifdef VARIANT_IBUS
-  // ###### CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL ######
-  // left sensor board cable. Channel 1: steering, Channel 2: speed.
-  #define CONTROL_IBUS                 // use IBUS as input
-  #define IBUS_NUM_CHANNELS 14         // total number of IBUS channels to receive, even if they are not used.
-  #define IBUS_LENGTH 0x20
-  #define IBUS_COMMAND 0x40
+// ###### CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL ######
+/* Connected to Left sensor board cable. Channel 1: steering, Channel 2: speed. */
+#ifdef VARIANT_IBUS     
+  #define CONTROL_IBUS                                  // use IBUS as input
+  #define IBUS_NUM_CHANNELS   14                        // total number of IBUS channels to receive, even if they are not used.
+  #define IBUS_LENGTH         0x20
+  #define IBUS_COMMAND        0x40
 
-  #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
   #undef  USART2_BAUD
-  #define USART2_BAUD 115200
+  #define USART2_BAUD         115200
+  #define CONTROL_SERIAL_USART2                         // left sensor board cable, disable if ADC or PPM is used!
+  #define FEEDBACK_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
 #endif
 
 
@@ -156,8 +157,8 @@
   #define UART_DMA_CHANNEL DMA1_Channel2
 #endif
 
+// ###### CONTROL VIA RC REMOTE ######
 #ifdef VARIANT_PPM
-  // ###### CONTROL VIA RC REMOTE ######
   // left sensor board cable. Channel 1: steering, Channel 2: speed.
   #define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
   #define PPM_NUM_CHANNELS 6          // total number of PPM channels to receive, even if they are not used.
