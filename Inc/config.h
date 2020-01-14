@@ -2,13 +2,13 @@
 #include "stm32f1xx_hal.h"
 
 // ############################### DEFINE FIRMWARE VARIANT ###############################
-// For variant selection, check platformio.ini 
-// or define the desired build variant here if you want to use make 
+// For variant selection, check platformio.ini
+// or define the desired build variant here if you want to use make
 
 #if !defined(PLATFORMIO)
   //#define VARIANT_ADC         // Variant for control via ADC input
   //#define VARIANT_USART3      // Variant for Serial control via USART3 input
-  //#define VARIANT_NUNCHUCK    // Variant for Nunchuck controlled vehicle build
+  //#define VARIANT_NUNCHUK    // Variant for Nunchuk controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
@@ -53,7 +53,7 @@
 
 /* How to calibrate: connect GND and RX of a 3.3v uart-usb adapter to the right sensor board cable
  * Be careful not to use the red wire of the cable. 15v will destroye verything.).
- * If you are using nunchuck, disable it temporarily. enable DEBUG_SERIAL_USART3 and DEBUG_SERIAL_ASCII use asearial terminal.
+ * If you are using nunchuk, disable it temporarily. enable DEBUG_SERIAL_USART3 and DEBUG_SERIAL_ASCII use asearial terminal.
  */
 
 /* Battery voltage calibration: connect power source. see <How to calibrate>.
@@ -120,17 +120,17 @@
   // #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
   // #define DEBUG_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
 
-  // #define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
-  // #define FEEDBACK_SERIAL_USART3                     // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
-  #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!  
+  // #define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+  // #define FEEDBACK_SERIAL_USART3                     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #elif defined(VARIANT_USART3)
   // #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
   // #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
   // #define DEBUG_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
 
-  #define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuck or lcd) is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART3                     // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
-  // #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+  #define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+  #define FEEDBACK_SERIAL_USART3                     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  // #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 
 #if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
@@ -146,7 +146,7 @@
 // left sensor board cable. Channel 1: steering, Channel 2: speed.
 #define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
 #define PPM_NUM_CHANNELS 6          // total number of PPM channels to receive, even if they are not used.
-#endif 
+#endif
 
 // ###### CONTROL VIA TWO POTENTIOMETERS ######
 /* ADC-calibration to cover the full poti-range:
@@ -181,15 +181,15 @@
   #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
 #endif
 
-#ifdef VARIANT_NUNCHUCK
-  // ###### CONTROL VIA NINTENDO NUNCHUCK ######
+#ifdef VARIANT_NUNCHUK
+  // ###### CONTROL VIA NINTENDO NUNCHUK ######
   /* left sensor board cable.
-  * keep cable short, use shielded cable, use ferrits, stabalize voltage in nunchuck,
-  * use the right one of the 2 types of nunchucks, add i2c pullups.
-  * use original nunchuck. most clones does not work very well.
-  * Recommendation: Nunchuck Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
+  * keep cable short, use shielded cable, use ferrits, stabalize voltage in nunchuk,
+  * use the right one of the 2 types of nunchuks, add i2c pullups.
+  * use original nunchuk. most clones does not work very well.
+  * Recommendation: Nunchuk Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
   */
-  #define CONTROL_NUNCHUCK            // use nunchuck as input. disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
+  #define CONTROL_NUNCHUK            // use nunchuk as input. disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
 #endif
 
 // ############################### MOTOR CONTROL #########################
@@ -212,12 +212,12 @@
 
 // Data checks - Do NOT touch
 #if (FIELD_WEAK_ENA == 0)
-  #undef  FIELD_WEAK_HI                       
+  #undef  FIELD_WEAK_HI
   #define FIELD_WEAK_HI 1000                    // [-] This prevents the input target going beyond 1000 when Field Weakening is not enabled
 #endif
-#define INPUT_MAX   MAX( 1000, FIELD_WEAK_HI)   // [-] Defines the Input target maximum limitation        
-#define INPUT_MIN   MIN(-1000,-FIELD_WEAK_HI)   // [-] Defines the Input target minimum limitation 
-#define INPUT_MID   INPUT_MAX / 2      
+#define INPUT_MAX   MAX( 1000, FIELD_WEAK_HI)   // [-] Defines the Input target maximum limitation
+#define INPUT_MIN   MIN(-1000,-FIELD_WEAK_HI)   // [-] Defines the Input target minimum limitation
+#define INPUT_MID   INPUT_MAX / 2
 
 /* GENERAL NOTES:
  * 1. The above parameters are over-writing the default motor parameters. For all the available parameters check BLDC_controller_data.c
@@ -240,7 +240,7 @@
  * - button1 and button2: digital input values. 0 or 1
  * - adc_buffer.l_tx2 and adc_buffer.l_rx2: unfiltered ADC values (you do not need them). 0 to 4095
  * Outputs:
- * - speedR and speedL: normal driving INPUT_MIN to INPUT_MAX 
+ * - speedR and speedL: normal driving INPUT_MIN to INPUT_MAX
  */
 
 // Beep in Reverse
@@ -256,17 +256,17 @@
 #define RATE                  480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
 
 // Value of FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
-#ifndef VARIANT_NUNCHUCK
+#ifndef VARIANT_NUNCHUK
   #define FILTER                6553  // 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
 #endif
 
 // ################################# DEFAULT SETTINGS ############################
-#if !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUCK)
+#if !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK)
   // Value of COEFFICIENT is in fixdt(1,16,14)
   // If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
   // If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
-  #define SPEED_COEFFICIENT   16384 // 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14 
-  #define STEER_COEFFICIENT   8192  // 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0. 
+  #define SPEED_COEFFICIENT   16384 // 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
+  #define STEER_COEFFICIENT   8192  // 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0.
 
   #define INVERT_R_DIRECTION
   #define INVERT_L_DIRECTION
@@ -276,7 +276,7 @@
 #ifdef VARIANT_HOVERCAR
   #define SPEED_COEFFICIENT  16384  //  1.0f
   #define STEER_COEFFICIENT  0      //  0.0f
-  
+
   // #define INVERT_R_DIRECTION
   // #define INVERT_L_DIRECTION
 #endif
@@ -285,23 +285,23 @@
 #ifdef VARIANT_TRANSPOTTER
   #define CONTROL_GAMETRAK
   #define SUPPORT_LCD
-  #define SUPPORT_NUNCHUCK
+  #define SUPPORT_NUNCHUK
 
   #define GAMETRAK_CONNECTION_NORMAL    // for normal wiring according to the wiki instructions
   //#define GAMETRAK_CONNECTION_ALTERNATE // use this define instead if you messed up the gametrak ADC wiring (steering is speed, and length of the wire is steering)
 
-  #define ROT_P          1.2          // P coefficient for the direction controller. Positive / Negative values to invert gametrak steering direction.  
+  #define ROT_P          1.2          // P coefficient for the direction controller. Positive / Negative values to invert gametrak steering direction.
 
   #define INVERT_R_DIRECTION          // Invert right motor
   #define INVERT_L_DIRECTION          // Invert left motor
 
-  // during nunchuck control (only relevant when activated)
+  // during nunchuk control (only relevant when activated)
   #define SPEED_COEFFICIENT   14746  // 0.9f - higher value == stronger. 0.0 to ~2.0?
   #define STEER_COEFFICIENT   8192   // 0.5f - higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
 #endif
 
-// ################################# VARIANT_NUNCHUCK SETTINGS ############################
-#ifdef VARIANT_NUNCHUCK
+// ################################# VARIANT_NUNCHUK SETTINGS ############################
+#ifdef VARIANT_NUNCHUK
   // # ARMCHAIR #
   #define FILTER             3276    //  0.05f
   #define SPEED_COEFFICIENT  8192    //  0.5f
@@ -311,13 +311,13 @@
 
 // ################################# SIMPLE BOBBYCAR #################################
 // for better bobbycar code see: https://github.com/larsmm/hoverboard-firmware-hack-bbcar
-// #define FILTER             6553    //  0.1f 
+// #define FILTER             6553    //  0.1f
 // #define SPEED_COEFFICIENT  49152   // -1.0f
 // #define STEER_COEFFICIENT  0       //  0.0f
 
 // ############################### VALIDATE SETTINGS ###############################
 
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUCK) && !defined(VARIANT_PPM)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
@@ -349,16 +349,16 @@
   #error CONTROL_PPM and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
-#if (defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3)) && defined(CONTROL_NUNCHUCK)
-  #error CONTROL_NUNCHUCK and SERIAL_USART3 not allowed. It is on the same cable.
+#if (defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3)) && defined(CONTROL_NUNCHUK)
+  #error CONTROL_NUNCHUK and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
 #if (defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3)) && defined(DEBUG_I2C_LCD)
   #error DEBUG_I2C_LCD and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
-#if defined(CONTROL_PPM) && defined(CONTROL_ADC) && defined(CONTROL_NUNCHUCK) || defined(CONTROL_PPM) && defined(CONTROL_ADC) || defined(CONTROL_ADC) && defined(CONTROL_NUNCHUCK) || defined(CONTROL_PPM) && defined(CONTROL_NUNCHUCK)
-  #error only 1 input method allowed. use CONTROL_PPM or CONTROL_ADC or CONTROL_NUNCHUCK.
+#if defined(CONTROL_PPM) && defined(CONTROL_ADC) && defined(CONTROL_NUNCHUK) || defined(CONTROL_PPM) && defined(CONTROL_ADC) || defined(CONTROL_ADC) && defined(CONTROL_NUNCHUK) || defined(CONTROL_PPM) && defined(CONTROL_NUNCHUK)
+  #error only 1 input method allowed. use CONTROL_PPM or CONTROL_ADC or CONTROL_NUNCHUK.
 #endif
 
 #if defined(ADC_PROTECT_ENA) && ((ADC1_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC1_MAX + ADC_PROTECT_THRESH) >= 4096)

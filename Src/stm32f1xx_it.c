@@ -178,7 +178,7 @@ void SysTick_Handler(void) {
   /* USER CODE END SysTick_IRQn 1 */
 }
 
-#ifdef CONTROL_NUNCHUCK
+#ifdef CONTROL_NUNCHUK
 extern I2C_HandleTypeDef hi2c2;
 void I2C1_EV_IRQHandler(void)
 {

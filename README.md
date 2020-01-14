@@ -2,18 +2,18 @@
 ## with Field Oriented Control (FOC)
 [![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=feru_emanuel%40yahoo.com&currency_code=EUR&source=url)
-***If you like this project, you can give me a cup of coffee. Thanks!*** 
+***If you like this project, you can give me a cup of coffee. Thanks!***
 
 This repository implements Field Oriented Control (FOC) for stock hoverboards. Compared to the commutation method, this new FOC control method offers superior performance featuring:
- - reduced noise and vibrations 	
+ - reduced noise and vibrations
  - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
- 
+
  This new firmware offers 3 control modes:
   - **VOLTAGE MODE**: in this mode the controller applies a constant Voltage to the motors
   - **SPEED MODE**: in this mode a closed-loop controller realizes the input target speed by rejecting any of the disturbance (resistive load) applied to the motor
   - **TORQUE MODE**: in this mode the target torque set by the user is realized. This mode enables motor "freewheeling" when the torque target is "0".
-  
+
   **NOTE**: In all the modes, the controller features maximum motor speed and maximum motor current protection. This brings great advantages to fulfil the needs of many robotic applications while maintaining safe operation.
 
 ## Firmware architecture
@@ -58,16 +58,16 @@ Demo videos:
 
 ### Field Weakening / Phase Advance
 
- - By default the Field weakening is disabled. You can enable it in config.h file by setting the FIELD_WEAK_ENA = 1 
+ - By default the Field weakening is disabled. You can enable it in config.h file by setting the FIELD_WEAK_ENA = 1
  - The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
  - The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
  - The figure below shows different possible calibrations for Field Weakening / Phase Advance
- ![Field Weakening](/docs/pictures/FieldWeakening.png) 
+ ![Field Weakening](/docs/pictures/FieldWeakening.png)
  - If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
 
 
-### Parameters 
- - All the calibratable motor parameters can be found in the 'BLDC_controller_data.c'. I provided you with an already calibrated controller, but if you feel like fine tuning it feel free to do so 
+### Parameters
+ - All the calibratable motor parameters can be found in the 'BLDC_controller_data.c'. I provided you with an already calibrated controller, but if you feel like fine tuning it feel free to do so
  - The parameters are represented in Fixed-point data type for a more efficient code execution
  - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EmanuelFeru/FixedPointViewer) tool
  - The parameters data Fixed-point types are given in the following table:
@@ -85,7 +85,7 @@ The error codes above are reported for each motor in the variables **errCode_Lef
 
 
 ---
-## Building 
+## Building
 For building (and flashing) I recommend platform.io, plaformio.ini file included. Simply open the folder in the IDE of choice (vscode or Atom), and press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
 
 Additionally, you can also flash using the method described below in the Flashing Section.
@@ -142,24 +142,24 @@ If the board draws more than 100mA in idle, it's probably broken.
 
 If the motors do something, but don't rotate smooth and quietly, try to use an alternative phase mapping. Usually, color-correct mapping (blue to blue, green to green, yellow to yellow) works fine. However, some hoverboards have a different layout then others, and this might be the reason your motor isn't spinning.
 
-Nunchuck not working: Use the right one of the 2 types of nunchucks. Use i2c pullups.
+Nunchuk not working: Use the right one of the 2 types of nunchuks. Use i2c pullups.
 
-Nunchuck or PPM working bad: The i2c bus and PPM signal are very sensitive to emv distortions of the motor controller. They get stronger the faster you are. Keep cables short, use shielded cable, use ferrits, stabilize voltage in nunchuck or reviever, add i2c pullups. To many errors leads to very high accelerations which triggers the protection board within the battery to shut everything down.
+Nunchuk or PPM working bad: The i2c bus and PPM signal are very sensitive to emv distortions of the motor controller. They get stronger the faster you are. Keep cables short, use shielded cable, use ferrits, stabilize voltage in nunchuk or reviever, add i2c pullups. To many errors leads to very high accelerations which triggers the protection board within the battery to shut everything down.
 
-Recommendation: Nunchuck Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
+Recommendation: Nunchuk Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
 
 Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
 
 ---
-## Example variants 
+## Example variants
 
 This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) and / or [/Inc/config.h](/Inc/config.h)):
 - **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
 - **VARIANT_USART3**: In this variant the motors are controlled via serial protocol on USART3 right sensor cable (short wired). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
 - **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
 - **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
-- **VARIANT_NUNCHUCK**: Wii Nunchuck offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
-- **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum singnal 
+- **VARIANT_NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
+- **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum singnal
 
 Of course the firmware can be further customized for other needs or projects.
 

@@ -72,7 +72,7 @@ extern volatile adc_buf_t adc_buffer;
 #endif
 extern I2C_HandleTypeDef hi2c2;
 #if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) \
- || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) 
+ || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
   extern UART_HandleTypeDef huart2;
   extern UART_HandleTypeDef huart3;
   static UART_HandleTypeDef huart;
@@ -83,7 +83,7 @@ extern I2C_HandleTypeDef hi2c2;
 #endif
 
 #ifdef VARIANT_TRANSPOTTER
-  uint8_t nunchuck_connected = 0;
+  uint8_t nunchuk_connected = 0;
   float steering;
   int feedforward;
 
@@ -97,7 +97,7 @@ extern I2C_HandleTypeDef hi2c2;
 
   uint16_t counter = 0;
 #else
-  uint8_t nunchuck_connected = 1;
+  uint8_t nunchuk_connected = 1;
 #endif
 
 #if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
@@ -134,7 +134,7 @@ static SerialFeedback Feedback;
 #endif
 static uint8_t serialSendCnt;           // serial send counter
 
-#if defined(CONTROL_NUNCHUCK) || defined(SUPPORT_NUNCHUCK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
+#if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
 static uint8_t button1, button2;
 #endif
 
@@ -169,7 +169,7 @@ extern int16_t batVoltage;              // global variable for battery voltage
 
 static uint32_t inactivity_timeout_counter;
 
-extern uint8_t nunchuck_data[6];
+extern uint8_t nunchuk_data[6];
 #ifdef CONTROL_PPM
 extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
 #endif
@@ -226,14 +226,14 @@ int main(void) {
 
 // Matlab Init
 // ###############################################################################
-  
-  /* Set BLDC controller parameters */ 
+
+  /* Set BLDC controller parameters */
   rtP_Left.b_selPhaABCurrMeas   = 1;            // Left motor measured current phases = {iA, iB} -> do NOT change
   rtP_Left.z_ctrlTypSel         = CTRL_TYP_SEL;
-  rtP_Left.b_diagEna            = DIAG_ENA; 
+  rtP_Left.b_diagEna            = DIAG_ENA;
   rtP_Left.i_max                = (I_MOT_MAX * A2BIT_CONV) << 4;        // fixdt(1,16,4)
   rtP_Left.n_max                = N_MOT_MAX << 4;                       // fixdt(1,16,4)
-  rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA; 
+  rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA;
   rtP_Left.id_fieldWeakMax      = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
   rtP_Left.a_phaAdvMax          = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
   rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
@@ -291,9 +291,9 @@ int main(void) {
     PPM_Init();
   #endif
 
-  #ifdef CONTROL_NUNCHUCK
+  #ifdef CONTROL_NUNCHUK
     I2C_Init();
-    Nunchuck_Init();
+    Nunchuk_Init();
   #endif
 
   #if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
@@ -401,7 +401,7 @@ int main(void) {
 
       feedforward = ((distance - (int)(setDistance * 1345)));
 
-      if (nunchuck_connected == 0) {
+      if (nunchuk_connected == 0) {
         speedL = speedL * 0.8f + (CLAMP(feedforward +  ((steering)*((float)MAX(ABS(feedforward), 50)) * ROT_P), -850, 850) * -0.2f);
         speedR = speedR * 0.8f + (CLAMP(feedforward -  ((steering)*((float)MAX(ABS(feedforward), 50)) * ROT_P), -850, 850) * -0.2f);
         if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50)) {
@@ -440,14 +440,14 @@ int main(void) {
       }
     #endif
 
-    #if defined(CONTROL_NUNCHUCK) || defined(SUPPORT_NUNCHUCK)
-      if (nunchuck_connected != 0) {
-        Nunchuck_Read();
-        cmd1 = CLAMP((nunchuck_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuck joystick readings range 30 - 230
-        cmd2 = CLAMP((nunchuck_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
+    #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
+      if (nunchuk_connected != 0) {
+        Nunchuk_Read();
+        cmd1 = CLAMP((nunchuk_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuk joystick readings range 30 - 230
+        cmd2 = CLAMP((nunchuk_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
 
-        button1 = (uint8_t)nunchuck_data[5] & 1;
-        button2 = (uint8_t)(nunchuck_data[5] >> 1) & 1;
+        button1 = (uint8_t)nunchuk_data[5] & 1;
+        button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
       }
     #endif
 
@@ -462,27 +462,27 @@ int main(void) {
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
       #ifdef ADC1_MID_POT
-        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MID) * INPUT_MAX / (ADC1_MAX - ADC1_MID), 0, INPUT_MAX) 
-              -CLAMP((ADC1_MID - adc_buffer.l_tx2) * INPUT_MAX / (ADC1_MID - ADC1_MIN), 0, INPUT_MAX);    // ADC1        
+        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MID) * INPUT_MAX / (ADC1_MAX - ADC1_MID), 0, INPUT_MAX)
+              -CLAMP((ADC1_MID - adc_buffer.l_tx2) * INPUT_MAX / (ADC1_MID - ADC1_MIN), 0, INPUT_MAX);    // ADC1
       #else
         cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MIN) * INPUT_MAX / (ADC1_MAX - ADC1_MIN), 0, INPUT_MAX);    // ADC1
       #endif
 
       #ifdef ADC2_MID_POT
-        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MID) * INPUT_MAX / (ADC2_MAX - ADC2_MID), 0, INPUT_MAX)  
-              -CLAMP((ADC2_MID - adc_buffer.l_rx2) * INPUT_MAX / (ADC2_MID - ADC2_MIN), 0, INPUT_MAX);    // ADC2        
+        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MID) * INPUT_MAX / (ADC2_MAX - ADC2_MID), 0, INPUT_MAX)
+              -CLAMP((ADC2_MID - adc_buffer.l_rx2) * INPUT_MAX / (ADC2_MID - ADC2_MIN), 0, INPUT_MAX);    // ADC2
       #else
         cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN) * INPUT_MAX / (ADC2_MAX - ADC2_MIN), 0, INPUT_MAX);    // ADC2
       #endif
 
       #ifdef ADC_PROTECT_ENA
-        if (adc_buffer.l_tx2 >= (ADC1_MIN - ADC_PROTECT_THRESH) && adc_buffer.l_tx2 <= (ADC1_MAX + ADC_PROTECT_THRESH) && 
+        if (adc_buffer.l_tx2 >= (ADC1_MIN - ADC_PROTECT_THRESH) && adc_buffer.l_tx2 <= (ADC1_MAX + ADC_PROTECT_THRESH) &&
             adc_buffer.l_rx2 >= (ADC2_MIN - ADC_PROTECT_THRESH) && adc_buffer.l_rx2 <= (ADC2_MAX + ADC_PROTECT_THRESH)) {
-          if (timeoutFlagADC) {                         // Check for previous timeout flag  
+          if (timeoutFlagADC) {                         // Check for previous timeout flag
             if (timeoutCntADC-- <= 0)                   // Timeout de-qualification
-              timeoutFlagADC  = 0;                      // Timeout flag cleared           
+              timeoutFlagADC  = 0;                      // Timeout flag cleared
           } else {
-            timeoutCntADC     = 0;                      // Reset the timeout counter         
+            timeoutCntADC     = 0;                      // Reset the timeout counter
           }
         } else {
           if (timeoutCntADC++ >= ADC_PROTECT_TIMEOUT) { // Timeout qualification
@@ -510,15 +510,15 @@ int main(void) {
     #if defined CONTROL_SERIAL_USART2 || defined CONTROL_SERIAL_USART3
 
       // Handle received data validity, timeout and fix out-of-sync if necessary
-      if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) { 
-        if (timeoutFlagSerial) {                      // Check for previous timeout flag  
+      if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
+        if (timeoutFlagSerial) {                      // Check for previous timeout flag
           if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
-            timeoutFlagSerial   = 0;                  // Timeout flag cleared           
+            timeoutFlagSerial   = 0;                  // Timeout flag cleared
         } else {
           cmd1            = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
-          cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);         
+          cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
           command.start   = 0xFFFF;                   // Change the Start Frame for timeout detection in the next cycle
-          timeoutCntSerial      = 0;                  // Reset the timeout counter         
+          timeoutCntSerial      = 0;                  // Reset the timeout counter
         }
       } else {
         if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
@@ -528,10 +528,10 @@ int main(void) {
         // Check the received Start Frame. If it is NOT OK, most probably we are out-of-sync.
         // Try to re-sync by reseting the DMA
         if (command.start != START_FRAME && command.start != 0xFFFF) {
-          HAL_UART_DMAStop(&huart);                
+          HAL_UART_DMAStop(&huart);
           HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
         }
-      }       
+      }
 
       if (timeoutFlagSerial) {                        // In case of timeout bring the system to a Safe State
         ctrlModReq  = 0;                        // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
@@ -558,7 +558,7 @@ int main(void) {
     // Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
     if ((SPEED_COEFFICIENT & (1 << 16)) >> 16) {
       speedAvg    = -speedAvg;
-    } 
+    }
     speedAvgAbs   = abs(speedAvg);
 
     #ifndef VARIANT_TRANSPOTTER
@@ -572,7 +572,7 @@ int main(void) {
       // ####### VARIANT_HOVERCAR #######
       #ifdef VARIANT_HOVERCAR
         // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
-        uint16_t speedBlend;       
+        uint16_t speedBlend;
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,30,90) - 30) << 15) / 60);     // speedBlend [0,1] is within [30 rpm, 90rpm]
 
         // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
@@ -580,16 +580,16 @@ int main(void) {
           multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBreak);   // Break pedal in this case is "cmd1" variable
         }
 
-        // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving          
+        // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving
         if (cmd1 > 20) {
           cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);
         }
 
-        // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
+        // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
         if (speedAvg > 0) {
           cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
         } else {
-          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);          
+          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);
         }
       #endif
 
@@ -599,12 +599,12 @@ int main(void) {
       filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 20);  // convert fixed-point to integer
-      speed = (int16_t)(speedFixdt >> 20);  // convert fixed-point to integer    
+      speed = (int16_t)(speedFixdt >> 20);  // convert fixed-point to integer
 
       // ####### VARIANT_HOVERCAR #######
-      #ifdef VARIANT_HOVERCAR        
+      #ifdef VARIANT_HOVERCAR
         if (!MultipleTapBreak.b_multipleTap) {  // Check driving direction
-          speed = steer + speed;                // Forward driving          
+          speed = steer + speed;                // Forward driving
         } else {
           speed = steer - speed;                // Reverse driving
         }
@@ -654,7 +654,7 @@ int main(void) {
 
         HAL_Delay(1000);
 
-        nunchuck_connected = 0;
+        nunchuk_connected = 0;
       }
 
       if ((distance / 1345.0) - setDistance > 0.5 && (lastDistance / 1345.0) - setDistance > 0.5) { // Error, robot too far away!
@@ -671,22 +671,22 @@ int main(void) {
         poweroff();
       }
 
-      #ifdef SUPPORT_NUNCHUCK
+      #ifdef SUPPORT_NUNCHUK
         if (counter % 500 == 0) {
-          if (nunchuck_connected == 0 && enable == 0) {
-            if (Nunchuck_Ping()) {
+          if (nunchuk_connected == 0 && enable == 0) {
+            if (Nunchuk_Ping()) {
               HAL_Delay(500);
-              Nunchuck_Init();
+              Nunchuk_Init();
               #ifdef SUPPORT_LCD
                 LCD_SetLocation(&lcd, 0, 0);
-                LCD_WriteString(&lcd, "Nunchuck Control");
+                LCD_WriteString(&lcd, "Nunchuk Control");
               #endif
               timeout = 0;
               HAL_Delay(1000);
-              nunchuck_connected = 1;
+              nunchuk_connected = 1;
             }
           }
-        }   
+        }
       #endif
 
       #ifdef SUPPORT_LCD
@@ -694,7 +694,7 @@ int main(void) {
           if (LCDerrorFlag == 1 && enable == 0) {
 
           } else {
-            if (nunchuck_connected == 0) {
+            if (nunchuk_connected == 0) {
               LCD_SetLocation(&lcd, 4, 0);
               LCD_WriteFloat(&lcd,distance/1345.0,2);
               LCD_SetLocation(&lcd, 10, 0);
@@ -748,15 +748,15 @@ int main(void) {
           Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
           Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
           Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR ^ Feedback.speedL
-                                    ^ Feedback.speedR_meas ^ Feedback.speedL_meas ^ Feedback.batVoltage ^ Feedback.boardTemp); 
+                                    ^ Feedback.speedR_meas ^ Feedback.speedL_meas ^ Feedback.batVoltage ^ Feedback.boardTemp);
 
           UART_DMA_CHANNEL->CCR  &= ~DMA_CCR_EN;
           UART_DMA_CHANNEL->CNDTR = sizeof(Feedback);
           UART_DMA_CHANNEL->CMAR  = (uint32_t)&Feedback;
-          UART_DMA_CHANNEL->CCR  |= DMA_CCR_EN;          
+          UART_DMA_CHANNEL->CCR  |= DMA_CCR_EN;
         }
-      #endif      
-    }    
+      #endif
+    }
 
     HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
     // ####### POWEROFF BY POWER-BUTTON #######
@@ -787,7 +787,7 @@ int main(void) {
     } else if (batVoltage < BAT_LOW_LVL2 && batVoltage >= BAT_LOW_DEAD && BAT_LOW_LVL2_ENABLE) {  // low bat 2: fast beep
       buzzerFreq    = 5;
       buzzerPattern = 6;
-    } else if (timeoutFlagADC || timeoutFlagSerial) {  // beep in case of ADC or Serial timeout - fast beep      
+    } else if (timeoutFlagADC || timeoutFlagSerial) {  // beep in case of ADC or Serial timeout - fast beep
       buzzerFreq    = 24;
       buzzerPattern = 1;
     } else if (BEEPS_BACKWARD && speed < -50 && speedAvg < 0) {  // backward beep
@@ -836,12 +836,12 @@ void shortBeep(uint8_t freq){
   * Max:  2047.9375
   * Min: -2048
   * Res:  0.0625
-  * 
+  *
   * Inputs:       u     = int16
   * Outputs:      y     = fixdt(1,32,20)
   * Parameters:   coef  = fixdt(0,16,16) = [0,65535U]
-  * 
-  * Example: 
+  *
+  * Example:
   * If coef = 0.8 (in floating point), then coef = 0.8 * 2^16 = 52429 (in fixed-point)
   * filtLowPass16(u, 52429, &y);
   * yint = (int16_t)(y >> 20); // the integer output is the fixed-point ouput shifted by 20 bits
@@ -849,14 +849,14 @@ void shortBeep(uint8_t freq){
 void filtLowPass32(int16_t u, uint16_t coef, int32_t *y)
 {
   int32_t tmp;
-  
-  tmp = (int16_t)(u << 4) - (*y >> 16);  
-  tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection  
+
+  tmp = (int16_t)(u << 4) - (*y >> 16);
+  tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection
   *y  = coef * tmp + (*y);
 }
 
 // ===========================================================
-  /* mixerFcn(rtu_speed, rtu_steer, &rty_speedR, &rty_speedL); 
+  /* mixerFcn(rtu_speed, rtu_steer, &rty_speedR, &rty_speedL);
   * Inputs:       rtu_speed, rtu_steer                  = fixdt(1,16,4)
   * Outputs:      rty_speedR, rty_speedL                = int16_t
   * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,14)
@@ -870,9 +870,9 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t
   prodSpeed   = (int16_t)((rtu_speed * (int16_t)SPEED_COEFFICIENT) >> 14);
   prodSteer   = (int16_t)((rtu_steer * (int16_t)STEER_COEFFICIENT) >> 14);
 
-  tmp         = prodSpeed - prodSteer;  
+  tmp         = prodSpeed - prodSteer;
   tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
-  *rty_speedR = (int16_t)(tmp >> 4);        // Convert from fixed-point to int 
+  *rty_speedR = (int16_t)(tmp >> 4);        // Convert from fixed-point to int
   *rty_speedR = CLAMP(*rty_speedR, INPUT_MIN, INPUT_MAX);
 
   tmp         = prodSpeed + prodSteer;
@@ -909,7 +909,7 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y)
 // ===========================================================
   /* multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x)
   * This function detects multiple tap presses, such as double tapping, triple tapping, etc.
-  * Inputs:       u = int16_t (input signal); timeNow = uint32_t (current time)  
+  * Inputs:       u = int16_t (input signal); timeNow = uint32_t (current time)
   * Outputs:      x->b_multipleTap (get the output here)
   */
 void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x)
@@ -919,7 +919,7 @@ void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x)
   uint8_t 	b_pulse;
   uint8_t 	z_pulseCnt;
   uint8_t   z_pulseCntRst;
-  uint32_t 	t_time; 
+  uint32_t 	t_time;
 
   // Detect hysteresis
   if (x->b_hysteresis) {
