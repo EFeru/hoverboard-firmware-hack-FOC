@@ -156,10 +156,12 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) and / or [/Inc/config.h](/Inc/config.h)):
 - **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
 - **VARIANT_USART**: In this variant the motors are controlled via serial protocol on USART3 right sensor cable (short wired). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
-- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
-- **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
 - **VARIANT_NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
 - **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum singnal
+- **VARIANT_IBUS**: This is when you want to use a RC remote control with Flysky IBUS protocol connected to the Left sensor cable.
+- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
+- **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
+
 
 Of course the firmware can be further customized for other needs or projects.
 

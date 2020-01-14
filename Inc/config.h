@@ -11,6 +11,7 @@
   //#define VARIANT_USART       // Variant for Serial control via USART input
   //#define VARIANT_NUNCHUK    // Variant for Nunchuk controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
+  //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
 #endif
@@ -28,7 +29,7 @@
  * Then you can verify voltage on debug output value 6 (to get calibrated voltage multiplied by 100).
 */
 #define BAT_FILT_COEF           655       // battery voltage filter coefficient in fixed-point. coef_fixedPoint = coef_floatingPoint * 2^16. In this case 655 = 0.01 * 2^16
-#define BAT_CALIB_REAL_VOLTAGE  3970      // input voltage measured by multimeter (multiplied by 100). In this case 43.00 V * 100 = 4300
+#define BAT_CALIB_REAL_VOLTAGE  3970      // input voltage measured by multimeter (multiplied by 100). For example 43.00 V * 100 = 4300
 #define BAT_CALIB_ADC           1492      // adc-value measured by mainboard (value nr 5 on UART debug output)
 #define BAT_CELLS               10        // battery number of cells. Normal Hoverboard battery: 10s
 #define BAT_LOW_LVL1_ENABLE     0         // to beep or not to beep, 1 or 0
@@ -182,6 +183,24 @@
   #define PPM_NUM_CHANNELS    6       // total number of PPM channels to receive, even if they are not used.
 #endif
 // ############################# END OF VARIANT_PPM SETTINGS ############################
+
+
+
+// ################################# VARIANT_IBUS SETTINGS ##############################
+// ###### CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL ######
+/* Connected to Left sensor board cable. Channel 1: steering, Channel 2: speed. */
+#ifdef VARIANT_IBUS
+  #define CONTROL_IBUS                                  // use IBUS as input
+  #define IBUS_NUM_CHANNELS   14                        // total number of IBUS channels to receive, even if they are not used.
+  #define IBUS_LENGTH         0x20
+  #define IBUS_COMMAND        0x40
+
+  #undef  USART2_BAUD
+  #define USART2_BAUD         115200
+  #define CONTROL_SERIAL_USART2                         // left sensor board cable, disable if ADC or PPM is used!
+  #define FEEDBACK_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
+#endif
+// ############################## END OF VARIANT_IBUS SETTINGS ###########################
 
 
 
@@ -355,7 +374,7 @@
 
 
 // ############################### VALIDATE SETTINGS ###############################
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(DEBUG_SERIAL_USART3) && !defined(DEBUG_SERIAL_USART2)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_IBUS) && !defined(DEBUG_SERIAL_USART3) && !defined(DEBUG_SERIAL_USART2)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 

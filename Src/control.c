@@ -112,8 +112,6 @@ void Nunchuk_Read(void) {
   HAL_Delay(3);
   if (HAL_I2C_Master_Receive(&hi2c2,0xA4,(uint8_t*)nunchuk_data, 6, 10) == HAL_OK) {
     timeout = 0;
-  } else {
-    timeout++;
   }
 
 #ifndef TRANSPOTTER

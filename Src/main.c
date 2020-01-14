@@ -106,12 +106,25 @@ static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
 static uint8_t timeoutFlagADC  = 0;  // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
 
 #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-typedef struct{
-  uint16_t  start;
-  int16_t   steer;
-  int16_t   speed;
-  uint16_t  checksum;
-} Serialcommand;
+  #ifdef CONTROL_IBUS
+    static uint16_t ibus_chksum;
+    static uint16_t ibus_captured_value[IBUS_NUM_CHANNELS];
+
+    typedef struct{
+      uint8_t  start;
+      uint8_t  type;
+      uint8_t  channels[IBUS_NUM_CHANNELS*2];
+      uint8_t  checksuml;
+      uint8_t  checksumh;
+    } Serialcommand;
+  #else
+    typedef struct{
+      uint16_t  start;
+      int16_t   steer;
+      int16_t   speed;
+      uint16_t  checksum;
+    } Serialcommand;
+  #endif
 static volatile Serialcommand command;
 static int16_t timeoutCntSerial   = 0;  // Timeout counter for Rx Serial command
 #endif
@@ -132,7 +145,6 @@ typedef struct{
 } SerialFeedback;
 static SerialFeedback Feedback;
 #endif
-static uint8_t serialSendCnt;           // serial send counter
 
 #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
 static uint8_t button1, button2;
@@ -168,6 +180,7 @@ extern volatile uint32_t timeout;       // global variable for timeout
 extern int16_t batVoltage;              // global variable for battery voltage
 
 static uint32_t inactivity_timeout_counter;
+static uint32_t main_loop_counter;
 
 extern uint8_t nunchuk_data[6];
 #ifdef CONTROL_PPM
@@ -510,35 +523,65 @@ int main(void) {
     #if defined CONTROL_SERIAL_USART2 || defined CONTROL_SERIAL_USART3
 
       // Handle received data validity, timeout and fix out-of-sync if necessary
-      if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
-        if (timeoutFlagSerial) {                      // Check for previous timeout flag
-          if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
-            timeoutFlagSerial   = 0;                  // Timeout flag cleared
+      #ifdef CONTROL_IBUS
+        ibus_chksum = 0xFFFF - IBUS_LENGTH - IBUS_COMMAND;
+        for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i++) {
+          ibus_chksum -= command.channels[i];
+        }
+        if (command.start == IBUS_LENGTH && command.type == IBUS_COMMAND && ibus_chksum == (uint16_t)((command.checksumh << 8) + command.checksuml)) {
+          if (timeoutFlagSerial) {                      // Check for previous timeout flag
+            if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
+              timeoutFlagSerial = 0;                    // Timeout flag cleared
+          } else {
+            for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
+              ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
+            }
+            cmd1              = CLAMP((ibus_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+            cmd2              = CLAMP((ibus_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+            command.start     = 0xFF;                   // Change the Start Frame for timeout detection in the next cycle
+            timeoutCntSerial  = 0;                      // Reset the timeout counter
+          }
         } else {
-          cmd1            = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
-          cmd2            = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
-          command.start   = 0xFFFF;                   // Change the Start Frame for timeout detection in the next cycle
-          timeoutCntSerial      = 0;                  // Reset the timeout counter
+          if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
+            timeoutFlagSerial = 1;                      // Timeout detected
+            timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
+          }
+          // Check periodically the received Start Frame. If it is NOT OK, most probably we are out-of-sync. Try to re-sync by reseting the DMA
+          if (main_loop_counter % 25 == 0 && command.start != IBUS_LENGTH && command.start != 0xFF) {
+            HAL_UART_DMAStop(&huart);
+            HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
+          }
         }
-      } else {
-        if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
-          timeoutFlagSerial     = 1;                  // Timeout detected
-          timeoutCntSerial      = SERIAL_TIMEOUT;     // Limit timout counter value
+      #else
+        if (command.start == START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
+          if (timeoutFlagSerial) {                      // Check for previous timeout flag
+            if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
+              timeoutFlagSerial = 0;                    // Timeout flag cleared
+          } else {
+            cmd1              = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
+            cmd2              = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
+            command.start     = 0xFFFF;                 // Change the Start Frame for timeout detection in the next cycle
+            timeoutCntSerial  = 0;                      // Reset the timeout counter
+          }
+        } else {
+          if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
+            timeoutFlagSerial = 1;                      // Timeout detected
+            timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
+          }
+          // Check periodically the received Start Frame. If it is NOT OK, most probably we are out-of-sync. Try to re-sync by reseting the DMA
+          if (main_loop_counter % 25 == 0 && command.start != START_FRAME && command.start != 0xFFFF) {
+            HAL_UART_DMAStop(&huart);
+            HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
+          }
         }
-        // Check the received Start Frame. If it is NOT OK, most probably we are out-of-sync.
-        // Try to re-sync by reseting the DMA
-        if (command.start != START_FRAME && command.start != 0xFFFF) {
-          HAL_UART_DMAStop(&huart);
-          HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
-        }
-      }
+      #endif
 
-      if (timeoutFlagSerial) {                        // In case of timeout bring the system to a Safe State
-        ctrlModReq  = 0;                        // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
+      if (timeoutFlagSerial) {                          // In case of timeout bring the system to a Safe State
+        ctrlModReq  = 0;                                // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
         cmd1        = 0;
         cmd2        = 0;
       } else {
-        ctrlModReq  = ctrlModReqRaw;            // Follow the Mode request
+        ctrlModReq  = ctrlModReqRaw;                    // Follow the Mode request
       }
       timeout = 0;
 
@@ -717,9 +760,7 @@ int main(void) {
     board_temp_adcFilt  = (int16_t)(board_temp_adcFixdt >> 20);  // convert fixed-point to integer
     board_temp_deg_c    = (TEMP_CAL_HIGH_DEG_C - TEMP_CAL_LOW_DEG_C) * (board_temp_adcFilt - TEMP_CAL_LOW_ADC) / (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
 
-    serialSendCnt++;              // Increment the counter
-    if (serialSendCnt > 20) {     // Send data every 100 ms = 20 * 5 ms, where 5 ms is approximately the main loop duration
-      serialSendCnt = 0;          // Reset the counter
+    if (main_loop_counter % 25 == 0) {    // Send data periodically
 
       // ####### DEBUG SERIAL OUT #######
       #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
@@ -738,15 +779,15 @@ int main(void) {
       // ####### FEEDBACK SERIAL OUT #######
       #elif defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
         if(UART_DMA_CHANNEL->CNDTR == 0) {
-          Feedback.start	        = (uint16_t)START_FRAME;
+          Feedback.start          = (uint16_t)START_FRAME;
           Feedback.cmd1           = (int16_t)cmd1;
           Feedback.cmd2           = (int16_t)cmd2;
-          Feedback.speedR	        = (int16_t)speedR;
-          Feedback.speedL	        = (int16_t)speedL;
-          Feedback.speedR_meas	  = (int16_t)rtY_Left.n_mot;
-          Feedback.speedL_meas	  = (int16_t)rtY_Right.n_mot;
-          Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
-          Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
+          Feedback.speedR         = (int16_t)speedR;
+          Feedback.speedL         = (int16_t)speedL;
+          Feedback.speedR_meas    = (int16_t)rtY_Left.n_mot;
+          Feedback.speedL_meas    = (int16_t)rtY_Right.n_mot;
+          Feedback.batVoltage     = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
+          Feedback.boardTemp      = (int16_t)board_temp_deg_c;
           Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR ^ Feedback.speedL
                                     ^ Feedback.speedR_meas ^ Feedback.speedL_meas ^ Feedback.batVoltage ^ Feedback.boardTemp);
 
@@ -808,6 +849,9 @@ int main(void) {
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
       poweroff();
     }
+
+    main_loop_counter++;
+    timeout++;
   }
 }
 
@@ -914,12 +958,12 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y)
   */
 void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x)
 {
-  uint8_t 	b_timeout;
-  uint8_t 	b_hyst;
-  uint8_t 	b_pulse;
-  uint8_t 	z_pulseCnt;
+  uint8_t   b_timeout;
+  uint8_t   b_hyst;
+  uint8_t   b_pulse;
+  uint8_t   z_pulseCnt;
   uint8_t   z_pulseCntRst;
-  uint32_t 	t_time;
+  uint32_t  t_time;
 
   // Detect hysteresis
   if (x->b_hysteresis) {
@@ -958,13 +1002,13 @@ void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x)
 
   // Check if complete tap presses are detected AND no timeout
   if ((z_pulseCnt >= MULTIPLE_TAP_NR) && (!b_timeout)) {
-    x->b_multipleTap = !x->b_multipleTap;	// Toggle output
+    x->b_multipleTap = !x->b_multipleTap; // Toggle output
   }
 
   // Update states
   x->z_pulseCntPrev = z_pulseCnt;
-  x->b_hysteresis 	= b_hyst;
-  x->t_timePrev 	  = t_time;
+  x->b_hysteresis   = b_hyst;
+  x->t_timePrev     = t_time;
 }
 
 // ===========================================================
