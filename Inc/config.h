@@ -7,7 +7,7 @@
 
 #if !defined(PLATFORMIO)
   //#define VARIANT_ADC         // Variant for control via ADC input
-  //#define VARIANT_USART3      // Variant for Serial control via USART3 input
+  //#define VARIANT_USART      // Variant for Serial control via USART3 input
   //#define VARIANT_NUNCHUK    // Variant for Nunchuk controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
@@ -123,7 +123,7 @@
   // #define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
   // #define FEEDBACK_SERIAL_USART3                     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
   #define DEBUG_SERIAL_USART3                        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-#elif defined(VARIANT_USART3)
+#elif defined(VARIANT_USART)
   // #define CONTROL_SERIAL_USART2                      // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
   // #define FEEDBACK_SERIAL_USART2                     // left sensor board cable, disable if ADC or PPM is used!
   // #define DEBUG_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
@@ -317,7 +317,7 @@
 
 // ############################### VALIDATE SETTINGS ###############################
 
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART3) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
