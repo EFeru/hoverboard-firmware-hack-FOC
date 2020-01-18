@@ -142,11 +142,11 @@ If the board draws more than 100mA in idle, it's probably broken.
 
 If the motors do something, but don't rotate smooth and quietly, try to use an alternative phase mapping. Usually, color-correct mapping (blue to blue, green to green, yellow to yellow) works fine. However, some hoverboards have a different layout then others, and this might be the reason your motor isn't spinning.
 
-Nunchuck not working: Use the right one of the 2 types of nunchucks. Use i2c pullups.
+Nunchuk not working: Use the right one of the 2 types of nunchuks. Use i2c pullups.
 
-Nunchuck or PPM working bad: The i2c bus and PPM signal are very sensitive to emv distortions of the motor controller. They get stronger the faster you are. Keep cables short, use shielded cable, use ferrits, stabilize voltage in nunchuck or reviever, add i2c pullups. To many errors leads to very high accelerations which triggers the protection board within the battery to shut everything down.
+Nunchuk or PPM working bad: The i2c bus and PPM signal are very sensitive to emv distortions of the motor controller. They get stronger the faster you are. Keep cables short, use shielded cable, use ferrits, stabilize voltage in nunchuk or reviever, add i2c pullups. To many errors leads to very high accelerations which triggers the protection board within the battery to shut everything down.
 
-Recommendation: Nunchuck Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
+Recommendation: Nunchuk Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
 
 Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
 
@@ -156,7 +156,7 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) and / or [/Inc/config.h](/Inc/config.h)):
 - **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
 - **VARIANT_USART3**: In this variant the motors are controlled via serial protocol on USART3 right sensor cable (short wired). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
-- **VARIANT_NUNCHUCK**: Wii Nunchuck offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
+- **VARIANT_ NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
 - **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum signal
 - **VARIANT_IBUS**: This is when you want to use a RC remote control with Flysky IBUS protocol connected to the Left sensor cable.
 - **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.

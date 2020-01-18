@@ -174,10 +174,10 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t
 void rateLimiter16(int16_t u, int16_t rate, int16_t *y);
 void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x);
 
-// Define I2C, Nunchuck, PPM functions
+// Define I2C, Nunchuk, PPM functions
 void I2C_Init(void);
-void Nunchuck_Init(void);
-void Nunchuck_Read(void);
-uint8_t Nunchuck_Ping(void);
+void Nunchuk_Init(void);
+void Nunchuk_Read(void);
+uint8_t Nunchuk_Ping(void);
 void PPM_Init(void);
 void PPM_ISR_Callback(void);
