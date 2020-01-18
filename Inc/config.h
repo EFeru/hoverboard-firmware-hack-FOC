@@ -17,6 +17,7 @@
 #endif
 
 #define INACTIVITY_TIMEOUT      8         // Minutes of not driving until poweroff. it is not very precise.
+#define BEEPS_BACKWARD        1     // 0 or 1a
 // ########################### END OF GENERAL SETTINGS ############################
 
 
@@ -31,6 +32,8 @@
 #define BAT_CALIB_REAL_VOLTAGE  3970      // input voltage measured by multimeter (multiplied by 100). In this case 43.00 V * 100 = 4300
 #define BAT_CALIB_ADC           1492      // adc-value measured by mainboard (value nr 5 on UART debug output)
 #define BAT_CELLS               10        // battery number of cells. Normal Hoverboard battery: 10s
+#define BAT_LOW_LVL1_ENABLE     0         // to beep or not to beep, 1 or 0
+#define BAT_LOW_LVL2_ENABLE     1         // to beep or not to beep, 1 or 0
 #define BAT_LOW_LVL1            (360 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // gently beeps at this voltage level. [V*100/cell]. In this case 3.60 V/cell
 #define BAT_LOW_LVL2            (350 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // your battery is almost empty. Charge now! [V*100/cell]. In this case 3.50 V/cell
 #define BAT_LOW_DEAD            (337 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // undervoltage poweroff. (while not driving) [V*100/cell]. In this case 3.37 V/cell
@@ -52,6 +55,7 @@
 #define TEMP_CAL_LOW_DEG_C      358       // temperature 1: measured temperature [°C * 10]. Here 35.8 °C
 #define TEMP_CAL_HIGH_ADC       1588      // temperature 2: ADC value
 #define TEMP_CAL_HIGH_DEG_C     489       // temperature 2: measured temperature [°C * 10]. Here 48.9 °C
+#define TEMP_WARNING_ENABLE     0         // to beep or not to beep, 1 or 0, DO NOT ACTIVITE WITHOUT CALIBRATION!
 #define TEMP_WARNING            600       // annoying fast beeps [°C * 10].  Here 60.0 °C
 #define TEMP_POWEROFF_ENABLE    0         // to poweroff or not to poweroff, 1 or 0, DO NOT ACTIVITE WITHOUT CALIBRATION!
 #define TEMP_POWEROFF           650       // overheat poweroff. (while not driving) [°C * 10]. Here 65.0 °C
@@ -372,7 +376,7 @@
 
 
 // ############################### VALIDATE SETTINGS ###############################
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_IBUS) && !defined(DEBUG_SERIAL_USART3) && !defined(DEBUG_SERIAL_USART2)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) &&t !defined(VARIANT_IBUS) && !defined(DEBUG_SERIAL_USART3) && !defined(DEBUG_SERIAL_USART2)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
