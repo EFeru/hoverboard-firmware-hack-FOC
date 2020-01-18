@@ -146,7 +146,7 @@ typedef struct{
 static SerialFeedback Feedback;
 #endif
 
-#if defined(CONTROL_ NUNCHUK) || defined(SUPPORT_ NUNCHUK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
+#if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
 static uint8_t button1, button2;
 #endif
 
@@ -304,7 +304,7 @@ int main(void) {
     PPM_Init();
   #endif
 
-  #ifdef CONTROL_ NUNCHUK
+  #ifdef CONTROL_NUNCHUK
     I2C_Init();
     Nunchuk_Init();
   #endif
@@ -453,7 +453,7 @@ int main(void) {
       }
     #endif
 
-    #if defined(CONTROL_ NUNCHUK) || defined(SUPPORT_ NUNCHUK)
+    #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
       if (nunchuk_connected != 0) {
         Nunchuk_Read();
         cmd1 = CLAMP((nunchuk_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuk joystick readings range 30 - 230
@@ -714,7 +714,7 @@ int main(void) {
         poweroff();
       }
 
-      #ifdef SUPPORT_ NUNCHUK
+      #ifdef SUPPORT_NUNCHUK
         if (counter % 500 == 0) {
           if (nunchuk_connected == 0 && enable == 0) {
             if (Nunchuk_Ping()) {
