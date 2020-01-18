@@ -376,7 +376,7 @@
 
 
 // ############################### VALIDATE SETTINGS ###############################
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) &&t !defined(VARIANT_IBUS) && !defined(DEBUG_SERIAL_USART3) && !defined(DEBUG_SERIAL_USART2)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_IBUS) && !defined(DEBUG_SERIAL_USART3) && !defined(DEBUG_SERIAL_USART2)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
