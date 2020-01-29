@@ -58,7 +58,7 @@ typedef struct{
    int16_t 	speedL_meas;
    int16_t 	batVoltage;
    int16_t 	boardTemp;
-   int16_t  checksum;
+   uint16_t checksum;
 } SerialFeedback;
 SerialFeedback Feedback;
 SerialFeedback NewFeedback;

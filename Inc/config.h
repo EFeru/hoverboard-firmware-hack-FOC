@@ -9,16 +9,50 @@
 #if !defined(PLATFORMIO)
   //#define VARIANT_ADC         // Variant for control via ADC input
   //#define VARIANT_USART       // Variant for Serial control via USART3 input
-  //#define VARIANT_NUNCHUK    // Variant for Nunchuk controlled vehicle build
+  //#define VARIANT_NUNCHUK     // Variant for Nunchuk controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
   //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
 #endif
 
-#define INACTIVITY_TIMEOUT      8         // Minutes of not driving until poweroff. it is not very precise.
-#define BEEPS_BACKWARD        1     // 0 or 1a
+#define INACTIVITY_TIMEOUT      8     // Minutes of not driving until poweroff. it is not very precise.
+#define BEEPS_BACKWARD          1     // 0 or 1
 // ########################### END OF GENERAL SETTINGS ############################
+
+
+// ############################### DO-NOT-TOUCH SETTINGS ###############################
+#define PWM_FREQ            16000     // PWM frequency in Hz / is also used for buzzer
+#define DEAD_TIME              48     // PWM deadtime
+#ifdef VARIANT_TRANSPOTTER
+  #define DELAY_IN_MAIN_LOOP    2
+#else
+  #define DELAY_IN_MAIN_LOOP    5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
+#endif
+#define TIMEOUT                 5     // number of wrong / missing input commands before emergency off
+#define A2BIT_CONV             50     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
+
+// ADC conversion time definitions
+#define ADC_CONV_TIME_1C5       (14)  //Total ADC clock cycles / conversion = (  1.5+12.5)
+#define ADC_CONV_TIME_7C5       (20)  //Total ADC clock cycles / conversion = (  7.5+12.5)
+#define ADC_CONV_TIME_13C5      (26)  //Total ADC clock cycles / conversion = ( 13.5+12.5)
+#define ADC_CONV_TIME_28C5      (41)  //Total ADC clock cycles / conversion = ( 28.5+12.5)
+#define ADC_CONV_TIME_41C5      (54)  //Total ADC clock cycles / conversion = ( 41.5+12.5)
+#define ADC_CONV_TIME_55C5      (68)  //Total ADC clock cycles / conversion = ( 55.5+12.5)
+#define ADC_CONV_TIME_71C5      (84)  //Total ADC clock cycles / conversion = ( 71.5+12.5)
+#define ADC_CONV_TIME_239C5     (252) //Total ADC clock cycles / conversion = (239.5+12.5)
+
+// This settings influences the actual sample-time. Only use definitions above
+// This parameter needs to be the same as the ADC conversion for Current Phase of the FIRST Motor in setup.c
+#define ADC_CONV_CLOCK_CYCLES   (ADC_CONV_TIME_7C5)
+
+// Set the configured ADC divider. This parameter needs to be the same ADC divider as PeriphClkInit.AdcClockSelection (see main.c)
+#define ADC_CLOCK_DIV           (4)
+
+// ADC Total conversion time: this will be used to offset TIM8 in advance of TIM1 to align the Phase current ADC measurement
+// This parameter is used in setup.c
+#define ADC_TOTAL_CONV_TIME     (ADC_CLOCK_DIV * ADC_CONV_CLOCK_CYCLES) // = ((SystemCoreClock / ADC_CLOCK_HZ) * ADC_CONV_CLOCK_CYCLES), where ADC_CLOCK_HZ = SystemCoreClock/ADC_CLOCK_DIV
+// ########################### END OF  DO-NOT-TOUCH SETTINGS ############################
 
 
 
@@ -63,6 +97,56 @@
 
 
 
+// ############################### MOTOR CONTROL #########################
+/* GENERAL NOTES:
+ * 1. The parameters here are over-writing the default motor parameters. For all the available parameters check BLDC_controller_data.c
+ * 2. The parameters are represented in fixed point data type for a more efficient code execution
+ * 3. For calibrating the fixed-point parameters use the Fixed-Point Viewer tool (see <https://github.com/EmanuelFeru/FixedPointViewer>)
+ * 4. For more details regarding the parameters and the working principle of the controller please consult the Simulink model
+ * 5. A webview was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code.
+ * The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge
+ *
+ * NOTES Field Weakening / Phase Advance:
+ * 1. The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
+ * 2. The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
+ * 3. If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
+
+   Inputs:
+    - cmd1 and cmd2: analog normalized input values. INPUT_MIN to INPUT_MAX
+    - button1 and button2: digital input values. 0 or 1
+    - adc_buffer.l_tx2 and adc_buffer.l_rx2: unfiltered ADC values (you do not need them). 0 to 4095
+   Outputs:
+    - speedR and speedL: normal driving INPUT_MIN to INPUT_MAX
+*/
+// Control selections
+#define CTRL_TYP_SEL    2               // [-] Control type selection: 0 = Commutation , 1 = Sinusoidal, 2 = FOC Field Oriented Control (default)
+#define CTRL_MOD_REQ    1               // [-] Control mode request: 0 = Open mode, 1 = VOLTAGE mode (default), 2 = SPEED mode, 3 = TORQUE mode. Note: SPEED and TORQUE modes are only available for FOC!
+#define DIAG_ENA        1               // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
+
+// Limitation settings
+#define I_MOT_MAX       15              // [A] Maximum motor current limit
+#define I_DC_MAX        17              // [A] Maximum DC Link current limit (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A)
+#define N_MOT_MAX       1000            // [rpm] Maximum motor speed limit
+
+// Field Weakening / Phase Advance
+#define FIELD_WEAK_ENA  0               // [-] Field Weakening / Phase Advance enable flag: 0 = Disabled (default), 1 = Enabled
+#define FIELD_WEAK_MAX  5               // [A] Maximum Field Weakening D axis current (only for FOC). Higher current results in higher maximum speed.
+#define PHASE_ADV_MAX   25              // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
+#define FIELD_WEAK_HI   1500            // [-] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
+#define FIELD_WEAK_LO   1000            // [-] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
+
+// Data checks - Do NOT touch
+#if (FIELD_WEAK_ENA == 0)
+  #undef  FIELD_WEAK_HI
+  #define FIELD_WEAK_HI 1000            // [-] This prevents the input target going beyond 1000 when Field Weakening is not enabled
+#endif
+#define INPUT_MAX MAX( 1000, FIELD_WEAK_HI)   // [-] Defines the Input target maximum limitation
+#define INPUT_MIN MIN(-1000,-FIELD_WEAK_HI)   // [-] Defines the Input target minimum limitation
+#define INPUT_MID INPUT_MAX / 2
+// ########################### END OF MOTOR CONTROL ########################
+
+
+
 // ############################### DEBUG SERIAL ###############################
 /* Connect GND and RX of a 3.3v uart-usb adapter to the left (USART2) or right sensor board cable (USART3)
  * Be careful not to use the red wire of the cable. 15v will destroye evrything.
@@ -86,7 +170,9 @@
 */
 
 // #define DEBUG_SERIAL_USART2          // left sensor board cable, disable if ADC or PPM is used!
-// #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+#if defined(VARIANT_ADC) || defined(VARIANT_HOVERCAR)
+#define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+#endif
 
 #ifndef VARIANT_TRANSPOTTER
   //#define DEBUG_SERIAL_SERVOTERM
@@ -109,6 +195,8 @@
  * If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
  * If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
 */
+// Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
+#define DEFAULT_RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
 #define DEFAULT_FILTER              6553  // Default for FILTER 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
 #define DEFAULT_SPEED_COEFFICIENT   16384 // Default for SPEED_COEFFICIENT 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
 #define DEFAULT_STEER_COEFFICIENT   8192  // Defualt for STEER_COEFFICIENT 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0.
@@ -145,10 +233,10 @@
 
 // ############################ VARIANT_USART SETTINGS ############################
 #ifdef VARIANT_USART
-  // #define CONTROL_SERIAL_USART2                   // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-  // #define FEEDBACK_SERIAL_USART2                  // left sensor board cable, disable if ADC or PPM is used!
-  //#define CONTROL_SERIAL_USART3                      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-  //#define FEEDBACK_SERIAL_USART3                   // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  // #define CONTROL_SERIAL_USART2         // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  // #define FEEDBACK_SERIAL_USART2        // left sensor board cable, disable if ADC or PPM is used!
+  #define CONTROL_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+  #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 // ######################## END OF VARIANT_USART SETTINGS #########################
 
@@ -214,11 +302,17 @@
   #define ADC1_MAX            2500      // max ADC1-value while poti at maximum-position (0 - 4095)
   #define ADC2_MIN            500       // min ADC2-value while poti at minimum-position (0 - 4095)
   #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
-  #define SPEED_COEFFICIENT  16384      //  1.0f
-  #define STEER_COEFFICIENT  0          //  0.0f
+  #define SPEED_COEFFICIENT   16384     //  1.0f
+  #define STEER_COEFFICIENT   0         //  0.0f
   //#define INVERT_R_DIRECTION            // Invert rotation of right motor
   //#define INVERT_L_DIRECTION            // Invert rotation of left motor
 #endif
+
+// Multiple tap detection: default DOUBLE Tap on Brake pedal (4 pulses)
+#define MULTIPLE_TAP_NR       2 * 2      // [-] Define tap number: MULTIPLE_TAP_NR = number_of_taps * 2, number_of_taps = 1 (for single taping), 2 (for double tapping), 3 (for triple tapping), etc...
+#define MULTIPLE_TAP_HI       600        // [-] Multiple tap detection High hysteresis threshold
+#define MULTIPLE_TAP_LO       200        // [-] Multiple tap detection Low hysteresis threshold
+#define MULTIPLE_TAP_TIMEOUT  2000       // [ms] Multiple tap detection Timeout period. The taps need to happen within this time window to be accepted.
 // ######################## END OF VARIANT_HOVERCAR SETTINGS #########################
 
 
@@ -227,121 +321,30 @@
 //TODO ADD VALIDATION
 #ifdef VARIANT_TRANSPOTTER
   #define CONTROL_GAMETRAK
-  //#define SUPPORT_LCD
-  //#define SUPPORT_NUNCHUK
-  #define GAMETRAK_CONNECTION_NORMAL   // for normal wiring according to the wiki instructions
+  #define SUPPORT_LCD
+  #define SUPPORT_NUNCHUK
+  #define GAMETRAK_CONNECTION_NORMAL    // for normal wiring according to the wiki instructions
   //#define GAMETRAK_CONNECTION_ALTERNATE // use this define instead if you messed up the gametrak ADC wiring (steering is speed, and length of the wire is steering)
-  #define ROT_P          1.2           // P coefficient for the direction controller. Positive / Negative values to invert gametrak steering direction.
+  #define ROT_P               1.2       // P coefficient for the direction controller. Positive / Negative values to invert gametrak steering direction.
   // during nunchuk control (only relevant when activated)
-  #define SPEED_COEFFICIENT   14746    // 0.9f - higher value == stronger. 0.0 to ~2.0?
-  #define STEER_COEFFICIENT   8192     // 0.5f - higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
+  #define SPEED_COEFFICIENT   14746     // 0.9f - higher value == stronger. 0.0 to ~2.0?
+  #define STEER_COEFFICIENT   8192      // 0.5f - higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
+  #define INVERT_R_DIRECTION            // Invert right motor
+  #define INVERT_L_DIRECTION            // Invert left motor
 #endif
 // ############################# END OF VARIANT_TRANSPOTTER SETTINGS ########################
 
 
 
-// ############################### MOTOR CONTROL #########################
-/* GENERAL NOTES:
- * 1. The parameters are over-writing the default motor parameters. For all the available parameters check BLDC_controller_data.c
- * 2. The parameters are represented in fixed point data type for a more efficient code execution
- * 3. For calibrating the fixed-point parameters use the Fixed-Point Viewer tool (see <https://github.com/EmanuelFeru/FixedPointViewer>)
- * 4. For more details regarding the parameters and the working principle of the controller please consult the Simulink model
- * 5. A webview was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code.
- * The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge
- *
- * NOTES Field Weakening / Phase Advance:
- * 1. The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
- * 2. The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
- * 3. If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
-
-   Inputs:
-    - cmd1 and cmd2: analog normalized input values. INPUT_MIN to INPUT_MAX
-    - button1 and button2: digital input values. 0 or 1
-    - adc_buffer.l_tx2 and adc_buffer.l_rx2: unfiltered ADC values (you do not need them). 0 to 4095
-   Outputs:
-    - speedR and speedL: normal driving INPUT_MIN to INPUT_MAX
-*/
-// Control selections
-#define CTRL_TYP_SEL    2               // [-] Control type selection: 0 = Commutation , 1 = Sinusoidal, 2 = FOC Field Oriented Control (default)
-#define CTRL_MOD_REQ    1               // [-] Control mode request: 0 = Open mode, 1 = VOLTAGE mode (default), 2 = SPEED mode, 3 = TORQUE mode. Note: SPEED and TORQUE modes are only available for FOC!
-#define DIAG_ENA        1               // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
-
-// Limitation settings
-#define I_MOT_MAX       15              // [A] Maximum motor current limit
-#define I_DC_MAX        17              // [A] Maximum DC Link current limit (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A)
-#define N_MOT_MAX       1000            // [rpm] Maximum motor speed limit
-
-// Field Weakening / Phase Advance
-#define FIELD_WEAK_ENA  0               // [-] Field Weakening / Phase Advance enable flag: 0 = Disabled (default), 1 = Enabled
-#define FIELD_WEAK_MAX  5               // [A] Maximum Field Weakening D axis current (only for FOC). Higher current results in higher maximum speed.
-#define PHASE_ADV_MAX   25              // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
-#define FIELD_WEAK_HI   1500            // [-] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
-#define FIELD_WEAK_LO   1000            // [-] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
-
-// Data checks - Do NOT touch
-#if (FIELD_WEAK_ENA == 0)
-  #undef  FIELD_WEAK_HI
-  #define FIELD_WEAK_HI 1000            // [-] This prevents the input target going beyond 1000 when Field Weakening is not enabled
-#endif
-#define INPUT_MAX MAX( 1000, FIELD_WEAK_HI)   // [-] Defines the Input target maximum limitation
-#define INPUT_MIN MIN(-1000,-FIELD_WEAK_HI)   // [-] Defines the Input target minimum limitation
-#define INPUT_MID INPUT_MAX / 2
-
-// Multiple tap detection: default DOUBLE Tap (4 pulses)
-#define MULTIPLE_TAP_NR       2 * 2      // [-] Define tap number: MULTIPLE_TAP_NR = number_of_taps * 2, number_of_taps = 1 (for single taping), 2 (for double tapping), 3 (for triple tapping), etc...
-#define MULTIPLE_TAP_HI       600        // [-] Multiple tap detection High hysteresis threshold
-#define MULTIPLE_TAP_LO       200        // [-] Multiple tap detection Low hysteresis threshold
-#define MULTIPLE_TAP_TIMEOUT  2000       // [ms] Multiple tap detection Timeout period. The taps need to happen within this time window to be accepted.
-
-// Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
-#define RATE                  480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
-// ########################### END OF MOTOR CONTROL ########################
-
-
-
-// ############################### DO-NOT-TOUCH SETTINGS ###############################
-#define PWM_FREQ            16000     // PWM frequency in Hz / is also used for buzzer
-#define DEAD_TIME              48     // PWM deadtime
-#ifdef VARIANT_TRANSPOTTER
-  #define DELAY_IN_MAIN_LOOP    2
-#else
-  #define DELAY_IN_MAIN_LOOP    5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
-#endif
-#define TIMEOUT                 5     // number of wrong / missing input commands before emergency off
-#define A2BIT_CONV             50     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
-
-// ADC conversion time definitions
-#define ADC_CONV_TIME_1C5       (14)  //Total ADC clock cycles / conversion = (  1.5+12.5)
-#define ADC_CONV_TIME_7C5       (20)  //Total ADC clock cycles / conversion = (  7.5+12.5)
-#define ADC_CONV_TIME_13C5      (26)  //Total ADC clock cycles / conversion = ( 13.5+12.5)
-#define ADC_CONV_TIME_28C5      (41)  //Total ADC clock cycles / conversion = ( 28.5+12.5)
-#define ADC_CONV_TIME_41C5      (54)  //Total ADC clock cycles / conversion = ( 41.5+12.5)
-#define ADC_CONV_TIME_55C5      (68)  //Total ADC clock cycles / conversion = ( 55.5+12.5)
-#define ADC_CONV_TIME_71C5      (84)  //Total ADC clock cycles / conversion = ( 71.5+12.5)
-#define ADC_CONV_TIME_239C5     (252) //Total ADC clock cycles / conversion = (239.5+12.5)
-
-// This settings influences the actual sample-time. Only use definitions above
-// This parameter needs to be the same as the ADC conversion for Current Phase of the FIRST Motor in setup.c
-#define ADC_CONV_CLOCK_CYCLES   (ADC_CONV_TIME_7C5)
-
-// Set the configured ADC divider. This parameter needs to be the same ADC divider as PeriphClkInit.AdcClockSelection (see main.c)
-#define ADC_CLOCK_DIV           (4)
-
-// ADC Total conversion time: this will be used to offset TIM8 in advance of TIM1 to align the Phase current ADC measurement
-// This parameter is used in setup.c
-#define ADC_TOTAL_CONV_TIME     (ADC_CLOCK_DIV * ADC_CONV_CLOCK_CYCLES) // = ((SystemCoreClock / ADC_CLOCK_HZ) * ADC_CONV_CLOCK_CYCLES), where ADC_CLOCK_HZ = SystemCoreClock/ADC_CLOCK_DIV
-// ########################### END OF  DO-NOT-TOUCH SETTINGS ############################
-
-
-
 // ########################### UART SETIINGS ############################
-#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
+#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || \
+    defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
   #define START_FRAME             0xAAAA                  // [-] Start frame definition for serial commands
   #define SERIAL_TIMEOUT          160                     // [-] Serial timeout duration for the received data. 160 ~= 0.8 sec. Calculation: 0.8 sec / 0.005 sec
 #endif
 #if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
   #ifndef USART2_BAUD
-    #define USART2_BAUD             38400                   // UART2 baud rate (long wired cable)
+    #define USART2_BAUD           38400                   // UART2 baud rate (long wired cable)
   #endif
   #define USART2_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
@@ -362,14 +365,17 @@
 
 
 // ############################### APPLY DEFAULT SETTINGS ###############################
+#ifndef RATE
+  #define RATE DEFAULT_RATE
+#endif
+#ifndef FILTER
+  #define FILTER DEFAULT_FILTER
+#endif
 #ifndef SPEED_COEFFICIENT
   #define SPEED_COEFFICIENT DEFAULT_SPEED_COEFFICIENT
 #endif
 #ifndef STEER_COEFFICIENT
   #define STEER_COEFFICIENT DEFAULT_STEER_COEFFICIENT
-#endif
-#ifndef FILTER
-  #define FILTER DEFAULT_FILTER
 #endif
 // ########################### END OF APPLY DEFAULT SETTING ############################
 
