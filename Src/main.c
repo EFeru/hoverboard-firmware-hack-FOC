@@ -83,7 +83,7 @@ extern I2C_HandleTypeDef hi2c2;
 #endif
 
 #ifdef VARIANT_TRANSPOTTER
-  uint8_t nunchuck_connected = 0;
+  uint8_t nunchuk_connected = 0;
   float steering;
   int feedforward;
 
@@ -97,7 +97,7 @@ extern I2C_HandleTypeDef hi2c2;
 
   uint16_t counter = 0;
 #else
-  uint8_t nunchuck_connected = 1;
+  uint8_t nunchuk_connected = 1;
 #endif
 
 #if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
@@ -146,7 +146,7 @@ typedef struct{
 static SerialFeedback Feedback;
 #endif
 
-#if defined(CONTROL_NUNCHUCK) || defined(SUPPORT_NUNCHUCK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
+#if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
 static uint8_t button1, button2;
 #endif
 
@@ -182,7 +182,7 @@ extern int16_t batVoltage;              // global variable for battery voltage
 static uint32_t inactivity_timeout_counter;
 static uint32_t main_loop_counter;
 
-extern uint8_t nunchuck_data[6];
+extern uint8_t nunchuk_data[6];
 #ifdef CONTROL_PPM
 extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
 #endif
@@ -304,9 +304,9 @@ int main(void) {
     PPM_Init();
   #endif
 
-  #ifdef CONTROL_NUNCHUCK
+  #ifdef CONTROL_NUNCHUK
     I2C_Init();
-    Nunchuck_Init();
+    Nunchuk_Init();
   #endif
 
   #if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
@@ -414,7 +414,7 @@ int main(void) {
 
       feedforward = ((distance - (int)(setDistance * 1345)));
 
-      if (nunchuck_connected == 0) {
+      if (nunchuk_connected == 0) {
         speedL = speedL * 0.8f + (CLAMP(feedforward +  ((steering)*((float)MAX(ABS(feedforward), 50)) * ROT_P), -850, 850) * -0.2f);
         speedR = speedR * 0.8f + (CLAMP(feedforward -  ((steering)*((float)MAX(ABS(feedforward), 50)) * ROT_P), -850, 850) * -0.2f);
         if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50)) {
@@ -453,14 +453,14 @@ int main(void) {
       }
     #endif
 
-    #if defined(CONTROL_NUNCHUCK) || defined(SUPPORT_NUNCHUCK)
-      if (nunchuck_connected != 0) {
-        Nunchuck_Read();
-        cmd1 = CLAMP((nunchuck_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuck joystick readings range 30 - 230
-        cmd2 = CLAMP((nunchuck_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
+    #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
+      if (nunchuk_connected != 0) {
+        Nunchuk_Read();
+        cmd1 = CLAMP((nunchuk_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuk joystick readings range 30 - 230
+        cmd2 = CLAMP((nunchuk_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
 
-        button1 = (uint8_t)nunchuck_data[5] & 1;
-        button2 = (uint8_t)(nunchuck_data[5] >> 1) & 1;
+        button1 = (uint8_t)nunchuk_data[5] & 1;
+        button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
       }
     #endif
 
@@ -697,7 +697,7 @@ int main(void) {
 
         HAL_Delay(1000);
 
-        nunchuck_connected = 0;
+        nunchuk_connected = 0;
       }
 
       if ((distance / 1345.0) - setDistance > 0.5 && (lastDistance / 1345.0) - setDistance > 0.5) { // Error, robot too far away!
@@ -714,19 +714,19 @@ int main(void) {
         poweroff();
       }
 
-      #ifdef SUPPORT_NUNCHUCK
+      #ifdef SUPPORT_NUNCHUK
         if (counter % 500 == 0) {
-          if (nunchuck_connected == 0 && enable == 0) {
-            if (Nunchuck_Ping()) {
+          if (nunchuk_connected == 0 && enable == 0) {
+            if (Nunchuk_Ping()) {
               HAL_Delay(500);
-              Nunchuck_Init();
+              Nunchuk_Init();
               #ifdef SUPPORT_LCD
                 LCD_SetLocation(&lcd, 0, 0);
-                LCD_WriteString(&lcd, "Nunchuck Control");
+                LCD_WriteString(&lcd, "Nunchuk Control");
               #endif
               timeout = 0;
               HAL_Delay(1000);
-              nunchuck_connected = 1;
+              nunchuk_connected = 1;
             }
           }
         }   
@@ -737,7 +737,7 @@ int main(void) {
           if (LCDerrorFlag == 1 && enable == 0) {
 
           } else {
-            if (nunchuck_connected == 0) {
+            if (nunchuk_connected == 0) {
               LCD_SetLocation(&lcd, 4, 0);
               LCD_WriteFloat(&lcd,distance/1345.0,2);
               LCD_SetLocation(&lcd, 10, 0);
