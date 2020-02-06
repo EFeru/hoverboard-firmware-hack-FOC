@@ -176,7 +176,7 @@
 
 #ifndef VARIANT_TRANSPOTTER
   //#define DEBUG_SERIAL_SERVOTERM
-  //#define DEBUG_SERIAL_ASCII
+  #define DEBUG_SERIAL_ASCII
 #endif
 // ########################### END OF DEBUG SERIAL ############################
 

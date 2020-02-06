@@ -550,6 +550,7 @@ int main(void) {
           if (main_loop_counter % 25 == 0 && command.start != IBUS_LENGTH && command.start != 0xFF) {
             HAL_UART_DMAStop(&huart);                
             HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
+            command.start = 0xFF;                       // Change the Start Frame to avoid entering again here if no data is received
           }
         }  
       #else
@@ -572,6 +573,7 @@ int main(void) {
           if (main_loop_counter % 25 == 0 && command.start != START_FRAME && command.start != 0xFFFF) {
             HAL_UART_DMAStop(&huart);                
             HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));
+            command.start = 0xFFFF;                     // Change the Start Frame to avoid entering again here if no data is received
           }
         }
       #endif     
