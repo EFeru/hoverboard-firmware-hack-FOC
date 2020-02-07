@@ -1,5 +1,4 @@
 # hoverboard-firmware-hack-FOC
-## with Field Oriented Control (FOC)
 [![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
@@ -8,6 +7,7 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
  - reduced noise and vibrations 	
  - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
+ 
  
  ---
  ## Hardware
@@ -19,6 +19,7 @@ Both USART2 & 3 can be used for UART and I2C, PA2&3 can be used as 12bit ADCs.
 
 The reverse-engineered schematics of the mainboard can be found here:
 http://vocke.tv/lib/exe/fetch.php?media=20150722_hoverboard_sch.pdf
+ 
  
  ---
  ## FOC firmware
@@ -98,7 +99,7 @@ The error codes above are reported for each motor in the variables **errCode_Lef
 
 Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer, like the ST-Link found on many STM devboards.
 
-If you have never flashed your sideboard before, the MCU is probably locked. To unlock the flash, check-out the [wiki page](link).
+If you have never flashed your sideboard before, the MCU is probably locked. To unlock the flash, check-out the wiki page [How to Unlock MCU flash](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki/How-to-Unlock-MCU-flash).
 
 Do not power the mainboard from the 3.3V of your programmer! This has already killed multiple mainboards.
 
@@ -142,6 +143,7 @@ Recommendation: Nunchuk Breakout Board https://github.com/Jan--Henrik/hoverboard
 
 Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
 
+
 ---
 ## Example Variants 
 
@@ -156,6 +158,7 @@ This firmware offers currently these variants (selectable in [platformio.ini](/p
 
 Of course the firmware can be further customized for other needs or projects.
 
+
 ---
 ## Acknowledgements
 
@@ -165,12 +168,13 @@ Last but not least, I would like to acknowledge and thank the following people:
 - Github: all the people that contributed via Pull Requests
 - ST Employee: [cedric H](https://community.st.com/s/question/0D50X0000B28qTDSQY/custom-foc-control-current-measurement-dma-timer-interrupt-needs-review)
 
+
 ---
 ## Contributions
 
 Every contribution to this repository is highly appriciated! Feel free to create pull requests to improve this firmware as ultimately you are going to help everyone. 
 
-If you want to donate to keep this firmware updated, check-out the link below:
+If you want to donate to keep this firmware updated, use the link below:
 
 [![paypal](https://www.paypalobjects.com/en_US/NL/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
 
