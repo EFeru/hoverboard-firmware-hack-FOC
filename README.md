@@ -172,7 +172,7 @@ Last but not least, I would like to acknowledge and thank the following people:
 ---
 ## Contributions
 
-Every contribution to this repository is highly appriciated! Feel free to create pull requests to improve this firmware as ultimately you are going to help everyone. 
+Every contribution to this repository is highly appreciated! Feel free to create pull requests to improve this firmware as ultimately you are going to help everyone. 
 
 If you want to donate to keep this firmware updated, please use the link below:
 
