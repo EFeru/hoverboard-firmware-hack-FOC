@@ -26,14 +26,12 @@
 #include "setup.h"
 #include "config.h"
 #include "comms.h"
+#include "eeprom.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
   #include "hd44780.h"
 #endif
 
-#ifdef VARIANT_TRANSPOTTER
-  #include "eeprom.h"
-#endif
 
 // Matlab includes and defines - from auto-code generation
 // ###############################################################################
@@ -45,7 +43,7 @@ RT_MODEL rtM_Right_;              /* Real-time model */
 RT_MODEL *const rtM_Left    = &rtM_Left_;
 RT_MODEL *const rtM_Right   = &rtM_Right_;
 
-P     rtP_Left;                   /* Block parameters (auto storage) */
+extern P rtP_Left;                /* Block parameters (auto storage) */
 DW    rtDW_Left;                  /* Observable states */
 ExtU  rtU_Left;                   /* External inputs */
 ExtY  rtY_Left;                   /* External outputs */
@@ -98,6 +96,7 @@ extern I2C_HandleTypeDef hi2c2;
   uint16_t counter = 0;
 #else
   uint8_t nunchuk_connected = 1;
+	uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300}; 	// Dummy address to avoid warnings
 #endif
 
 #if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
@@ -146,25 +145,24 @@ typedef struct{
 static SerialFeedback Feedback;
 #endif
 
-#if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK) || defined(CONTROL_PPM) || defined(CONTROL_ADC)
+#ifdef SUPPORT_BUTTONS
 static uint8_t button1, button2;
 #endif
 
 uint8_t ctrlModReqRaw = CTRL_MOD_REQ;
 uint8_t ctrlModReq    = CTRL_MOD_REQ;   // Final control mode request
-static int        cmd1;                 // normalized input value. -1000 to 1000
-static int        cmd2;                 // normalized input value. -1000 to 1000
 static int16_t    speed;                // local variable for speed. -1000 to 1000
 #ifndef VARIANT_TRANSPOTTER
+	static int        cmd1;               // normalized input value. -1000 to 1000
+	static int        cmd2;               // normalized input value. -1000 to 1000
   static int16_t  steer;                // local variable for steering. -1000 to 1000
   static int16_t  steerRateFixdt;       // local fixed-point variable for steering rate limiter
   static int16_t  speedRateFixdt;       // local fixed-point variable for speed rate limiter
   static int32_t  steerFixdt;           // local fixed-point variable for steering low-pass filter
   static int32_t  speedFixdt;           // local fixed-point variable for speed low-pass filter
 #endif
-#ifdef VARIANT_HOVERCAR
-  static MultipleTap MultipleTapBreak;  // define multiple tap functionality for the Break pedal
-#endif
+static MultipleTap MultipleTapBreak;  // define multiple tap functionality for the Break pedal
+
 static int16_t    speedAvg;             // average measured speed
 static int16_t    speedAvgAbs;          // average measured speed in absolute
 
@@ -197,7 +195,7 @@ void poweroff(void) {
             buzzerFreq = (uint8_t)i;
             HAL_Delay(100);
         }
-        HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 0);
+        HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_RESET);
         while(1) {}
   //  }
 }
@@ -232,7 +230,7 @@ int main(void) {
   MX_ADC1_Init();
   MX_ADC2_Init();
 
-  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 1);
+  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);
 
   HAL_ADC_Start(&hadc1);
   HAL_ADC_Start(&hadc2);
@@ -279,7 +277,7 @@ int main(void) {
   }
   buzzerFreq = 0;
 
-  HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
+  HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 
   #ifdef VARIANT_TRANSPOTTER
     int  lastDistance = 0;
@@ -458,17 +456,21 @@ int main(void) {
         Nunchuk_Read();
         cmd1 = CLAMP((nunchuk_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuk joystick readings range 30 - 230
         cmd2 = CLAMP((nunchuk_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
-
-        button1 = (uint8_t)nunchuk_data[5] & 1;
-        button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
+				
+				#ifdef SUPPORT_BUTTONS
+					button1 = (uint8_t)nunchuk_data[5] & 1;
+					button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
+				#endif
       }
     #endif
 
     #ifdef CONTROL_PPM
       cmd1 = CLAMP((ppm_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
       cmd2 = CLAMP((ppm_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
-      button1 = ppm_captured_value[5] > INPUT_MID;
-      button2 = 0;
+			#ifdef SUPPORT_BUTTONS
+				button1 = ppm_captured_value[5] > INPUT_MID;
+				button2 = 0;
+			#endif
       // float scale = ppm_captured_value[2] / 1000.0f;     // not used for now, uncomment if needed
     #endif
 
@@ -514,8 +516,10 @@ int main(void) {
       #endif
 
       // use ADCs as button inputs:
-      button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
-      button2 = (uint8_t)(adc_buffer.l_rx2 > 2000);  // ADC2
+			#ifdef SUPPORT_BUTTONS
+				button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
+				button2 = (uint8_t)(adc_buffer.l_rx2 > 2000);  // ADC2
+			#endif
 
       timeout = 0;
     #endif
@@ -833,7 +837,7 @@ int main(void) {
     } else if (timeoutFlagADC || timeoutFlagSerial) {  // beep in case of ADC or Serial timeout - fast beep      
       buzzerFreq    = 24;
       buzzerPattern = 1;
-    } else if (BEEPS_BACKWARD && speed < -50 && speedAvg < 0) {  // backward beep
+    } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBreak.b_multipleTap)) {  // backward beep
       buzzerFreq    = 5;
       buzzerPattern = 1;
     } else {  // do not beep

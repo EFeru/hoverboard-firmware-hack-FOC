@@ -136,7 +136,7 @@ void DMA1_Channel1_IRQHandler(void) {
       HAL_GPIO_TogglePin(BUZZER_PORT, BUZZER_PIN);
     }
   } else {
-      HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, 0);
+      HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, GPIO_PIN_RESET);
   }
 
   // ############################### MOTOR CONTROL ###############################

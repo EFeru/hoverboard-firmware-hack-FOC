@@ -112,7 +112,14 @@ To build and flash choose one of the following methods:
 - open the folder in the IDE of choice (vscode or Atom)
 - press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
 
-### Method 2: Using Ubuntu
+### Method 2: Using Keil uVision
+
+- in [Keil uVision](https://www.keil.com/download/product/), open the [mainboard-hack.uvproj](/MDK-ARM/)
+- if you are asked to install missing packages, click Yes
+- click Build Target (or press F7) to build the firmware
+- click Load Code (or press F8) to flash the firmware.
+
+### Method 3: Using Ubuntu
 
 - prerequisites: install [ST-Flash utility](https://github.com/texane/stlink).
 - open a terminal in the repo check-out folder and type:
