@@ -8,6 +8,9 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
  - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
  
+ #### For the hoverboard sideboard firmware see the following repositories:
+ - [hoverboard-sideboard-hack-GD](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-GD)
+ - [hoverboard-sideboard-hack-STM](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-STM)
  
  ---
  ## Hardware
