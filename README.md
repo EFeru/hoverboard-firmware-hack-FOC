@@ -98,6 +98,21 @@ The error codes above are reported for each motor in the variables **errCode_Lef
 
 
 ---
+## Example Variants 
+
+This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
+- **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
+- **VARIANT_USART**: In this variant the motors are controlled via serial protocol (e.g. on USART3 right sensor cable, the short wired cable). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
+- **VARIANT_NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
+- **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum signal
+- **VARIANT_IBUS**: This is when you want to use a RC remote control with Flysky IBUS protocol connected to the Left sensor cable.
+- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
+- **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
+
+Of course the firmware can be further customized for other needs or projects.
+
+
+---
 ## Flashing
 
 Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer, like the ST-Link found on many STM devboards.
@@ -138,6 +153,29 @@ make flash
 openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c flash "write_image erase build/hover.bin 0x8000000"
 ```
 
+### Method 4: MacOS
+- prerequisites:  first get brew https://brew.sh
+- then install stlink ST-Flash utility
+```
+brew install stlink
+```
+- open a terminal in the repo check-out folder and type:
+```
+make
+```
+If compiling fails because something is missing just install it with brew AND leave a comment to improve this howto or pull request ;-)
+
+- flash the firmware by typing:
+```
+make flash
+```
+- if unlock is needed
+```
+make unlock
+```
+
+
+
 ---
 ## Troubleshooting
 First, check that power is connected and voltage is >36V while flashing.
@@ -152,21 +190,6 @@ Nunchuk or PPM working bad: The i2c bus and PPM signal are very sensitive to emv
 Recommendation: Nunchuk Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
 
 Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
-
-
----
-## Example Variants 
-
-This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
-- **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
-- **VARIANT_USART**: In this variant the motors are controlled via serial protocol (e.g. on USART3 right sensor cable, the short wired cable). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
-- **VARIANT_NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
-- **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum signal
-- **VARIANT_IBUS**: This is when you want to use a RC remote control with Flysky IBUS protocol connected to the Left sensor cable.
-- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
-- **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
-
-Of course the firmware can be further customized for other needs or projects.
 
 
 ---
