@@ -19,7 +19,10 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+// Define to prevent recursive inclusion
+#ifndef DEFINES_H
+#define DEFINES_H
+
 #include "stm32f1xx_hal.h"
 
 #define LEFT_HALL_U_PIN GPIO_PIN_5
@@ -181,3 +184,6 @@ void Nunchuk_Read(void);
 uint8_t Nunchuk_Ping(void);
 void PPM_Init(void);
 void PPM_ISR_Callback(void);
+
+#endif
+

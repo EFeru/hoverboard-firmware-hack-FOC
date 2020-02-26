@@ -1,11 +1,14 @@
-#pragma once
+// Define to prevent recursive inclusion
+#ifndef CONFIG_H
+#define CONFIG_H
+
 #include "stm32f1xx_hal.h"
 
-// ############################### GENERAL SETTINGS ###############################
-// For variant selection, check platformio.ini
-// or define the desired build variant here if you want to use make in console
-// or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_NUNCHUK"
-// Only one at a time, choose wisely ;-)
+// ############################### VARIANT SELECTION ###############################
+// PlatformIO: uncomment desired variant in platformio.ini
+// Keil uVision: select desired variant from the Target drop down menu (to the right of the Load button)
+// Ubuntu: define the desired build variant here if you want to use make in console
+// or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_NUNCHUK". Select only one at a time.
 #if !defined(PLATFORMIO)
   //#define VARIANT_ADC         // Variant for control via ADC input
   //#define VARIANT_USART       // Variant for Serial control via USART3 input
@@ -13,12 +16,10 @@
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
   //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
+	//#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
 #endif
-
-#define INACTIVITY_TIMEOUT      8     // Minutes of not driving until poweroff. it is not very precise.
-#define BEEPS_BACKWARD          1     // 0 or 1
-// ########################### END OF GENERAL SETTINGS ############################
+// ########################### END OF VARIANT SELECTION ############################
 
 
 // ############################### DO-NOT-TOUCH SETTINGS ###############################
@@ -147,6 +148,26 @@
 
 
 
+// ############################## DEFAULT SETTINGS ############################
+// Default settings will be applied at the end of this config file if not set before
+#define INACTIVITY_TIMEOUT      	8     // Minutes of not driving until poweroff. it is not very precise.
+#define BEEPS_BACKWARD          	1     // 0 or 1
+// #define SUPPORT_BUTTONS							// Define for buttons support on ADC, Nunchuck
+
+/* FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
+ * Value of COEFFICIENT is in fixdt(1,16,14)
+ * If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
+ * If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
+*/
+// Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
+#define DEFAULT_RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
+#define DEFAULT_FILTER              6553  // Default for FILTER 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
+#define DEFAULT_SPEED_COEFFICIENT   16384 // Default for SPEED_COEFFICIENT 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
+#define DEFAULT_STEER_COEFFICIENT   8192  // Defualt for STEER_COEFFICIENT 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0.
+// ######################### END OF DEFAULT SETTINGS ##########################
+
+
+
 // ############################### DEBUG SERIAL ###############################
 /* Connect GND and RX of a 3.3v uart-usb adapter to the left (USART2) or right sensor board cable (USART3)
  * Be careful not to use the red wire of the cable. 15v will destroye evrything.
@@ -176,7 +197,7 @@
 
 #ifndef VARIANT_TRANSPOTTER
   //#define DEBUG_SERIAL_SERVOTERM
-  //#define DEBUG_SERIAL_ASCII
+  #define DEBUG_SERIAL_ASCII
 #endif
 // ########################### END OF DEBUG SERIAL ############################
 
@@ -185,22 +206,6 @@
 // ############################### DEBUG LCD ###############################
 //#define DEBUG_I2C_LCD             // standard 16x2 or larger text-lcd via i2c-converter on right sensor board cable
 // ########################### END OF DEBUG LCD ############################
-
-
-
-// ############################## VARIANT DEFAULT SETTINGS ############################
-/* Default settings will be applied at the end of this config file if not set before
- * FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
- * Value of COEFFICIENT is in fixdt(1,16,14)
- * If VAL_floatingPoint >= 0, VAL_fixedPoint = VAL_floatingPoint * 2^14
- * If VAL_floatingPoint < 0,  VAL_fixedPoint = 2^16 + floor(VAL_floatingPoint * 2^14).
-*/
-// Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
-#define DEFAULT_RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
-#define DEFAULT_FILTER              6553  // Default for FILTER 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
-#define DEFAULT_SPEED_COEFFICIENT   16384 // Default for SPEED_COEFFICIENT 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
-#define DEFAULT_STEER_COEFFICIENT   8192  // Defualt for STEER_COEFFICIENT 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0.
-// ######################### END OF VARIANT DEFAULT SETTINGS ##########################
 
 
 
@@ -317,12 +322,24 @@
 
 
 
+// ############################ VARIANT_HOVERBOARD SETTINGS ############################
+// #####  !  NOT IMPLEMENTED YET !  #####
+#ifdef VARIANT_HOVERBOARD
+  // #define CONTROL_SERIAL_USART2         // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  // #define FEEDBACK_SERIAL_USART2        // left sensor board cable, disable if ADC or PPM is used!
+  #define CONTROL_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+  #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+#endif
+// ######################## END OF VARIANT_HOVERBOARD SETTINGS #########################
+
+
+
 // ################################# VARIANT_TRANSPOTTER SETTINGS ############################
 //TODO ADD VALIDATION
 #ifdef VARIANT_TRANSPOTTER
   #define CONTROL_GAMETRAK
   #define SUPPORT_LCD
-  #define SUPPORT_NUNCHUK
+  // #define SUPPORT_NUNCHUK
   #define GAMETRAK_CONNECTION_NORMAL    // for normal wiring according to the wiki instructions
   //#define GAMETRAK_CONNECTION_ALTERNATE // use this define instead if you messed up the gametrak ADC wiring (steering is speed, and length of the wire is steering)
   #define ROT_P               1.2       // P coefficient for the direction controller. Positive / Negative values to invert gametrak steering direction.
@@ -382,7 +399,8 @@
 
 
 // ############################### VALIDATE SETTINGS ###############################
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_IBUS) && !defined(DEBUG_SERIAL_USART3) && !defined(DEBUG_SERIAL_USART2)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_IBUS) && \
+    !defined(VARIANT_HOVERCAR) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
@@ -440,4 +458,6 @@
   #error Total number of PPM channels needs to be set
 #endif
 // ############################# END OF VALIDATE SETTINGS ############################
+
+#endif
 
