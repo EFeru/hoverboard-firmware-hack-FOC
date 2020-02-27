@@ -125,7 +125,7 @@ Make sure you hold the powerbutton or connect a jumper to the power button pins 
 
 To build and flash choose one of the following methods:
 
-### Method 1: Using Platformio
+### Method 1: Using Platformio IDE
 
 - open the folder in the IDE of choice (vscode or Atom)
 - press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
@@ -137,12 +137,16 @@ To build and flash choose one of the following methods:
 - click Build Target (or press F7) to build the firmware
 - click Load Code (or press F8) to flash the firmware.
 
-### Method 3: Using Ubuntu
+### Method 3: Using Linux CLI
 
 - prerequisites: install [ST-Flash utility](https://github.com/texane/stlink).
-- open a terminal in the repo check-out folder and type:
+- open a terminal in the repo check-out folder and if you have definded the variant in [config.h](/Inc/config.h) type:
 ```
 make
+```
+or you can set the variant like this
+```
+make -e VARIANT=VARIANT_NUNCHUK
 ```
 - flash the firmware by typing:
 ```
@@ -153,15 +157,21 @@ make flash
 openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c flash "write_image erase build/hover.bin 0x8000000"
 ```
 
-### Method 4: MacOS
+### Method 4: MacOS CLI
 - prerequisites:  first get brew https://brew.sh
 - then install stlink ST-Flash utility
+
+#### Using Make
 ```
 brew install stlink
 ```
-- open a terminal in the repo check-out folder and type:
+- open a terminal in the repo check-out folder and if you have definded the variant in [config.h](/Inc/config.h) type:
 ```
 make
+```
+or you can set the variant like this
+```
+make -e VARIANT=VARIANT_####
 ```
 If compiling fails because something is missing just install it with brew AND leave a comment to improve this howto or pull request ;-)
 
@@ -174,7 +184,14 @@ make flash
 make unlock
 ```
 
+#### Using platformio CLI
 
+```
+brew install platformio
+platformio run -e VARIANT_####
+platformio run –target upload -e VARIANT_####
+```
+If you have set default_envs in [platformio.ini](/platformio.ini) you can ommit -e parameter
 
 ---
 ## Troubleshooting
