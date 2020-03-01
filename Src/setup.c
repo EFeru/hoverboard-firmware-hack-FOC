@@ -53,11 +53,12 @@ DMA_HandleTypeDef hdma_usart3_tx;
 volatile adc_buf_t adc_buffer;
 
 
-#if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
+#if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
+    defined(FEEDBACK_SERIAL_USAR2) || defined(DEBUG_SERIAL_USART2)
 void UART2_Init(void) {
 
   /* The code below is commented out - otwerwise Serial Receive does not work */
-  // #ifdef CONTROL_SERIAL_USART2
+  // #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
   //   /* DMA1_Channel6_IRQn interrupt configuration */
   //   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 5, 6);
   //   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
@@ -81,7 +82,7 @@ void UART2_Init(void) {
   huart2.Init.Parity        = UART_PARITY_NONE;
   huart2.Init.HwFlowCtl     = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling  = UART_OVERSAMPLING_16;
-  #if defined(CONTROL_SERIAL_USART2)
+  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     huart2.Init.Mode        = UART_MODE_TX_RX;
   #elif defined(DEBUG_SERIAL_USART2)
     huart2.Init.Mode        = UART_MODE_TX;
@@ -99,7 +100,7 @@ void UART2_Init(void) {
   GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  #ifdef CONTROL_SERIAL_USART2
+  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     GPIO_InitStruct.Pin     = GPIO_PIN_3;
     GPIO_InitStruct.Mode    = GPIO_MODE_INPUT; //GPIO_MODE_AF_PP;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -127,7 +128,7 @@ void UART2_Init(void) {
   hdma_usart2_tx.Init.Priority              = DMA_PRIORITY_LOW;
   HAL_DMA_Init(&hdma_usart2_tx);
 
-  #ifdef CONTROL_SERIAL_USART2
+  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     __HAL_LINKDMA(&huart2, hdmatx, hdma_usart2_tx);
   #endif
   #if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
@@ -139,11 +140,12 @@ void UART2_Init(void) {
 }
 #endif
 
-#if defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
+#if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || \
+    defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
 void UART3_Init(void) {
 
   /* The code below is commented out - otwerwise Serial Receive does not work */
-  // #ifdef CONTROL_SERIAL_USART3
+  // #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
   //   /* DMA1_Channel3_IRQn interrupt configuration */
   //   HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 3);
   //   HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
@@ -167,7 +169,7 @@ void UART3_Init(void) {
   huart3.Init.Parity          = UART_PARITY_NONE;
   huart3.Init.HwFlowCtl       = UART_HWCONTROL_NONE;
   huart3.Init.OverSampling    = UART_OVERSAMPLING_16;
-  #if defined(CONTROL_SERIAL_USART3)
+  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     huart3.Init.Mode          = UART_MODE_TX_RX;
   #elif defined(DEBUG_SERIAL_USART3)
     huart3.Init.Mode          = UART_MODE_TX;
@@ -185,7 +187,7 @@ void UART3_Init(void) {
   GPIO_InitStruct.Speed       = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  #ifdef CONTROL_SERIAL_USART3
+  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     GPIO_InitStruct.Pin       = GPIO_PIN_11;
     GPIO_InitStruct.Mode      = GPIO_MODE_INPUT;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -213,7 +215,7 @@ void UART3_Init(void) {
   hdma_usart3_tx.Init.Priority                = DMA_PRIORITY_LOW;
   HAL_DMA_Init(&hdma_usart3_tx);
 
-  #ifdef CONTROL_SERIAL_USART3
+  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     __HAL_LINKDMA(&huart3, hdmatx, hdma_usart3_tx);
   #endif
   #if defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)

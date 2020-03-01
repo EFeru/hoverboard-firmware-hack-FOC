@@ -114,12 +114,12 @@ void Nunchuk_Read(void) {
     timeout = 0;
   }
 
-#ifndef TRANSPOTTER
-  if (timeout > 3) {
-    HAL_Delay(50);
-    Nunchuk_Init();
-  }
-#endif
+  #ifndef TRANSPOTTER
+    if (timeout > 3) {
+      HAL_Delay(50);
+      Nunchuk_Init();
+    }
+  #endif
 
   //setScopeChannel(0, (int)nunchuk_data[0]);
   //setScopeChannel(1, (int)nunchuk_data[1]);

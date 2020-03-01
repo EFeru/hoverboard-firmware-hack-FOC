@@ -26,6 +26,7 @@
 #include "defines.h"
 #include "setup.h"
 #include "config.h"
+#include "util.h"
 
 // Matlab includes and defines - from auto-code generation
 // ###############################################################################
@@ -35,11 +36,11 @@
 extern RT_MODEL *const rtM_Left;
 extern RT_MODEL *const rtM_Right;
 
-extern DW rtDW_Left;                    /* Observable states */
+extern DW   rtDW_Left;                  /* Observable states */
 extern ExtU rtU_Left;                   /* External inputs */
 extern ExtY rtY_Left;                   /* External outputs */
 
-extern DW rtDW_Right;                   /* Observable states */
+extern DW   rtDW_Right;                 /* Observable states */
 extern ExtU rtU_Right;                  /* External inputs */
 extern ExtY rtY_Right;                  /* External outputs */
 // ###############################################################################
@@ -50,8 +51,6 @@ extern uint8_t ctrlModReq;
 static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
 int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
 int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
-uint8_t errCode_Left = 0;
-uint8_t errCode_Right = 0;
 
 volatile int pwml = 0;
 volatile int pwmr = 0;
@@ -70,10 +69,10 @@ static uint8_t enableFin    = 0;
 static const uint16_t pwm_res  = 64000000 / 2 / PWM_FREQ; // = 2000
 
 static uint16_t offsetcount = 0;
-static int16_t offsetrl1    = 2000;
-static int16_t offsetrl2    = 2000;
-static int16_t offsetrr1    = 2000;
-static int16_t offsetrr2    = 2000;
+static int16_t offsetrlA    = 2000;
+static int16_t offsetrlB    = 2000;
+static int16_t offsetrrB    = 2000;
+static int16_t offsetrrC    = 2000;
 static int16_t offsetdcl    = 2000;
 static int16_t offsetdcr    = 2000;
 
@@ -91,10 +90,10 @@ void DMA1_Channel1_IRQHandler(void) {
 
   if(offsetcount < 2000) {  // calibrate ADC offsets
     offsetcount++;
-    offsetrl1 = (adc_buffer.rl1 + offsetrl1) / 2;
-    offsetrl2 = (adc_buffer.rl2 + offsetrl2) / 2;
-    offsetrr1 = (adc_buffer.rr1 + offsetrr1) / 2;
-    offsetrr2 = (adc_buffer.rr2 + offsetrr2) / 2;
+    offsetrlA = (adc_buffer.rlA + offsetrlA) / 2;
+    offsetrlB = (adc_buffer.rlB + offsetrlB) / 2;
+    offsetrrB = (adc_buffer.rrB + offsetrrB) / 2;
+    offsetrrC = (adc_buffer.rrC + offsetrrC) / 2;
     offsetdcl = (adc_buffer.dcl + offsetdcl) / 2;
     offsetdcr = (adc_buffer.dcr + offsetdcr) / 2;
     return;
@@ -102,17 +101,17 @@ void DMA1_Channel1_IRQHandler(void) {
 
   if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time -> not any more, everything converted to fixed-point
     filtLowPass32(adc_buffer.batt1, BAT_FILT_COEF, &batVoltageFixdt);
-    batVoltage = (int16_t)(batVoltageFixdt >> 20);  // convert fixed-point to integer
+    batVoltage = (int16_t)(batVoltageFixdt >> 16);  // convert fixed-point to integer
   }
 
   // Get Left motor currents
-  curL_phaA = (int16_t)(offsetrl1 - adc_buffer.rl1);
-  curL_phaB = (int16_t)(offsetrl2 - adc_buffer.rl2);
+  curL_phaA = (int16_t)(offsetrlA - adc_buffer.rlA);
+  curL_phaB = (int16_t)(offsetrlB - adc_buffer.rlB);
   curL_DC   = (int16_t)(offsetdcl - adc_buffer.dcl);
   
   // Get Right motor currents
-  curR_phaB = (int16_t)(offsetrr1 - adc_buffer.rr1);
-  curR_phaC = (int16_t)(offsetrr2 - adc_buffer.rr2);
+  curR_phaB = (int16_t)(offsetrrB - adc_buffer.rrB);
+  curR_phaC = (int16_t)(offsetrrC - adc_buffer.rrC);
   curR_DC   = (int16_t)(offsetdcr - adc_buffer.dcr);
 
   // Disable PWM when current limit is reached (current chopping)
@@ -152,7 +151,7 @@ void DMA1_Channel1_IRQHandler(void) {
   OverrunFlag = true;
 
   /* Make sure to stop BOTH motors in case of an error */
-  enableFin = enable && !errCode_Left && !errCode_Right;
+  enableFin = enable && !rtY_Left.z_errCode && !rtY_Right.z_errCode;
  
   // ========================= LEFT MOTOR ============================ 
     // Get hall sensors values
@@ -178,7 +177,7 @@ void DMA1_Channel1_IRQHandler(void) {
     ul            = rtY_Left.DC_phaA;
     vl            = rtY_Left.DC_phaB;
     wl            = rtY_Left.DC_phaC;
-    errCode_Left  = rtY_Left.z_errCode;
+  // errCodeLeft  = rtY_Left.z_errCode;
   // motSpeedLeft = rtY_Left.n_mot;
   // motAngleLeft = rtY_Left.a_elecAngle;
 
@@ -213,7 +212,7 @@ void DMA1_Channel1_IRQHandler(void) {
     ur            = rtY_Right.DC_phaA;
     vr            = rtY_Right.DC_phaB;
     wr            = rtY_Right.DC_phaC;
-    errCode_Right = rtY_Right.z_errCode;
+ // errCodeRight  = rtY_Right.z_errCode;
  // motSpeedRight = rtY_Right.n_mot;
  // motAngleRight = rtY_Right.a_elecAngle;
 
