@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'filtLowPass'.
  *
- * Model version                  : 1.1165
+ * Model version                  : 1.1257
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Sun Oct  6 22:00:52 2019
+ * C/C++ source code generated on : Mon Feb 24 20:31:06 2020
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -81,7 +81,7 @@ preprocessor word size checks.
 #endif
 #endif
 
-extern int32_T filtLowPass_l(int16_T rtu_u, uint16_T rtu_coef, DW_filtLowPass
+extern int32_T filtLowPass_l(int32_T rtu_u, uint16_T rtu_coef, DW_filtLowPass
   *localDW);
 
 /*===========*
@@ -115,37 +115,35 @@ extern int32_T filtLowPass_l(int16_T rtu_u, uint16_T rtu_coef, DW_filtLowPass
 #endif
 
 /* Output and update for atomic system: '<Root>/filtLowPass' */
-int32_T filtLowPass_l(int16_T rtu_u, uint16_T rtu_coef, DW_filtLowPass *localDW)
+int32_T filtLowPass_l(int32_T rtu_u, uint16_T rtu_coef, DW_filtLowPass *localDW)
 {
-  int32_T q0;
-  int32_T q1;
+  int32_T rtb_UnitDelay1;
+  int64_T tmp;
   int32_T rty_y_0;
 
-  /* Outputs for Atomic SubSystem: '<S1>/Low_Pass_Filter1' */
-  /* Sum: '<S2>/Sum1' incorporates:
+  /* UnitDelay: '<S2>/UnitDelay1' */
+  rtb_UnitDelay1 = localDW->UnitDelay1_DSTATE;
+
+  /* Product: '<S2>/Divide3' incorporates:
    *  DataTypeConversion: '<S1>/Data Type Conversion'
-   *  Product: '<S2>/Divide1'
-   *  Product: '<S2>/Divide2'
-   *  Sum: '<S2>/Sum5'
-   *  UnitDelay: '<S2>/UnitDelay3'
+   *  Sum: '<S2>/Sum2'
    */
-  q0 = (int32_T)(((int64_T)(rtu_u << 16) * rtu_coef) >> 16);
-  q1 = (int32_T)(((int64_T)(65535U - rtu_coef) * localDW->UnitDelay3_DSTATE) >>
-                 16);
-  if ((q0 < 0) && (q1 < MIN_int32_T - q0)) {
-    rty_y_0 = MIN_int32_T;
-  } else if ((q0 > 0) && (q1 > MAX_int32_T - q0)) {
-    rty_y_0 = MAX_int32_T;
+  tmp = ((int64_T)((rtu_u << 4) - (rtb_UnitDelay1 >> 12)) * rtu_coef) >> 4;
+  if (tmp > 2147483647LL) {
+    tmp = 2147483647LL;
   } else {
-    rty_y_0 = q0 + q1;
+    if (tmp < -2147483648LL) {
+      tmp = -2147483648LL;
+    }
   }
 
-  /* Update for UnitDelay: '<S2>/UnitDelay3' incorporates:
-   *  Sum: '<S2>/Sum1'
+  /* Sum: '<S2>/Sum3' incorporates:
+   *  Product: '<S2>/Divide3'
    */
-  localDW->UnitDelay3_DSTATE = rty_y_0;
+  rty_y_0 = (int32_T)tmp + rtb_UnitDelay1;
 
-  /* End of Outputs for SubSystem: '<S1>/Low_Pass_Filter1' */
+  /* Update for UnitDelay: '<S2>/UnitDelay1' */
+  localDW->UnitDelay1_DSTATE = rty_y_0;
   return rty_y_0;
 }
 

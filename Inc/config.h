@@ -16,7 +16,7 @@
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
   //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
-	//#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
+  //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
 #endif
 // ########################### END OF VARIANT SELECTION ############################
@@ -67,11 +67,15 @@
 #define BAT_CALIB_REAL_VOLTAGE  3970      // input voltage measured by multimeter (multiplied by 100). In this case 43.00 V * 100 = 4300
 #define BAT_CALIB_ADC           1492      // adc-value measured by mainboard (value nr 5 on UART debug output)
 #define BAT_CELLS               10        // battery number of cells. Normal Hoverboard battery: 10s
-#define BAT_LOW_LVL1_ENABLE     0         // to beep or not to beep, 1 or 0
-#define BAT_LOW_LVL2_ENABLE     1         // to beep or not to beep, 1 or 0
-#define BAT_LOW_LVL1            (360 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // gently beeps at this voltage level. [V*100/cell]. In this case 3.60 V/cell
-#define BAT_LOW_LVL2            (350 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // your battery is almost empty. Charge now! [V*100/cell]. In this case 3.50 V/cell
-#define BAT_LOW_DEAD            (337 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // undervoltage poweroff. (while not driving) [V*100/cell]. In this case 3.37 V/cell
+#define BAT_LVL2_ENABLE         0         // to beep or not to beep, 1 or 0
+#define BAT_LVL1_ENABLE         1         // to beep or not to beep, 1 or 0
+#define BAT_BLINK_INTERVAL      80        // battery led blink interval (80 loops * 5ms ~= 400ms)
+#define BAT_LVL5                (390 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Green blink:  no beep
+#define BAT_LVL4                (380 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Yellow:       no beep
+#define BAT_LVL3                (370 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Yellow blink: no beep 
+#define BAT_LVL2                (360 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Red:          gently beep at this voltage level. [V*100/cell]. In this case 3.60 V/cell
+#define BAT_LVL1                (350 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Red blink:    fast beep. Your battery is almost empty. Charge now! [V*100/cell]. In this case 3.50 V/cell
+#define BAT_DEAD                (337 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // All leds off: undervoltage poweroff. (while not driving) [V*100/cell]. In this case 3.37 V/cell
 // ######################## END OF BATTERY ###############################
 
 
@@ -135,24 +139,16 @@
 #define PHASE_ADV_MAX   25              // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
 #define FIELD_WEAK_HI   1500            // [-] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
 #define FIELD_WEAK_LO   1000            // [-] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
-
-// Data checks - Do NOT touch
-#if (FIELD_WEAK_ENA == 0)
-  #undef  FIELD_WEAK_HI
-  #define FIELD_WEAK_HI 1000            // [-] This prevents the input target going beyond 1000 when Field Weakening is not enabled
-#endif
-#define INPUT_MAX MAX( 1000, FIELD_WEAK_HI)   // [-] Defines the Input target maximum limitation
-#define INPUT_MIN MIN(-1000,-FIELD_WEAK_HI)   // [-] Defines the Input target minimum limitation
-#define INPUT_MID INPUT_MAX / 2
 // ########################### END OF MOTOR CONTROL ########################
 
 
 
 // ############################## DEFAULT SETTINGS ############################
 // Default settings will be applied at the end of this config file if not set before
-#define INACTIVITY_TIMEOUT      	8     // Minutes of not driving until poweroff. it is not very precise.
-#define BEEPS_BACKWARD          	1     // 0 or 1
-// #define SUPPORT_BUTTONS							// Define for buttons support on ADC, Nunchuck
+#define INACTIVITY_TIMEOUT      	8       // Minutes of not driving until poweroff. it is not very precise.
+#define BEEPS_BACKWARD          	1       // 0 or 1
+#define FLASH_WRITE_KEY           0x1234  // Flash writing key, used when writing data to flash memory
+// #define SUPPORT_BUTTONS							  // Define for buttons support on ADC, Nunchuck
 
 /* FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
  * Value of COEFFICIENT is in fixdt(1,16,14)
@@ -191,8 +187,8 @@
 */
 
 // #define DEBUG_SERIAL_USART2          // left sensor board cable, disable if ADC or PPM is used!
-#if defined(VARIANT_ADC) || defined(VARIANT_HOVERCAR)
-#define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+#if defined(VARIANT_ADC)
+  #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 
 #ifndef VARIANT_TRANSPOTTER
@@ -238,8 +234,11 @@
 
 // ############################ VARIANT_USART SETTINGS ############################
 #ifdef VARIANT_USART
+  // #define SIDEBOARD_SERIAL_USART2
   // #define CONTROL_SERIAL_USART2         // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
   // #define FEEDBACK_SERIAL_USART2        // left sensor board cable, disable if ADC or PPM is used!
+
+  // #define SIDEBOARD_SERIAL_USART3
   #define CONTROL_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
   #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
@@ -302,15 +301,18 @@
   #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
   #define ADC_PROTECT_TIMEOUT 30        // ADC Protection: number of wrong / missing input commands before safety state is taken
-  #define ADC_PROTECT_THRESH  400       // ADC Protection threshold below/above the MIN/MAX ADC values
+  #define ADC_PROTECT_THRESH  300       // ADC Protection threshold below/above the MIN/MAX ADC values
   #define ADC1_MIN            1000      // min ADC1-value while poti at minimum-position (0 - 4095)
   #define ADC1_MAX            2500      // max ADC1-value while poti at maximum-position (0 - 4095)
   #define ADC2_MIN            500       // min ADC2-value while poti at minimum-position (0 - 4095)
   #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
   #define SPEED_COEFFICIENT   16384     //  1.0f
   #define STEER_COEFFICIENT   0         //  0.0f
-  //#define INVERT_R_DIRECTION            // Invert rotation of right motor
-  //#define INVERT_L_DIRECTION            // Invert rotation of left motor
+  // #define INVERT_R_DIRECTION           // Invert rotation of right motor
+  // #define INVERT_L_DIRECTION           // Invert rotation of left motor
+  #define SIDEBOARD_SERIAL_USART3
+  #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  // #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 
 // Multiple tap detection: default DOUBLE Tap on Brake pedal (4 pulses)
@@ -323,12 +325,13 @@
 
 
 // ############################ VARIANT_HOVERBOARD SETTINGS ############################
-// #####  !  NOT IMPLEMENTED YET !  #####
+// Communication:         [DONE]
+// Balancing controller:  [TODO]
 #ifdef VARIANT_HOVERBOARD
-  // #define CONTROL_SERIAL_USART2         // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-  // #define FEEDBACK_SERIAL_USART2        // left sensor board cable, disable if ADC or PPM is used!
-  #define CONTROL_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  #define SIDEBOARD_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used! 
+  #define FEEDBACK_SERIAL_USART2
+  #define SIDEBOARD_SERIAL_USART3       // right sensor board cable, disable if I2C (nunchuk or lcd) is used!        
+  #define FEEDBACK_SERIAL_USART3        
 #endif
 // ######################## END OF VARIANT_HOVERBOARD SETTINGS #########################
 
@@ -354,28 +357,26 @@
 
 
 // ########################### UART SETIINGS ############################
-#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || \
-    defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
-  #define START_FRAME             0xAAAA                  // [-] Start frame definition for serial commands
+#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
+    defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+  #define SERIAL_START_FRAME      0xABCD                  // [-] Start frame definition for serial commands
   #define SERIAL_TIMEOUT          160                     // [-] Serial timeout duration for the received data. 160 ~= 0.8 sec. Calculation: 0.8 sec / 0.005 sec
 #endif
-#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
+#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
   #ifndef USART2_BAUD
     #define USART2_BAUD           38400                   // UART2 baud rate (long wired cable)
   #endif
   #define USART2_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
-#if defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
+#if defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
   #define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
   #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
 
-#if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
-  #define UART_DMA_CHANNEL DMA1_Channel7
-#endif
-
-#if defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
-  #define UART_DMA_CHANNEL DMA1_Channel2
+#if defined(DEBUG_SERIAL_USART2)
+  #define UART_DMA_CHANNEL_TX DMA1_Channel7
+#elif defined(DEBUG_SERIAL_USART3)
+  #define UART_DMA_CHANNEL_TX DMA1_Channel2  
 #endif
 // ########################### UART SETIINGS ############################
 
@@ -408,8 +409,12 @@
   #error CONTROL_SERIAL_USART2 and CONTROL_SERIAL_USART3 not allowed, choose one.
 #endif
 
-#if defined(FEEDBACK_SERIAL_USART2) && defined(FEEDBACK_SERIAL_USART3)
-  #error FEEDBACK_SERIAL_USART2 and FEEDBACK_SERIAL_USART3 not allowed, choose one.
+#if defined(CONTROL_SERIAL_USART2) && defined(SIDEBOARD_SERIAL_USART2)
+  #error CONTROL_SERIAL_USART2 and SIDEBOARD_SERIAL_USART2 not allowed, choose one.
+#endif
+
+#if defined(CONTROL_SERIAL_USART3) && defined(SIDEBOARD_SERIAL_USART3)
+  #error CONTROL_SERIAL_USART3 and SIDEBOARD_SERIAL_USART3 not allowed, choose one.
 #endif
 
 #if defined(DEBUG_SERIAL_USART2) && defined(FEEDBACK_SERIAL_USART2)
@@ -424,19 +429,19 @@
   #error DEBUG_SERIAL_USART2 and DEBUG_SERIAL_USART3 not allowed, choose one.
 #endif
 
-#if defined(CONTROL_ADC) && (defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2))
+#if defined(CONTROL_ADC) && (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2))
   #error CONTROL_ADC and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
-#if (defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2)) && defined(CONTROL_PPM)
+#if (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)) && defined(CONTROL_PPM)
   #error CONTROL_PPM and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
-#if (defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3)) && defined(CONTROL_NUNCHUK)
+#if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(CONTROL_NUNCHUK)
   #error CONTROL_NUNCHUK and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
-#if (defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3)) && defined(DEBUG_I2C_LCD)
+#if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(DEBUG_I2C_LCD)
   #error DEBUG_I2C_LCD and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
@@ -444,12 +449,12 @@
   #error only 1 input method allowed. use CONTROL_PPM or CONTROL_ADC or CONTROL_NUNCHUK.
 #endif
 
-#if defined(ADC_PROTECT_ENA) && ((ADC1_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC1_MAX + ADC_PROTECT_THRESH) >= 4096)
+#if defined(ADC_PROTECT_ENA) && ((ADC1_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC1_MAX + ADC_PROTECT_THRESH) >= 4095)
   #warning ADC1 Protection NOT possible! Adjust the ADC thresholds.
   #undef ADC_PROTECT_ENA
 #endif
 
-#if defined(ADC_PROTECT_ENA) && ((ADC2_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC2_MAX + ADC_PROTECT_THRESH) >= 4096)
+#if defined(ADC_PROTECT_ENA) && ((ADC2_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC2_MAX + ADC_PROTECT_THRESH) >= 4095)
   #warning ADC2 Protection NOT possible! Adjust the ADC thresholds.
   #undef ADC_PROTECT_ENA
 #endif

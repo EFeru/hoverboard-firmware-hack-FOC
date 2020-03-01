@@ -38,6 +38,7 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c \
 Src/system_stm32f1xx.c \
 Src/setup.c \
 Src/control.c \
+Src/util.c \
 Src/main.c \
 Src/bldc.c \
 Src/eeprom.c \

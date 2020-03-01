@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'filtLowPass'.
  *
- * Model version                  : 1.1165
+ * Model version                  : 1.1257
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Sun Oct  6 22:00:52 2019
+ * C/C++ source code generated on : Mon Feb 24 20:31:06 2020
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -31,7 +31,7 @@ typedef struct tag_RTM RT_MODEL;
 
 /* Block signals and states (auto storage) for system '<Root>/filtLowPass' */
 typedef struct {
-  int32_T UnitDelay3_DSTATE;           /* '<S2>/UnitDelay3' */
+  int32_T UnitDelay1_DSTATE;           /* '<S2>/UnitDelay1' */
 } DW_filtLowPass;
 
 /* Block signals and states (auto storage) for system '<Root>' */
@@ -41,7 +41,7 @@ typedef struct {
 
 /* External inputs (root inport signals with auto storage) */
 typedef struct {
-  int16_T u;                           /* '<Root>/u' */
+  int32_T u;                           /* '<Root>/u' */
   uint16_T coef;                       /* '<Root>/coef' */
 } ExtU;
 
@@ -62,6 +62,12 @@ extern void filtLowPass_initialize(RT_MODEL *const rtM);
 extern void filtLowPass_step(RT_MODEL *const rtM);
 
 /*-
+ * These blocks were eliminated from the model due to optimizations:
+ *
+ * Block '<S2>/Scope1' : Unused code path elimination
+ */
+
+/*-
  * The generated code includes comments that allow you to trace directly
  * back to the appropriate location in the model.  The basic format
  * is <system>/block_name, where system is the system number (uniquely
@@ -80,7 +86,7 @@ extern void filtLowPass_step(RT_MODEL *const rtM);
  *
  * '<Root>' : 'BLDCmotorControl_FOC_R2017b_fixdt'
  * '<S1>'   : 'BLDCmotorControl_FOC_R2017b_fixdt/filtLowPass'
- * '<S2>'   : 'BLDCmotorControl_FOC_R2017b_fixdt/filtLowPass/Low_Pass_Filter1'
+ * '<S2>'   : 'BLDCmotorControl_FOC_R2017b_fixdt/filtLowPass/Low_Pass_Filter'
  */
 #endif                                 /* RTW_HEADER_filtLowPass_h_ */
 

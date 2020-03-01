@@ -19,7 +19,9 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+// Define to prevent recursive inclusion
+#ifndef SETUP_H
+#define SETUP_H
 
 #include "stm32f1xx_hal.h"
 
@@ -29,3 +31,6 @@ void MX_ADC1_Init(void);
 void MX_ADC2_Init(void);
 void UART2_Init(void);
 void UART3_Init(void);
+
+#endif
+
