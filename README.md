@@ -98,6 +98,22 @@ The error codes above are reported for each motor in the variables **rtY_Left.z_
 
 
 ---
+## Example Variants 
+
+This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
+- **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
+- **VARIANT_USART**: In this variant the motors are controlled via serial protocol (e.g. on USART3 right sensor cable, the short wired cable). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
+- **VARIANT_NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
+- **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum signal
+- **VARIANT_IBUS**: This is when you want to use a RC remote control with Flysky IBUS protocol connected to the Left sensor cable.
+- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
+- **VARIANT_HOVERBOARD**: In this variant the mainboard reads the sideboards data. The sideboards need to be flashed with the hacked version. Only balancing controller is still to be implemented.
+- **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
+
+Of course the firmware can be further customized for other needs or projects.
+
+
+---
 ## Flashing
 
 Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer, like the ST-Link found on many STM devboards.
@@ -110,7 +126,7 @@ Make sure you hold the powerbutton or connect a jumper to the power button pins 
 
 To build and flash choose one of the following methods:
 
-### Method 1: Using Platformio
+### Method 1: Using Platformio IDE
 
 - open the folder in the IDE of choice (vscode or Atom)
 - press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
@@ -122,12 +138,16 @@ To build and flash choose one of the following methods:
 - click Build Target (or press F7) to build the firmware
 - click Load Code (or press F8) to flash the firmware.
 
-### Method 3: Using Ubuntu
+### Method 3: Using Linux CLI
 
 - prerequisites: install [ST-Flash utility](https://github.com/texane/stlink).
-- open a terminal in the repo check-out folder and type:
+- open a terminal in the repo check-out folder and if you have definded the variant in [config.h](/Inc/config.h) type:
 ```
 make
+```
+or you can set the variant like this
+```
+make -e VARIANT=VARIANT_NUNCHUK
 ```
 - flash the firmware by typing:
 ```
@@ -137,6 +157,42 @@ make flash
 ```
 openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c flash "write_image erase build/hover.bin 0x8000000"
 ```
+
+### Method 4: MacOS CLI
+- prerequisites:  first get brew https://brew.sh
+- then install stlink ST-Flash utility
+
+#### Using Make
+```
+brew install stlink
+```
+- open a terminal in the repo check-out folder and if you have definded the variant in [config.h](/Inc/config.h) type:
+```
+make
+```
+or you can set the variant like this
+```
+make -e VARIANT=VARIANT_####
+```
+If compiling fails because something is missing just install it with brew AND leave a comment to improve this howto or pull request ;-)
+
+- flash the firmware by typing:
+```
+make flash
+```
+- if unlock is needed
+```
+make unlock
+```
+
+#### Using platformio CLI
+
+```
+brew install platformio
+platformio run -e VARIANT_####
+platformio run –target upload -e VARIANT_####
+```
+If you have set default_envs in [platformio.ini](/platformio.ini) you can ommit -e parameter
 
 ---
 ## Troubleshooting
@@ -155,22 +211,7 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 
 
 ---
-## Example Variants 
 
-This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
-- **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
-- **VARIANT_USART**: In this variant the motors are controlled via serial protocol (e.g. on USART3 right sensor cable, the short wired cable). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
-- **VARIANT_NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
-- **VARIANT_PPM**: This is when you want to use a RC remote control with PPM Sum signal
-- **VARIANT_IBUS**: This is when you want to use a RC remote control with Flysky IBUS protocol connected to the Left sensor cable.
-- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
-- **VARIANT_HOVERBOARD**: In this variant the mainboard reads the sideboards data. The sideboards need to be flashed with the hacked version. Only balancing controller is still to be implemented.
-- **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
-
-Of course the firmware can be further customized for other needs or projects.
-
-
----
 ## Acknowledgements
 
 Last but not least, I would like to acknowledge and thank the following people:
