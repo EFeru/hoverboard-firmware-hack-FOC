@@ -298,6 +298,8 @@
 
 // ############################ VARIANT_HOVERCAR SETTINGS ############################
 #ifdef VARIANT_HOVERCAR
+  #undef  CTRL_MOD_REQ
+  #define CTRL_MOD_REQ        3         // HOVERCAR works best in TORQUE Mode
   #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
   #define ADC_PROTECT_TIMEOUT 30        // ADC Protection: number of wrong / missing input commands before safety state is taken

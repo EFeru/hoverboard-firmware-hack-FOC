@@ -205,10 +205,10 @@ int main(void) {
       #ifdef VARIANT_HOVERCAR
         // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
         uint16_t speedBlend;       
-        speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,30,90) - 30) << 15) / 60);     // speedBlend [0,1] is within [30 rpm, 90rpm]
+        speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50);     // speedBlend [0,1] is within [10 rpm, 60rpm]
 
         // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
-        if (speedAvgAbs < 20) {
+        if (speedAvgAbs < 60) {
           multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBreak);   // Break pedal in this case is "cmd1" variable
         }
 
