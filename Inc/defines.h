@@ -160,13 +160,18 @@ typedef struct {
   uint16_t l_rx2;
 } adc_buf_t;
 
-// Define I2C, Nunchuk, PPM functions
+// Define I2C, Nunchuk, PPM, PWM functions
 void I2C_Init(void);
 void Nunchuk_Init(void);
 void Nunchuk_Read(void);
 uint8_t Nunchuk_Ping(void);
 void PPM_Init(void);
 void PPM_ISR_Callback(void);
+void PWM_Init(void);
+//void PWM_ISR_CH1_Callback(void);
+void PWM_ISR_CH2_Callback(void);
+void PWM_SysTick_Callback(void);
+int PWM_Signal_Correct(int16_t x, int16_t max, int16_t min);
 
 // Sideboard definitions
 #define LED1_SET     				(0x01)

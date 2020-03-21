@@ -82,6 +82,10 @@ extern SerialSideboard Sideboard_L;
 #if defined(SIDEBOARD_SERIAL_USART3)
 extern SerialSideboard Sideboard_R;
 #endif
+#if defined(CONTROL_PWM) && defined(DEBUG_SERIAL_USART3)
+//extern volatile uint16_t pwm_captured_ch1_value;
+extern volatile uint16_t pwm_captured_ch2_value;
+#endif
 
 
 //------------------------------------------------------------------------
@@ -380,6 +384,10 @@ int main(void) {
         #ifdef CONTROL_ADC
         setScopeChannel(0, (int16_t)adc_buffer.l_tx2);          // 1: ADC1
         setScopeChannel(1, (int16_t)adc_buffer.l_rx2);          // 2: ADC2
+        #endif
+        #ifdef CONTROL_PWM
+        setScopeChannel(0, 0);//pwm_captured_ch1_value);        // 1: CH1
+        setScopeChannel(1, pwm_captured_ch2_value);             // 2: CH2
         #endif
         setScopeChannel(2, (int16_t)speedR);                    // 3: output command: [-1000, 1000]
         setScopeChannel(3, (int16_t)speedL);                    // 4: output command: [-1000, 1000]

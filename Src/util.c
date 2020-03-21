@@ -63,6 +63,16 @@ extern volatile uint32_t main_loop_counter;
 extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
 #endif
 
+#ifdef CONTROL_PWM
+//extern volatile uint16_t pwm_captured_ch1_value;
+extern volatile uint16_t pwm_captured_ch2_value;
+#endif
+
+#ifdef BUTTONS_RIGHT
+extern volatile uint8_t btn1;  // Blue
+extern volatile uint8_t btn2;  // Green
+#endif
+
 
 //------------------------------------------------------------------------
 // Global variables set here in util.c
@@ -234,6 +244,10 @@ void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !
 void Input_Init(void) {
   #ifdef CONTROL_PPM
     PPM_Init();
+  #endif
+
+  #ifdef CONTROL_PWM
+    PWM_Init();
   #endif
 
   #ifdef CONTROL_NUNCHUK
@@ -632,6 +646,11 @@ void readCommand(void) {
 				button2 = 0;
 			#endif
       // float scale = ppm_captured_value[2] / 1000.0f;     // not used for now, uncomment if needed
+    #endif
+
+    #ifdef CONTROL_PWM
+      cmd1 = 0; // CLAMP(PWM_Signal_Correct((pwm_captured_ch1_value - 500) * 2, PWM_CH1_MAX, PWM_CH1_MIN), INPUT_MIN, INPUT_MAX);
+      cmd2 = CLAMP(PWM_Signal_Correct((pwm_captured_ch2_value - 500) * 2, PWM_CH2_MAX, PWM_CH2_MIN), INPUT_MIN, INPUT_MAX);
     #endif
 
     #ifdef CONTROL_ADC
