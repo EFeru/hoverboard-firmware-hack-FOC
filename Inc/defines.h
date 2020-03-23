@@ -170,8 +170,6 @@ void PPM_ISR_Callback(void);
 void PWM_Init(void);
 //void PWM_ISR_CH1_Callback(void);
 void PWM_ISR_CH2_Callback(void);
-void PWM_SysTick_Callback(void);
-int PWM_Signal_Correct(int16_t x, int16_t max, int16_t min);
 
 // Sideboard definitions
 #define LED1_SET     				(0x01)

@@ -287,9 +287,9 @@
   #define PWM_DEADBAND                100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define PWM_CH1_MAX                 1000    // (0 - 1000)
-  #define PWM_CH1_MIN                 -1000   // (-1000 - 0)
-  #define PWM_CH2_MAX                 500     // (0 - 1000)
-  #define PWM_CH2_MIN                 -800    // (-1000 - 0)
+  #define PWM_CH1_MIN                -1000    // (-1000 - 0)
+  #define PWM_CH2_MAX                 1000    // (0 - 1000)
+  #define PWM_CH2_MIN                -1000    // (-1000 - 0)
   // right sensor board cable. Only read once during startup
   #define BUTTONS_RIGHT               // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
   #define FILTER                      6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].

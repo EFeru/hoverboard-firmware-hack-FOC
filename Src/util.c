@@ -649,8 +649,8 @@ void readCommand(void) {
     #endif
 
     #ifdef CONTROL_PWM
-      cmd1 = 0; // CLAMP(PWM_Signal_Correct((pwm_captured_ch1_value - 500) * 2, PWM_CH1_MAX, PWM_CH1_MIN), INPUT_MIN, INPUT_MAX);
-      cmd2 = CLAMP(PWM_Signal_Correct((pwm_captured_ch2_value - 500) * 2, PWM_CH2_MAX, PWM_CH2_MIN), INPUT_MIN, INPUT_MAX);
+      cmd1 = 0; // CLAMP(PWM_Signal_Correct((pwm_captured_ch1_value - 500) * 2, PWM_CH1_MIN, PWM_CH1_MAX), INPUT_MIN, INPUT_MAX);
+      cmd2 = CLAMP(PWM_Signal_Correct((pwm_captured_ch2_value - 500) * 2, PWM_CH2_MIN, PWM_CH2_MAX), INPUT_MIN, INPUT_MAX);
     #endif
 
     #ifdef CONTROL_ADC
@@ -811,7 +811,6 @@ void readCommand(void) {
         if (main_loop_counter % 30 == 0) {
           HAL_UART_DMAStop(&huart3);                
           HAL_UART_Receive_DMA(&huart3, (uint8_t *)&Sideboard_Rnew, sizeof(Sideboard_Rnew));
-          Sideboard_Rnew.start = 0xFFFF;              // Change the Start Frame to avoid entering again here if no data is received
         }
       }
       timeoutFlagSerial = timeoutFlagSerial_R;
@@ -839,6 +838,22 @@ void readCommand(void) {
 
 }
 
+
+ /*
+ * PWM Signal Correction
+ * This function realizes a dead-band around 0 and scales the input within a min and a max
+ */
+int PWM_Signal_Correct(int16_t u,  int16_t min, int16_t max) {
+  int outVal = 0;
+  if(u > -PWM_DEADBAND && u < PWM_DEADBAND) {
+    outVal = 0;
+  } else if(u > 0) {
+    outVal = (INPUT_MAX * CLAMP(u - PWM_DEADBAND, 0, max - PWM_DEADBAND)) / (max - PWM_DEADBAND);
+  } else {
+    outVal = (INPUT_MIN * CLAMP(u + PWM_DEADBAND, min + PWM_DEADBAND, 0)) / (min + PWM_DEADBAND);
+  }
+  return outVal;
+}
 
 
 /* =========================== Sideboard Functions =========================== */

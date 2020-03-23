@@ -251,8 +251,8 @@ int main(void) {
       // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
       mixerFcn(speed << 4, steer << 4, &speedR, &speedL);   // This function implements the equations above
 
-      // ####### SET OUTPUTS (if the target change is less than +/- 50) #######
-      if ((speedL > lastSpeedL-50 && speedL < lastSpeedL+50) && (speedR > lastSpeedR-50 && speedR < lastSpeedR+50) && timeout < TIMEOUT) {
+      // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
+      if ((speedL > lastSpeedL-100 && speedL < lastSpeedL+100) && (speedR > lastSpeedR-100 && speedR < lastSpeedR+100) && timeout < TIMEOUT) {
         #ifdef INVERT_R_DIRECTION
           pwmr = speedR;
         #else
