@@ -82,6 +82,13 @@ extern SerialSideboard Sideboard_L;
 #if defined(SIDEBOARD_SERIAL_USART3)
 extern SerialSideboard Sideboard_R;
 #endif
+#if defined(CONTROL_PPM) && defined(DEBUG_SERIAL_USART3)
+extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
+#endif
+#if defined(CONTROL_PWM) && defined(DEBUG_SERIAL_USART3)
+extern volatile uint16_t pwm_captured_ch1_value;
+extern volatile uint16_t pwm_captured_ch2_value;
+#endif
 
 
 //------------------------------------------------------------------------
@@ -247,8 +254,8 @@ int main(void) {
       // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
       mixerFcn(speed << 4, steer << 4, &speedR, &speedL);   // This function implements the equations above
 
-      // ####### SET OUTPUTS (if the target change is less than +/- 50) #######
-      if ((speedL > lastSpeedL-50 && speedL < lastSpeedL+50) && (speedR > lastSpeedR-50 && speedR < lastSpeedR+50) && timeout < TIMEOUT) {
+      // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
+      if ((speedL > lastSpeedL-100 && speedL < lastSpeedL+100) && (speedR > lastSpeedR-100 && speedR < lastSpeedR+100) && timeout < TIMEOUT) {
         #ifdef INVERT_R_DIRECTION
           pwmr = speedR;
         #else
@@ -380,6 +387,14 @@ int main(void) {
         #ifdef CONTROL_ADC
         setScopeChannel(0, (int16_t)adc_buffer.l_tx2);          // 1: ADC1
         setScopeChannel(1, (int16_t)adc_buffer.l_rx2);          // 2: ADC2
+        #endif
+        #ifdef CONTROL_PPM
+        setScopeChannel(0, ppm_captured_value[0]);              // 1: CH1
+        setScopeChannel(1, ppm_captured_value[1]);              // 2: CH2
+        #endif
+        #ifdef CONTROL_PWM
+        setScopeChannel(0, pwm_captured_ch1_value);             // 1: CH1
+        setScopeChannel(1, pwm_captured_ch2_value);             // 2: CH2
         #endif
         setScopeChannel(2, (int16_t)speedR);                    // 3: output command: [-1000, 1000]
         setScopeChannel(3, (int16_t)speedL);                    // 4: output command: [-1000, 1000]

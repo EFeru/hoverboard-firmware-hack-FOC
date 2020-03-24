@@ -221,11 +221,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2480:2413",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2480:2414",
   "className":"Simulink.Inport",
   "icon":"WebViewIcon3",
-  "name":"max",
-  "label":"max",
+  "name":"rst",
+  "label":"rst",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2480",
   "inspector":{
    "params":[
@@ -248,7 +248,7 @@
     "OutputFunctionCall"
    ],
    "values":[
-    "2",
+    "3",
     "Port number",
     "[]",
     "[]",
@@ -288,11 +288,11 @@
   }
  },
  {
-  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2480:2414",
+  "sid":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2480:2413",
   "className":"Simulink.Inport",
   "icon":"WebViewIcon3",
-  "name":"rst",
-  "label":"rst",
+  "name":"max",
+  "label":"max",
   "parent":"BLDCmotorControl_FOC_R2017b_fixdt:8486:2480",
   "inspector":{
    "params":[
@@ -315,7 +315,7 @@
     "OutputFunctionCall"
    ],
    "values":[
-    "3",
+    "2",
     "Port number",
     "[]",
     "[]",

@@ -14,6 +14,7 @@
   //#define VARIANT_USART       // Variant for Serial control via USART3 input
   //#define VARIANT_NUNCHUK     // Variant for Nunchuk controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
+  //#define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
   //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
   //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
@@ -187,7 +188,7 @@
 */
 
 // #define DEBUG_SERIAL_USART2          // left sensor board cable, disable if ADC or PPM is used!
-#if defined(VARIANT_ADC)
+#if defined(VARIANT_ADC) || defined(VARIANT_PPM)
   #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 
@@ -272,6 +273,35 @@
 */
   #define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
   #define PPM_NUM_CHANNELS    6       // total number of PPM channels to receive, even if they are not used.
+  #define PPM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  // Min / Max values of each channel (use DEBUG to determine these values)
+  #define PPM_CH1_MAX         1000    // (0 - 1000)
+  #define PPM_CH1_MIN        -1000    // (-1000 - 0)
+  #define PPM_CH2_MAX         1000    // (0 - 1000)
+  #define PPM_CH2_MIN        -1000    // (-1000 - 0)  
+#endif
+// ############################# END OF VARIANT_PPM SETTINGS ############################
+
+
+// ################################# VARIANT_PWM SETTINGS ##############################
+#ifdef VARIANT_PWM
+/* ###### CONTROL VIA RC REMOTE ######
+ * left sensor board cable. Connect PA2 to channel 1 and PA3 to channel 2 on receiver.
+ * Channel 1: steering, Channel 2: speed.
+*/
+  #define CONTROL_PWM                         // use RC PWM as input. disable DEBUG_SERIAL_USART2!
+  #define PWM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  // Min / Max values of each channel (use DEBUG to determine these values)
+  #define PWM_CH1_MAX         1000    // (0 - 1000)
+  #define PWM_CH1_MIN        -1000    // (-1000 - 0)
+  #define PWM_CH2_MAX         1000    // (0 - 1000)
+  #define PWM_CH2_MIN        -1000    // (-1000 - 0)  
+  #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
+  #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
+  #define STEER_COEFFICIENT   0       // 0.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case     0 = 0.0 * 2^14. If you do not want any steering, set it to 0.
+  // #define SUPPORT_BUTTONS          // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
+  // #define INVERT_R_DIRECTION
+  // #define INVERT_L_DIRECTION
 #endif
 // ############################# END OF VARIANT_PPM SETTINGS ############################
 
@@ -402,8 +432,8 @@
 
 
 // ############################### VALIDATE SETTINGS ###############################
-#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_IBUS) && \
-    !defined(VARIANT_HOVERCAR) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+#if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_PWM) && \
+    !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
@@ -439,6 +469,14 @@
   #error CONTROL_PPM and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
+#if (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)) && defined(CONTROL_PWM)
+  #error CONTROL_PWM and SERIAL_USART2 not allowed. It is on the same cable.
+#endif
+
+#if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(CONTROL_PWM) && defined(SUPPORT_BUTTONS)
+  #error SUPPORT_BUTTONS and SERIAL_USART3 not allowed for VARIANT_PWM. It is on the same cable.
+#endif
+
 #if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(CONTROL_NUNCHUK)
   #error CONTROL_NUNCHUK and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
@@ -447,8 +485,8 @@
   #error DEBUG_I2C_LCD and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
-#if defined(CONTROL_PPM) && defined(CONTROL_ADC) && defined(CONTROL_NUNCHUK) || defined(CONTROL_PPM) && defined(CONTROL_ADC) || defined(CONTROL_ADC) && defined(CONTROL_NUNCHUK) || defined(CONTROL_PPM) && defined(CONTROL_NUNCHUK)
-  #error only 1 input method allowed. use CONTROL_PPM or CONTROL_ADC or CONTROL_NUNCHUK.
+#if defined(CONTROL_ADC) && (defined(CONTROL_PPM) || defined(CONTROL_PWM) || defined(CONTROL_NUNCHUK)) || defined(CONTROL_PPM) && (defined(CONTROL_PWM) || defined(CONTROL_NUNCHUK)) || defined(CONTROL_PWM) && defined(CONTROL_NUNCHUK)
+  #error only 1 input method allowed. use CONTROL_ADC or CONTROL_PPM or CONTROL_PWM or CONTROL_NUNCHUK.
 #endif
 
 #if defined(ADC_PROTECT_ENA) && ((ADC1_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC1_MAX + ADC_PROTECT_THRESH) >= 4095)
