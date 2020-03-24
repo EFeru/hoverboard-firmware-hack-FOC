@@ -26,8 +26,6 @@ uint32_t ppm_timeout = 0;
 
 bool ppm_valid = true;
 
-#define IN_RANGE(x, low, up) (((x) >= (low)) && ((x) <= (up)))
-
 void PPM_ISR_Callback(void) {
   // Dummy loop with 16 bit count wrap around
   uint16_t rc_delay = TIM2->CNT;
@@ -87,84 +85,54 @@ void PPM_Init(void) {
 #endif
 
 
-#ifdef BUTTONS_RIGHT
-
-uint8_t btn1 = 0;
-uint8_t btn2 = 0;
-
-void BUTTONS_RIGHT_Init() {
-  GPIO_InitTypeDef GPIO_InitStruct;
-  /*Configure GPIO pin : PB10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  btn1 = !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10);
-
-  GPIO_InitTypeDef GPIO_InitStruct2;
-  /*Configure GPIO pin : PB11 */
-  GPIO_InitStruct2.Pin = GPIO_PIN_11;
-  GPIO_InitStruct2.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct2.Speed = GPIO_SPEED_FREQ_MEDIUM;
-  GPIO_InitStruct2.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct2);
-
-  btn2 = !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11);
-}
-
-#endif
-
 #ifdef CONTROL_PWM
-//uint16_t pwm_captured_ch1_value = 500;
+uint16_t pwm_captured_ch1_value = 500;
 uint16_t pwm_captured_ch2_value = 500;
-uint32_t pwm_timeout = 0;
+uint32_t pwm_timeout_ch1 = 0;
+uint32_t pwm_timeout_ch2 = 0;
 
-#define IN_RANGE(x, low, up) (((x) >= (low)) && ((x) <= (up)))
-
-/*
 void PWM_ISR_CH1_Callback(void) {
   // Dummy loop with 16 bit count wrap around
   uint16_t rc_signal = TIM3->CNT;
   TIM3->CNT = 0;
 
-  // The interval check below should be larger than the feasible PWM interval of ~[500, 2500] ms
-  if (IN_RANGE(rc_signal, 200, 4000)){
+  if (IN_RANGE(rc_signal, 900, 2100)){
     timeout = 0;
-    pwm_timeout = 0;
+    pwm_timeout_ch1 = 0;
     pwm_captured_ch1_value = CLAMP(rc_signal, 1000, 2000) - 1000;
   }
 }
-*/
+
 
 void PWM_ISR_CH2_Callback(void) {
   // Dummy loop with 16 bit count wrap around
   uint16_t rc_signal = TIM2->CNT;
   TIM2->CNT = 0;
 
-  // The interval check below should be larger than the feasible PWM interval of ~[900, 2100] ms
-  if (IN_RANGE(rc_signal, 200, 3000)){
+  if (IN_RANGE(rc_signal, 900, 2100)){
     timeout = 0;
-    pwm_timeout = 0;
+    pwm_timeout_ch2 = 0;
     pwm_captured_ch2_value = CLAMP(rc_signal, 1000, 2000) - 1000;
   }
 }
 
 // SysTick executes once each ms
 void PWM_SysTick_Callback(void) {
-  pwm_timeout++;
+  pwm_timeout_ch1++;
+  pwm_timeout_ch2++;
   // Stop after 500 ms without PWM signal
-  if(pwm_timeout > 500) {
-    //pwm_captured_ch1_value = 500;
+  if(pwm_timeout_ch1 > 500) {
+    pwm_captured_ch1_value = 500;
+    pwm_timeout_ch1 = 500;          // limit the timeout to max timeout value of 500 ms
+  }
+  if(pwm_timeout_ch2 > 500) {
     pwm_captured_ch2_value = 500;
-    pwm_timeout = 500;          // limit the timeout to max timeout value of 500 ms
+    pwm_timeout_ch2 = 500;          // limit the timeout to max timeout value of 500 ms
   }
 }
 
 void PWM_Init(void) {
   // Channel 1 (steering)
-  /*
   GPIO_InitTypeDef GPIO_InitStruct2;
   // Configure GPIO pin : PA2
   GPIO_InitStruct2.Pin          = GPIO_PIN_2;
@@ -185,10 +153,8 @@ void PWM_Init(void) {
   HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
   HAL_TIM_Base_Start(&TimHandle2);
-*/
 
   // Channel 2 (speed)
-
   GPIO_InitTypeDef GPIO_InitStruct;
   /*Configure GPIO pin : PA3 */
   GPIO_InitStruct.Pin             = GPIO_PIN_3;
@@ -209,9 +175,24 @@ void PWM_Init(void) {
   HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
   HAL_TIM_Base_Start(&TimHandle);
+
+  #ifdef SUPPORT_BUTTONS  
+  /*Configure GPIO pin : PB10 */
+  GPIO_InitStruct.Pin             = BUTTON1_RIGHT_PIN;
+  GPIO_InitStruct.Mode            = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Speed           = GPIO_SPEED_FREQ_MEDIUM;
+  GPIO_InitStruct.Pull            = GPIO_PULLUP;
+  HAL_GPIO_Init(BUTTON1_RIGHT_PORT, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB11 */
+  GPIO_InitStruct2.Pin            = BUTTON2_RIGHT_PIN;
+  GPIO_InitStruct2.Mode           = GPIO_MODE_INPUT;
+  GPIO_InitStruct2.Speed          = GPIO_SPEED_FREQ_MEDIUM;
+  GPIO_InitStruct2.Pull           = GPIO_PULLUP;
+  HAL_GPIO_Init(BUTTON2_RIGHT_PORT, &GPIO_InitStruct2);
+  #endif
 }
 #endif
-
 
 uint8_t Nunchuk_Ping(void) {
   if (HAL_I2C_Master_Receive(&hi2c2,0xA4,(uint8_t*)nunchuk_data, 1, 10) == HAL_OK) {

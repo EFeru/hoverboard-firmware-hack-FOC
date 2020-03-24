@@ -242,13 +242,12 @@ void EXTI3_IRQHandler(void)
     PWM_ISR_CH2_Callback();
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_3);
 }
-/*
+
 void EXTI2_IRQHandler(void)
 {
     PWM_ISR_CH1_Callback();
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_2);
-}*/
-
+}
 #endif
 
 #ifdef CONTROL_SERIAL_USART2

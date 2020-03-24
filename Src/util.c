@@ -64,7 +64,7 @@ extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
 #endif
 
 #ifdef CONTROL_PWM
-//extern volatile uint16_t pwm_captured_ch1_value;
+extern volatile uint16_t pwm_captured_ch1_value;
 extern volatile uint16_t pwm_captured_ch2_value;
 #endif
 
@@ -152,7 +152,6 @@ uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300};     // Dummy virtual address to av
 //------------------------------------------------------------------------
 static int16_t INPUT_MAX;             // [-] Input target maximum limitation
 static int16_t INPUT_MIN;             // [-] Input target minimum limitation
-static int16_t INPUT_MID;             // [-] Input target middle   
 
 #if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
 static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
@@ -238,7 +237,6 @@ void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !
     INPUT_MAX =  1000;
     INPUT_MIN = -1000;
   }
-  INPUT_MID = INPUT_MAX / 2;
 }
 
 void Input_Init(void) {
@@ -639,18 +637,22 @@ void readCommand(void) {
     #endif
 
     #ifdef CONTROL_PPM
-      cmd1 = CLAMP((ppm_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
-      cmd2 = CLAMP((ppm_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+      cmd1 = CLAMP((ppm_captured_value[0] - 500) * 2, INPUT_MIN, INPUT_MAX);
+      cmd2 = CLAMP((ppm_captured_value[1] - 500) * 2, INPUT_MIN, INPUT_MAX);
 			#ifdef SUPPORT_BUTTONS
-				button1 = ppm_captured_value[5] > INPUT_MID;
+				button1 = ppm_captured_value[5] > 500;
 				button2 = 0;
 			#endif
       // float scale = ppm_captured_value[2] / 1000.0f;     // not used for now, uncomment if needed
     #endif
 
     #ifdef CONTROL_PWM
-      cmd1 = 0; // CLAMP(PWM_Signal_Correct((pwm_captured_ch1_value - 500) * 2, PWM_CH1_MIN, PWM_CH1_MAX), INPUT_MIN, INPUT_MAX);
+      cmd1 = CLAMP(PWM_Signal_Correct((pwm_captured_ch1_value - 500) * 2, PWM_CH1_MIN, PWM_CH1_MAX), INPUT_MIN, INPUT_MAX);
       cmd2 = CLAMP(PWM_Signal_Correct((pwm_captured_ch2_value - 500) * 2, PWM_CH2_MIN, PWM_CH2_MAX), INPUT_MIN, INPUT_MAX);
+      #ifdef SUPPORT_BUTTONS
+        button1 = !HAL_GPIO_ReadPin(BUTTON1_RIGHT_PORT, BUTTON1_RIGHT_PIN);
+        button2 = !HAL_GPIO_ReadPin(BUTTON2_RIGHT_PORT, BUTTON2_RIGHT_PIN);
+      #endif
     #endif
 
     #ifdef CONTROL_ADC
@@ -718,8 +720,8 @@ void readCommand(void) {
             for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
               ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
             }
-            cmd1              = CLAMP((ibus_captured_value[0] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
-            cmd2              = CLAMP((ibus_captured_value[1] - INPUT_MID) * 2, INPUT_MIN, INPUT_MAX);
+            cmd1              = CLAMP((ibus_captured_value[0] - 500) * 2, INPUT_MIN, INPUT_MAX);
+            cmd2              = CLAMP((ibus_captured_value[1] - 500) * 2, INPUT_MIN, INPUT_MAX);
             command.start     = 0xFF;                   // Change the Start Frame for timeout detection in the next cycle
             timeoutCntSerial  = 0;                      // Reset the timeout counter
           }
@@ -844,6 +846,7 @@ void readCommand(void) {
  * This function realizes a dead-band around 0 and scales the input within a min and a max
  */
 int PWM_Signal_Correct(int16_t u,  int16_t min, int16_t max) {
+#ifdef CONTROL_PWM
   int outVal = 0;
   if(u > -PWM_DEADBAND && u < PWM_DEADBAND) {
     outVal = 0;
@@ -853,6 +856,9 @@ int PWM_Signal_Correct(int16_t u,  int16_t min, int16_t max) {
     outVal = (INPUT_MIN * CLAMP(u + PWM_DEADBAND, min + PWM_DEADBAND, 0)) / (min + PWM_DEADBAND);
   }
   return outVal;
+#else
+  return 0;
+#endif
 }
 
 

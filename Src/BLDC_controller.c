@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1256
+ * Model version                  : 1.1260
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Mon Dec 30 21:36:12 2019
+ * C/C++ source code generated on : Tue Mar 24 11:01:08 2020
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -1012,6 +1012,7 @@ void BLDC_controller_step(RT_MODEL *const rtM)
      *  Abs: '<S3>/Abs4'
      *  Constant: '<S3>/CTRL_COMM4'
      *  Constant: '<S3>/r_errInpTgtThres'
+     *  Inport: '<Root>/b_motEna'
      *  Logic: '<S3>/Logical Operator1'
      *  RelationalOperator: '<S3>/Relational Operator7'
      *  S-Function (sfix_bitop): '<S3>/Bitwise Operator1'
@@ -1033,8 +1034,8 @@ void BLDC_controller_step(RT_MODEL *const rtM)
         rtb_Merge_f_idx_1 = rtDW->UnitDelay4_DSTATE_eu;
       }
 
-      rtb_RelationalOperator1_m = ((rtb_Merge_f_idx_1 > rtP->r_errInpTgtThres) &&
-        rtb_RelationalOperator9);
+      rtb_RelationalOperator1_m = (rtU->b_motEna && rtb_RelationalOperator9 &&
+        (rtb_Merge_f_idx_1 > rtP->r_errInpTgtThres));
     }
 
     /* End of Switch: '<S3>/Switch3' */

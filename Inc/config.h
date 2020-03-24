@@ -284,14 +284,13 @@
  * Channel 1: steering, Channel 2: speed.
 */
   #define CONTROL_PWM                         // use RC PWM as input. disable DEBUG_SERIAL_USART2!
+  // #define SUPPORT_BUTTONS                  // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
   #define PWM_DEADBAND                100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define PWM_CH1_MAX                 1000    // (0 - 1000)
   #define PWM_CH1_MIN                -1000    // (-1000 - 0)
   #define PWM_CH2_MAX                 1000    // (0 - 1000)
-  #define PWM_CH2_MIN                -1000    // (-1000 - 0)
-  // right sensor board cable. Only read once during startup
-  #define BUTTONS_RIGHT               // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
+  #define PWM_CH2_MIN                -1000    // (-1000 - 0)  
   #define FILTER                      6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT           16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
   #define STEER_COEFFICIENT           0       // 0.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case     0 = 0.0 * 2^14. If you do not want any steering, set it to 0.
@@ -464,6 +463,14 @@
   #error CONTROL_PPM and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
+#if (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)) && defined(CONTROL_PWM)
+  #error CONTROL_PWM and SERIAL_USART2 not allowed. It is on the same cable.
+#endif
+
+#if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(CONTROL_PWM) && defined(SUPPORT_BUTTONS)
+  #error SUPPORT_BUTTONS and SERIAL_USART3 not allowed for VARIANT_PWM. It is on the same cable.
+#endif
+
 #if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(CONTROL_NUNCHUK)
   #error CONTROL_NUNCHUK and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
@@ -472,8 +479,8 @@
   #error DEBUG_I2C_LCD and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
-#if defined(CONTROL_PPM) && defined(CONTROL_ADC) && defined(CONTROL_NUNCHUK) || defined(CONTROL_PPM) && defined(CONTROL_ADC) || defined(CONTROL_ADC) && defined(CONTROL_NUNCHUK) || defined(CONTROL_PPM) && defined(CONTROL_NUNCHUK)
-  #error only 1 input method allowed. use CONTROL_PPM or CONTROL_ADC or CONTROL_NUNCHUK.
+#if defined(CONTROL_ADC) && (defined(CONTROL_PPM) || defined(CONTROL_PWM) || defined(CONTROL_NUNCHUK)) || defined(CONTROL_PPM) && (defined(CONTROL_PWM) || defined(CONTROL_NUNCHUK)) || defined(CONTROL_PWM) && defined(CONTROL_NUNCHUK)
+  #error only 1 input method allowed. use CONTROL_ADC or CONTROL_PPM or CONTROL_PWM or CONTROL_NUNCHUK.
 #endif
 
 #if defined(ADC_PROTECT_ENA) && ((ADC1_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC1_MAX + ADC_PROTECT_THRESH) >= 4095)

@@ -124,6 +124,11 @@
 #define CHARGER_PIN GPIO_PIN_12
 #define CHARGER_PORT GPIOA
 
+#define BUTTON1_RIGHT_PIN GPIO_PIN_10
+#define BUTTON1_RIGHT_PORT GPIOB
+#define BUTTON2_RIGHT_PIN GPIO_PIN_11
+#define BUTTON2_RIGHT_PORT GPIOB
+
 #define DELAY_TIM_FREQUENCY_US 1000000
 
 #define MILLI_R (R * 1000)
@@ -141,6 +146,7 @@
 #define RAD(a) ((a)*180.0f / M_PI)
 #define SIGN(a) (((a) < 0) ? (-1) : (((a) > 0) ? (1) : (0)))
 #define CLAMP(x, low, high) (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+#define IN_RANGE(x, low, high) (((x) >= (low)) && ((x) <= (high)))
 #define SCALE(value, high, max) MIN(MAX(((max) - (value)) / ((max) - (high)), 0.0f), 1.0f)
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -168,7 +174,7 @@ uint8_t Nunchuk_Ping(void);
 void PPM_Init(void);
 void PPM_ISR_Callback(void);
 void PWM_Init(void);
-//void PWM_ISR_CH1_Callback(void);
+void PWM_ISR_CH1_Callback(void);
 void PWM_ISR_CH2_Callback(void);
 
 // Sideboard definitions
