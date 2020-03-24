@@ -188,7 +188,7 @@
 */
 
 // #define DEBUG_SERIAL_USART2          // left sensor board cable, disable if ADC or PPM is used!
-#if defined(VARIANT_ADC)
+#if defined(VARIANT_ADC) || defined(VARIANT_PPM)
   #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 
@@ -273,6 +273,12 @@
 */
   #define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
   #define PPM_NUM_CHANNELS    6       // total number of PPM channels to receive, even if they are not used.
+  #define PPM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  // Min / Max values of each channel (use DEBUG to determine these values)
+  #define PPM_CH1_MAX         1000    // (0 - 1000)
+  #define PPM_CH1_MIN        -1000    // (-1000 - 0)
+  #define PPM_CH2_MAX         1000    // (0 - 1000)
+  #define PPM_CH2_MIN        -1000    // (-1000 - 0)  
 #endif
 // ############################# END OF VARIANT_PPM SETTINGS ############################
 
@@ -284,16 +290,16 @@
  * Channel 1: steering, Channel 2: speed.
 */
   #define CONTROL_PWM                         // use RC PWM as input. disable DEBUG_SERIAL_USART2!
-  // #define SUPPORT_BUTTONS                  // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
-  #define PWM_DEADBAND                100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define PWM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define PWM_CH1_MAX                 1000    // (0 - 1000)
-  #define PWM_CH1_MIN                -1000    // (-1000 - 0)
-  #define PWM_CH2_MAX                 1000    // (0 - 1000)
-  #define PWM_CH2_MIN                -1000    // (-1000 - 0)  
-  #define FILTER                      6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
-  #define SPEED_COEFFICIENT           16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
-  #define STEER_COEFFICIENT           0       // 0.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case     0 = 0.0 * 2^14. If you do not want any steering, set it to 0.
+  #define PWM_CH1_MAX         1000    // (0 - 1000)
+  #define PWM_CH1_MIN        -1000    // (-1000 - 0)
+  #define PWM_CH2_MAX         1000    // (0 - 1000)
+  #define PWM_CH2_MIN        -1000    // (-1000 - 0)  
+  #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
+  #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
+  #define STEER_COEFFICIENT   0       // 0.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case     0 = 0.0 * 2^14. If you do not want any steering, set it to 0.
+  // #define SUPPORT_BUTTONS          // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
   // #define INVERT_R_DIRECTION
   // #define INVERT_L_DIRECTION
 #endif

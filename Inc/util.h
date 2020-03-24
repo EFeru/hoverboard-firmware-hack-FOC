@@ -73,7 +73,7 @@ void poweroffPressCheck(void);
 
 // Read Command Function
 void readCommand(void);
-int  PWM_Signal_Correct(int16_t u,  int16_t min, int16_t max);
+int  addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max);
 
 // Sideboard functions
 void sideboardLeds(uint8_t *leds);

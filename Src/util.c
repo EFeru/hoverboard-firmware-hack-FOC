@@ -637,8 +637,8 @@ void readCommand(void) {
     #endif
 
     #ifdef CONTROL_PPM
-      cmd1 = CLAMP((ppm_captured_value[0] - 500) * 2, INPUT_MIN, INPUT_MAX);
-      cmd2 = CLAMP((ppm_captured_value[1] - 500) * 2, INPUT_MIN, INPUT_MAX);
+      cmd1 = CLAMP(addDeadBand((ppm_captured_value[0] - 500) * 2, PPM_DEADBAND, PPM_CH1_MIN, PPM_CH1_MAX), INPUT_MIN, INPUT_MAX);
+      cmd2 = CLAMP(addDeadBand((ppm_captured_value[1] - 500) * 2, PPM_DEADBAND, PPM_CH1_MIN, PPM_CH1_MAX), INPUT_MIN, INPUT_MAX);
 			#ifdef SUPPORT_BUTTONS
 				button1 = ppm_captured_value[5] > 500;
 				button2 = 0;
@@ -647,8 +647,8 @@ void readCommand(void) {
     #endif
 
     #ifdef CONTROL_PWM
-      cmd1 = CLAMP(PWM_Signal_Correct((pwm_captured_ch1_value - 500) * 2, PWM_CH1_MIN, PWM_CH1_MAX), INPUT_MIN, INPUT_MAX);
-      cmd2 = CLAMP(PWM_Signal_Correct((pwm_captured_ch2_value - 500) * 2, PWM_CH2_MIN, PWM_CH2_MAX), INPUT_MIN, INPUT_MAX);
+      cmd1 = CLAMP(addDeadBand((pwm_captured_ch1_value - 500) * 2, PWM_DEADBAND, PWM_CH1_MIN, PWM_CH1_MAX), INPUT_MIN, INPUT_MAX);
+      cmd2 = CLAMP(addDeadBand((pwm_captured_ch2_value - 500) * 2, PWM_DEADBAND, PWM_CH2_MIN, PWM_CH2_MAX), INPUT_MIN, INPUT_MAX);
       #ifdef SUPPORT_BUTTONS
         button1 = !HAL_GPIO_ReadPin(BUTTON1_RIGHT_PORT, BUTTON1_RIGHT_PIN);
         button2 = !HAL_GPIO_ReadPin(BUTTON2_RIGHT_PORT, BUTTON2_RIGHT_PIN);
@@ -842,18 +842,18 @@ void readCommand(void) {
 
 
  /*
- * PWM Signal Correction
+ * Add Dead-band to a signal
  * This function realizes a dead-band around 0 and scales the input within a min and a max
  */
-int PWM_Signal_Correct(int16_t u,  int16_t min, int16_t max) {
-#ifdef CONTROL_PWM
+int addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max) {
+#if defined(CONTROL_PPM) || defined(CONTROL_PWM)
   int outVal = 0;
-  if(u > -PWM_DEADBAND && u < PWM_DEADBAND) {
+  if(u > -deadBand && u < deadBand) {
     outVal = 0;
   } else if(u > 0) {
-    outVal = (INPUT_MAX * CLAMP(u - PWM_DEADBAND, 0, max - PWM_DEADBAND)) / (max - PWM_DEADBAND);
+    outVal = (INPUT_MAX * CLAMP(u - deadBand, 0, max - deadBand)) / (max - deadBand);
   } else {
-    outVal = (INPUT_MIN * CLAMP(u + PWM_DEADBAND, min + PWM_DEADBAND, 0)) / (min + PWM_DEADBAND);
+    outVal = (INPUT_MIN * CLAMP(u + deadBand, min + deadBand, 0)) / (min + deadBand);
   }
   return outVal;
 #else
