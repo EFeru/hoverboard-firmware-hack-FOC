@@ -828,6 +828,73 @@ void readCommand(void) {
  * Sideboard LEDs Handling
  * This function manages the leds behavior connected to the sideboard
  */
+void sideboardLeds(uint8_t *leds) {
+  #if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
+    // Enable flag: use LED4 (bottom Blue)
+    // enable == 1, turn on led
+    // enable == 0, blink led
+    if (enable) {
+      *leds |= LED4_SET;
+    } else if (!enable && (main_loop_counter % 20 == 0)) {
+      *leds ^= LED4_SET;
+    }
+
+    // Backward Drive: use LED5 (upper Blue)
+    // backwardDrive == 1, blink led
+    // backwardDrive == 0, turn off led
+    if (backwardDrive && (main_loop_counter % 50 == 0)) {
+      *leds ^= LED5_SET;
+    }
+
+    // Brake: use LED5 (upper Blue)
+    // brakePressed == 1, turn on led
+    // brakePressed == 0, turn off led
+    #ifdef VARIANT_HOVERCAR
+      if (brakePressed) {
+        *leds |= LED5_SET;
+      } else if (!brakePressed && !backwardDrive) {
+        *leds &= ~LED5_SET;
+      }
+    #endif
+
+    // Battery Level Indicator: use LED1, LED2, LED3
+    if (main_loop_counter % BAT_BLINK_INTERVAL == 0) {              //  | RED (LED1) | YELLOW (LED3) | GREEN (LED2) |
+      if (batVoltage < BAT_DEAD) {                                  //  |     0      |       0       |      0       |
+        *leds &= ~LED1_SET & ~LED3_SET & ~LED2_SET;          
+      } else if (batVoltage < BAT_LVL1) {                           //  |     B      |       0       |      0       |
+        *leds ^= LED1_SET;
+        *leds &= ~LED3_SET & ~LED2_SET;
+      } else if (batVoltage < BAT_LVL2) {                           //  |     1      |       0       |      0       |
+        *leds |= LED1_SET;
+        *leds &= ~LED3_SET & ~LED2_SET;
+      } else if (batVoltage < BAT_LVL3) {                           //  |     0      |       B       |      0       |
+        *leds ^= LED3_SET;
+        *leds &= ~LED1_SET & ~LED2_SET;
+      } else if (batVoltage < BAT_LVL4) {                           //  |     0      |       1       |      0       |
+        *leds |= LED3_SET;
+        *leds &= ~LED1_SET & ~LED2_SET;
+      } else if (batVoltage < BAT_LVL5) {                           //  |     0      |       0       |      B       |
+        *leds ^= LED2_SET;
+        *leds &= ~LED1_SET & ~LED3_SET;
+      } else {                                                      //  |     0      |       0       |      1       |
+        *leds |= LED2_SET;
+        *leds &= ~LED1_SET & ~LED3_SET;
+      }
+    }
+
+    // Error handling
+    // Critical error:  LED1 on (RED)     + high pitch beep (hadled in main)
+    // Soft error:      LED3 on (YELLOW)  + low  pitch beep (hadled in main)
+    if (rtY_Left.z_errCode || rtY_Right.z_errCode) {
+      *leds |= LED1_SET;
+      *leds &= ~LED3_SET & ~LED2_SET;
+    }
+    if (timeoutFlagADC || timeoutFlagSerial) {
+      *leds |= LED3_SET;
+      *leds &= ~LED1_SET & ~LED2_SET;
+    }
+  #endif
+}
 void sideboardLeds_L(uint8_t *leds) {
   #if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
     // Enable flag: use LED4 (bottom Blue)

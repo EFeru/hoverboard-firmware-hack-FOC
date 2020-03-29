@@ -77,6 +77,7 @@ void readCommand(void);
 // Sideboard functions
 void sideboardLeds_L(uint8_t *leds);
 void sideboardLeds_R(uint8_t *leds);
+void sideboardLeds (uint8_t *leds);
 void sideboardSensors(uint8_t sensors);
 
 // Filtering Functions
