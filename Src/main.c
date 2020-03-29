@@ -108,8 +108,9 @@ typedef struct{
 #if defined(VARIANT_HOVERBOARD)
 static SerialFeedback Feedback_L;
 static SerialFeedback Feedback_R;
-#endif
+#else
 static SerialFeedback Feedback;
+#endif
 #endif
 #if defined(FEEDBACK_SERIAL_USART2)
 static uint8_t sideboard_leds_L;
@@ -405,82 +406,83 @@ int main(void) {
 
     // ####### FEEDBACK SERIAL OUT #######
     #if defined(VARIANT_HOVERBOARD)
-    #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3) 
-      if (main_loop_counter % 2 == 0) {    // Send data periodically every 10 ms
-        Feedback_L.start	        = (uint16_t)SERIAL_START_FRAME;
-        Feedback_L.cmd1           = (int16_t)cmd1;
-        Feedback_L.cmd2           = (int16_t)cmd2;
-        Feedback_L.speedR_meas	  = (int16_t)rtY_Right.n_mot;
-        Feedback_L.speedL_meas	  = (int16_t)rtY_Left.n_mot;
-        Feedback_L.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
-        Feedback_L.boardTemp	    = (int16_t)board_temp_deg_c;
-				
-				Feedback_R.start	        = (uint16_t)SERIAL_START_FRAME;
-        Feedback_R.cmd1           = (int16_t)cmd1;
-        Feedback_R.cmd2           = (int16_t)cmd2;
-        Feedback_R.speedR_meas	  = (int16_t)rtY_Right.n_mot;
-        Feedback_R.speedL_meas	  = (int16_t)rtY_Left.n_mot;
-        Feedback_R.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
-        Feedback_R.boardTemp	    = (int16_t)board_temp_deg_c;
-				
-        #if defined(FEEDBACK_SERIAL_USART2)
-          if(DMA1_Channel7->CNDTR == 0) {
-            Feedback_L.cmdLed         = (uint16_t)sideboard_leds_L;
-            Feedback_L.checksum       = (uint16_t)(Feedback_L.start ^ Feedback_L.cmd1 ^ Feedback_L.cmd2 ^ Feedback_L.speedR_meas ^ Feedback_L.speedL_meas 
-                                               ^ Feedback_L.batVoltage ^ Feedback_L.boardTemp ^ Feedback_L.cmdLed);
-            DMA1_Channel7->CCR     &= ~DMA_CCR_EN;
-            DMA1_Channel7->CNDTR    = sizeof(Feedback_L);
-            DMA1_Channel7->CMAR     = (uint32_t)&Feedback_L;
-            DMA1_Channel7->CCR     |= DMA_CCR_EN;          
-          }
-        #endif
-        #if defined(FEEDBACK_SERIAL_USART3)
-          if(DMA1_Channel2->CNDTR == 0) {
-            Feedback_R.cmdLed         = (uint16_t)sideboard_leds_R;
-            Feedback_R.checksum       = (uint16_t)(Feedback_R.start ^ Feedback_R.cmd1 ^ Feedback_R.cmd2 ^ Feedback_R.speedR_meas ^ Feedback_R.speedL_meas 
-                                               ^ Feedback_R.batVoltage ^ Feedback_R.boardTemp ^ Feedback_R.cmdLed);
-            DMA1_Channel2->CCR     &= ~DMA_CCR_EN;
-            DMA1_Channel2->CNDTR    = sizeof(Feedback_R);
-            DMA1_Channel2->CMAR     = (uint32_t)&Feedback_R;
-            DMA1_Channel2->CCR     |= DMA_CCR_EN;          
-          }
-        #endif            
-      }
-    #endif
-    #endif
- #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3) 
-      if (main_loop_counter % 2 == 0) {    // Send data periodically every 10 ms
-        Feedback.start	        = (uint16_t)SERIAL_START_FRAME;
-        Feedback.cmd1           = (int16_t)cmd1;
-        Feedback.cmd2           = (int16_t)cmd2;
-        Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
-        Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
-        Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
-        Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
-				
-        #if defined(FEEDBACK_SERIAL_USART2)
-          if(DMA1_Channel7->CNDTR == 0) {
-            Feedback.cmdLed         = (uint16_t)sideboard_leds_L;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
-                                               ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
-            DMA1_Channel7->CCR     &= ~DMA_CCR_EN;
-            DMA1_Channel7->CNDTR    = sizeof(Feedback);
-            DMA1_Channel7->CMAR     = (uint32_t)&Feedback;
-            DMA1_Channel7->CCR     |= DMA_CCR_EN;          
-          }
-        #endif
-        #if defined(FEEDBACK_SERIAL_USART3)
-          if(DMA1_Channel2->CNDTR == 0) {
-            Feedback.cmdLed         = (uint16_t)sideboard_leds_R;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
-                                               ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
-            DMA1_Channel2->CCR     &= ~DMA_CCR_EN;
-            DMA1_Channel2->CNDTR    = sizeof(Feedback);
-            DMA1_Channel2->CMAR     = (uint32_t)&Feedback;
-            DMA1_Channel2->CCR     |= DMA_CCR_EN;          
-          }
-        #endif            
-      }
+      #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3) 
+        if (main_loop_counter % 2 == 0) {    // Send data periodically every 10 ms
+          Feedback_L.start	        = (uint16_t)SERIAL_START_FRAME;
+          Feedback_L.cmd1           = (int16_t)cmd1;
+          Feedback_L.cmd2           = (int16_t)cmd2;
+          Feedback_L.speedR_meas	  = (int16_t)rtY_Right.n_mot;
+          Feedback_L.speedL_meas	  = (int16_t)rtY_Left.n_mot;
+          Feedback_L.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
+          Feedback_L.boardTemp	    = (int16_t)board_temp_deg_c;
+          
+          Feedback_R.start	        = (uint16_t)SERIAL_START_FRAME;
+          Feedback_R.cmd1           = (int16_t)cmd1;
+          Feedback_R.cmd2           = (int16_t)cmd2;
+          Feedback_R.speedR_meas	  = (int16_t)rtY_Right.n_mot;
+          Feedback_R.speedL_meas	  = (int16_t)rtY_Left.n_mot;
+          Feedback_R.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
+          Feedback_R.boardTemp	    = (int16_t)board_temp_deg_c;
+          
+          #if defined(FEEDBACK_SERIAL_USART2)
+            if(DMA1_Channel7->CNDTR == 0) {
+              Feedback_L.cmdLed         = (uint16_t)sideboard_leds_L;
+              Feedback_L.checksum       = (uint16_t)(Feedback_L.start ^ Feedback_L.cmd1 ^ Feedback_L.cmd2 ^ Feedback_L.speedR_meas ^ Feedback_L.speedL_meas 
+                                                ^ Feedback_L.batVoltage ^ Feedback_L.boardTemp ^ Feedback_L.cmdLed);
+              DMA1_Channel7->CCR     &= ~DMA_CCR_EN;
+              DMA1_Channel7->CNDTR    = sizeof(Feedback_L);
+              DMA1_Channel7->CMAR     = (uint32_t)&Feedback_L;
+              DMA1_Channel7->CCR     |= DMA_CCR_EN;          
+            }
+          #endif
+          #if defined(FEEDBACK_SERIAL_USART3)
+            if(DMA1_Channel2->CNDTR == 0) {
+              Feedback_R.cmdLed         = (uint16_t)sideboard_leds_R;
+              Feedback_R.checksum       = (uint16_t)(Feedback_R.start ^ Feedback_R.cmd1 ^ Feedback_R.cmd2 ^ Feedback_R.speedR_meas ^ Feedback_R.speedL_meas 
+                                                ^ Feedback_R.batVoltage ^ Feedback_R.boardTemp ^ Feedback_R.cmdLed);
+              DMA1_Channel2->CCR     &= ~DMA_CCR_EN;
+              DMA1_Channel2->CNDTR    = sizeof(Feedback_R);
+              DMA1_Channel2->CMAR     = (uint32_t)&Feedback_R;
+              DMA1_Channel2->CCR     |= DMA_CCR_EN;          
+            }
+          #endif            
+        }
+      #endif
+    #else
+      #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3) 
+        if (main_loop_counter % 2 == 0) {    // Send data periodically every 10 ms
+          Feedback.start	        = (uint16_t)SERIAL_START_FRAME;
+          Feedback.cmd1           = (int16_t)cmd1;
+          Feedback.cmd2           = (int16_t)cmd2;
+          Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
+          Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
+          Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
+          Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
+          
+          #if defined(FEEDBACK_SERIAL_USART2)
+            if(DMA1_Channel7->CNDTR == 0) {
+              Feedback.cmdLed         = (uint16_t)sideboard_leds_L;
+              Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                                ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+              DMA1_Channel7->CCR     &= ~DMA_CCR_EN;
+              DMA1_Channel7->CNDTR    = sizeof(Feedback);
+              DMA1_Channel7->CMAR     = (uint32_t)&Feedback;
+              DMA1_Channel7->CCR     |= DMA_CCR_EN;          
+            }
+          #endif
+          #if defined(FEEDBACK_SERIAL_USART3)
+            if(DMA1_Channel2->CNDTR == 0) {
+              Feedback.cmdLed         = (uint16_t)sideboard_leds_R;
+              Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                                ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+              DMA1_Channel2->CCR     &= ~DMA_CCR_EN;
+              DMA1_Channel2->CNDTR    = sizeof(Feedback);
+              DMA1_Channel2->CMAR     = (uint32_t)&Feedback;
+              DMA1_Channel2->CCR     |= DMA_CCR_EN;          
+            }
+          #endif            
+        }
+      #endif
     #endif
     // ####### POWEROFF BY POWER-BUTTON #######
     poweroffPressCheck();
