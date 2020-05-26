@@ -84,7 +84,7 @@ void UART2_Init(void) {
   huart2.Init.OverSampling  = UART_OVERSAMPLING_16;
   #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     huart2.Init.Mode        = UART_MODE_TX_RX;
-  #elif defined(DEBUG_SERIAL_USART2)
+  #elif defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
     huart2.Init.Mode        = UART_MODE_TX;
   #endif
   HAL_UART_Init(&huart2);
@@ -171,7 +171,7 @@ void UART3_Init(void) {
   huart3.Init.OverSampling    = UART_OVERSAMPLING_16;
   #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     huart3.Init.Mode          = UART_MODE_TX_RX;
-  #elif defined(DEBUG_SERIAL_USART3)
+  #elif defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
     huart3.Init.Mode          = UART_MODE_TX;
   #endif
   HAL_UART_Init(&huart3);
