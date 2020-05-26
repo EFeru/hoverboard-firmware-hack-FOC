@@ -342,8 +342,11 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pin = RIGHT_HALL_W_PIN;
   HAL_GPIO_Init(RIGHT_HALL_W_PORT, &GPIO_InitStruct);
 
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Pin = CHARGER_PIN;
   HAL_GPIO_Init(CHARGER_PORT, &GPIO_InitStruct);
+  
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
 
   GPIO_InitStruct.Pin = BUTTON_PIN;
   HAL_GPIO_Init(BUTTON_PORT, &GPIO_InitStruct);

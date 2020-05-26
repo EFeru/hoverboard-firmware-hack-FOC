@@ -218,8 +218,8 @@
 */
   #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   // #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
-  #define ADC_PROTECT_TIMEOUT 30        // ADC Protection: number of wrong / missing input commands before safety state is taken
-  #define ADC_PROTECT_THRESH  400       // ADC Protection threshold below/above the MIN/MAX ADC values
+  #define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
+  #define ADC_PROTECT_THRESH  300       // ADC Protection threshold below/above the MIN/MAX ADC values
   // #define ADC1_MID_POT                  // ADC1 middle resting poti: comment-out if NOT a middle resting poti
   #define ADC1_MIN            0         // min ADC1-value while poti at minimum-position (0 - 4095)
   #define ADC1_MID            2048      // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
@@ -332,7 +332,7 @@
   #define CTRL_MOD_REQ        3         // HOVERCAR works best in TORQUE Mode
   #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
-  #define ADC_PROTECT_TIMEOUT 30        // ADC Protection: number of wrong / missing input commands before safety state is taken
+  #define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
   #define ADC_PROTECT_THRESH  300       // ADC Protection threshold below/above the MIN/MAX ADC values
   #define ADC1_MIN            1000      // min ADC1-value while poti at minimum-position (0 - 4095)
   #define ADC1_MAX            2500      // max ADC1-value while poti at maximum-position (0 - 4095)

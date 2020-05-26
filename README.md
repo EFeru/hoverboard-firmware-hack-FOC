@@ -15,7 +15,7 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
  ---
  ## Hardware
  
-![mainboard_pinout](pinout.png)
+![mainboard_pinout](/docs/pictures/mainboard_pinout.png)
 
 The original Hardware supports two 4-pin cables that originally were connected to the two sensor boards. They break out GND, 12/15V and USART2&3 of the Hoverboard mainboard.
 Both USART2 & 3 can be used for UART and I2C, PA2&3 can be used as 12bit ADCs.
@@ -25,7 +25,7 @@ http://vocke.tv/lib/exe/fetch.php?media=20150722_hoverboard_sch.pdf
  
  
  ---
- ## FOC firmware
+ ## FOC Firmware
  
  This new firmware offers 3 control modes:
   - **VOLTAGE MODE**: in this mode the controller applies a constant Voltage to the motors
@@ -36,7 +36,7 @@ In all the modes, the controller features maximum motor speed and maximum motor 
    - The C code for the controller was auto-code generated using [Matlab/Simulink](https://nl.mathworks.com/solutions/embedded-code-generation.html) from a model which I developed from scratch specifically for hoverboard control. For more details regarding the working principle of the controller please consult the [Matlab/Simulink model](/01_Matlab).
  - A [webview](/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code. The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge.
 
-### Firmware architecture
+### Firmware Architecture
 
 The main firmware architecture includes:
 - **Estimations**: estimates the rotor position, angle and motor speed based on Hall sensors signal
@@ -86,15 +86,15 @@ Each motor is constantly monitored for errors. These errors are:
 The error codes above are reported for each motor in the variables **rtY_Left.z_errCode** and **rtY_Right.z_errCode** for Left motor (long wired motor) and Right motor (short wired motor), respectively. In case of error, the motor power is reduced to 0, while an audible (fast beep) can be heard to notify the user.
 
 
-### Demo videos
+### Demo Videos
+
+[►Video: HOVERCAR](https://www.youtube.com/watch?v=IgHCcj0NgWQ&t=)
 
 [►Video: Commutation vs Advanced control (constant speed)](https://drive.google.com/open?id=1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD)
 
 [►Video: Commutation vs Advanced control (variable speed)](https://drive.google.com/open?id=1rrQ4k5VLhhAWXQzDSCar_SmEdsbM-hq2)
 
 [►Video: Reliable Serial Communication demo](https://drive.google.com/open?id=1mUM-p7SE6gmyTH7zhDHy5DUyczXvmy5d)
-
-[►Video: HOVERCAR demo](https://drive.google.com/open?id=18IvRJVdQSsjTg1I0Wedlg19e0FuDjfdS)
 
 
 ---
@@ -107,7 +107,7 @@ This firmware offers currently these variants (selectable in [platformio.ini](/p
 - **VARIANT_PPM**: This is when you want to use an RC remote control with PPM Sum signal.
 - **VARIANT_PWM**: This is when you want to use an RC remote control with PWM signal.
 - **VARIANT_IBUS**: This is when you want to use an RC remote control with Flysky IBUS protocol connected to the Left sensor cable.
-- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill.
+- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill. See [HOVERCAR video](https://www.youtube.com/watch?v=IgHCcj0NgWQ&t=).
 - **VARIANT_HOVERBOARD**: In this variant the mainboard reads the sideboards data. The sideboards need to be flashed with the hacked version. Only balancing controller is still to be implemented.
 - **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
 
@@ -148,7 +148,7 @@ make
 ```
 or you can set the variant like this
 ```
-make -e VARIANT=VARIANT_NUNCHUK
+make -e VARIANT=VARIANT_####
 ```
 - flash the firmware by typing:
 ```
@@ -212,14 +212,25 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 
 
 ---
+## Projects and Links
 
-## Acknowledgements
+- **Original firmware:** [https://github.com/NiklasFauth/hoverboard-firmware-hack](https://github.com/NiklasFauth/hoverboard-firmware-hack)
+- **[RoboDurden's](https://github.com/RoboDurden) online compiler:** [https://pionierland.de/hoverhack/](https://pionierland.de/hoverhack/) 
+- **Hoverboard hack for AT32F403RCT6 mainboards:** [https://github.com/cloidnerux/hoverboard-firmware-hack](https://github.com/cloidnerux/hoverboard-firmware-hack)
+- **Hoverboard hack for split mainboards:** [https://github.com/flo199213/Hoverboard-Firmware-Hack-Gen2](https://github.com/flo199213/Hoverboard-Firmware-Hack-Gen2)
+- **Hoverboard hack from BiPropellant:** [https://github.com/bipropellant](https://github.com/bipropellant)
+- **Hoverboard breakout boards:** [https://github.com/Jan--Henrik/hoverboard-breakout](https://github.com/Jan--Henrik/hoverboard-breakout)
 
-Last but not least, I would like to acknowledge and thank the following people:
-- Original firmware: [@NiklasFauth](https://github.com/NiklasFauth)
-- Github: [@TomTinkering](https://github.com/TomTinkering), [@ced2c](https://github.com/ced2c), [@btsimonh](https://github.com/btsimonh), [@lalalandrus](https://github.com/lalalandrus), [@p-h-a-i-l](https://github.com/p-h-a-i-l) , [@AntumArk](https://github.com/AntumArk), [@juodumas](https://github.com/juodumas)
-- Github: all the people that contributed via Pull Requests
-- ST Employee: [cedric H](https://community.st.com/s/question/0D50X0000B28qTDSQY/custom-foc-control-current-measurement-dma-timer-interrupt-needs-review)
+<a/>
+
+- **Bobbycar** [https://github.com/larsmm/hoverboard-firmware-hack-bbcar](https://github.com/larsmm/hoverboard-firmware-hack-bbcar)
+- **Wheel chair:** [https://github.com/Lahorde/steer_speed_ctrl](https://github.com/Lahorde/steer_speed_ctrl)
+- **TranspOtterNG:** [https://github.com/Jan--Henrik/transpOtterNG](https://github.com/Jan--Henrik/transpOtterNG)
+- **ST Community:** [Custom FOC motor control](https://community.st.com/s/question/0D50X0000B28qTDSQY/custom-foc-control-current-measurement-dma-timer-interrupt-needs-review)
+
+<a/>
+
+- **Telegram Community:** If you are an enthusiast join our [Hooover Telegram Group](https://t.me/joinchat/BHWO_RKu2LT5ZxEkvUB8uw)
 
 
 ---
@@ -230,6 +241,7 @@ Every contribution to this repository is highly appreciated! Feel free to create
 If you want to donate to keep this firmware updated, please use the link below:
 
 [![paypal](https://www.paypalobjects.com/en_US/NL/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
+
 
 ---
 
