@@ -731,7 +731,7 @@ void readCommand(void) {
             timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
           }
           // Most probably we are out-of-sync. Try to re-sync by reseting the DMA
-          if (main_loop_counter % 30 == 0) {
+          if (command.start != IBUS_LENGTH && command.start != 0xFF && main_loop_counter % 2 == 0) {
             HAL_UART_DMAStop(&huart);                
             HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));            
           }
@@ -753,7 +753,7 @@ void readCommand(void) {
             timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
           }
           // Most probably we are out-of-sync. Try to re-sync by reseting the DMA
-          if (main_loop_counter % 30 == 0) {
+          if (command.start != SERIAL_START_FRAME && command.start != 0xFFFF && main_loop_counter % 2 == 0) {
             HAL_UART_DMAStop(&huart);                
             HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));            
           }
@@ -787,7 +787,7 @@ void readCommand(void) {
           timeoutCntSerial_L  = SERIAL_TIMEOUT;       // Limit timout counter value
         }
         // Most probably we are out-of-sync. Try to re-sync by reseting the DMA
-        if (main_loop_counter % 30 == 0) {
+        if (Sideboard_Lnew.start != SERIAL_START_FRAME && Sideboard_Lnew.start != 0xFFFF && main_loop_counter % 2 == 0) {
           HAL_UART_DMAStop(&huart2);                
           HAL_UART_Receive_DMA(&huart2, (uint8_t *)&Sideboard_Lnew, sizeof(Sideboard_Lnew));
         }
@@ -810,7 +810,7 @@ void readCommand(void) {
           timeoutCntSerial_R  = SERIAL_TIMEOUT;       // Limit timout counter value
         }
         // Most probably we are out-of-sync. Try to re-sync by reseting the DMA
-        if (main_loop_counter % 30 == 0) {
+        if (Sideboard_Rnew.start != SERIAL_START_FRAME && Sideboard_Rnew.start != 0xFFFF && main_loop_counter % 2 == 0) {
           HAL_UART_DMAStop(&huart3);                
           HAL_UART_Receive_DMA(&huart3, (uint8_t *)&Sideboard_Rnew, sizeof(Sideboard_Rnew));
         }
@@ -818,7 +818,7 @@ void readCommand(void) {
       timeoutFlagSerial = timeoutFlagSerial_R;
     #endif
     #if defined(SIDEBOARD_SERIAL_USART2) && defined(SIDEBOARD_SERIAL_USART3)
-      timeoutFlagSerial = timeoutFlagSerial_L | timeoutFlagSerial_R;
+      timeoutFlagSerial = timeoutFlagSerial_L || timeoutFlagSerial_R;
     #endif
 
     #ifdef VARIANT_HOVERCAR      
