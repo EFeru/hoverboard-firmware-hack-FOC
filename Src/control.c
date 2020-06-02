@@ -119,9 +119,9 @@ void PWM_SysTick_Callback(void) {
   pwm_timeout++;
   // Stop after 500 ms without PPM signal
   if(pwm_timeout > 500) {
-    //pwm_captured_ch1_value = 500;
+    pwm_captured_ch1_value = 500;
     pwm_captured_ch2_value = 500;
-    pwm_timeout = 500;
+    pwm_timeout = 0;
   }
 }
 
