@@ -88,109 +88,95 @@ void PPM_Init(void) {
 #ifdef CONTROL_PWM
 uint16_t pwm_captured_ch1_value = 500;
 uint16_t pwm_captured_ch2_value = 500;
-uint32_t pwm_timeout_ch1 = 0;
-uint32_t pwm_timeout_ch2 = 0;
+uint32_t pwm_timeout = 0;
 
-void PWM_ISR_CH1_Callback(void) {
-  // Dummy loop with 16 bit count wrap around
-  uint16_t rc_signal = TIM3->CNT;
-  TIM3->CNT = 0;
-
-  if (IN_RANGE(rc_signal, 900, 2100)){
-    timeout = 0;
-    pwm_timeout_ch1 = 0;
-    pwm_captured_ch1_value = CLAMP(rc_signal, 1000, 2000) - 1000;
+int PWM_Signal_Correct(int x, int max, int min) {
+  int outVal = 0;
+  if(x > -PWM_DEADBAND && x < PWM_DEADBAND) {
+    outVal = 0;
+  } else if(x > 0) {
+    outVal = (float)CLAMP(x-PWM_DEADBAND, 0, max - PWM_DEADBAND) / (max - PWM_DEADBAND) * 1000;
+  } else {
+    outVal = 0 - ((float)CLAMP(x+PWM_DEADBAND, min + PWM_DEADBAND, 0) / (min + PWM_DEADBAND) * 1000);
   }
+  return outVal;
 }
 
-
-void PWM_ISR_CH2_Callback(void) {
+void PWM_ISR_CH1_Callback() {
   // Dummy loop with 16 bit count wrap around
   uint16_t rc_signal = TIM2->CNT;
   TIM2->CNT = 0;
 
   if (IN_RANGE(rc_signal, 900, 2100)){
     timeout = 0;
-    pwm_timeout_ch2 = 0;
+    pwm_timeout = 0;
+    pwm_captured_ch1_value = CLAMP(rc_signal, 1000, 2000) - 1000;
+  }
+}
+
+void PWM_ISR_CH2_Callback() {
+  // Dummy loop with 16 bit count wrap around
+  uint16_t rc_signal = TIM2->CNT;
+  TIM2->CNT = 0;
+
+  if (IN_RANGE(rc_signal, 900, 2100)){
+    timeout = 0;
+    pwm_timeout = 0;
     pwm_captured_ch2_value = CLAMP(rc_signal, 1000, 2000) - 1000;
   }
 }
 
 // SysTick executes once each ms
-void PWM_SysTick_Callback(void) {
-  pwm_timeout_ch1++;
-  pwm_timeout_ch2++;
-  // Stop after 500 ms without PWM signal
-  if(pwm_timeout_ch1 > 500) {
-    pwm_captured_ch1_value = 500;
-    pwm_timeout_ch1 = 500;          // limit the timeout to max timeout value of 500 ms
-  }
-  if(pwm_timeout_ch2 > 500) {
+void PWM_SysTick_Callback() {
+  pwm_timeout++;
+  // Stop after 500 ms without PPM signal
+  if(pwm_timeout > 500) {
+    //pwm_captured_ch1_value = 500;
     pwm_captured_ch2_value = 500;
-    pwm_timeout_ch2 = 500;          // limit the timeout to max timeout value of 500 ms
+    pwm_timeout = 0;
   }
 }
 
-void PWM_Init(void) {
+void PWM_Init() {
+  // PWM Timer (TIM2)
+  __HAL_RCC_TIM2_CLK_ENABLE();
+  TimHandle.Instance = TIM2;
+  TimHandle.Init.Period = UINT16_MAX;
+  TimHandle.Init.Prescaler = (SystemCoreClock/DELAY_TIM_FREQUENCY_US)-1;;
+  TimHandle.Init.ClockDivision = 0;
+  TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
+  HAL_TIM_Base_Init(&TimHandle);
+  
+  
   // Channel 1 (steering)
   GPIO_InitTypeDef GPIO_InitStruct2;
   // Configure GPIO pin : PA2
-  GPIO_InitStruct2.Pin          = GPIO_PIN_2;
-  GPIO_InitStruct2.Mode         = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct2.Speed        = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct2.Pull         = GPIO_PULLDOWN;
+  GPIO_InitStruct2.Pin = GPIO_PIN_2;
+  GPIO_InitStruct2.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct2.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct2.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct2);
-
-  __HAL_RCC_TIM3_CLK_ENABLE();
-  TimHandle2.Instance           = TIM3;
-  TimHandle2.Init.Period        = UINT16_MAX;
-  TimHandle2.Init.Prescaler     = (SystemCoreClock/DELAY_TIM_FREQUENCY_US)-1;;
-  TimHandle2.Init.ClockDivision = 0;
-  TimHandle2.Init.CounterMode   = TIM_COUNTERMODE_UP;
-  HAL_TIM_Base_Init(&TimHandle2);
 
   // EXTI interrupt init
   HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-  HAL_TIM_Base_Start(&TimHandle2);
+
 
   // Channel 2 (speed)
   GPIO_InitTypeDef GPIO_InitStruct;
   /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin             = GPIO_PIN_3;
-  GPIO_InitStruct.Mode            = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Speed           = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Pull            = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  __HAL_RCC_TIM2_CLK_ENABLE();
-  TimHandle.Instance              = TIM2;
-  TimHandle.Init.Period           = UINT16_MAX;
-  TimHandle.Init.Prescaler        = (SystemCoreClock/DELAY_TIM_FREQUENCY_US)-1;;
-  TimHandle.Init.ClockDivision    = 0;
-  TimHandle.Init.CounterMode      = TIM_COUNTERMODE_UP;
-  HAL_TIM_Base_Init(&TimHandle);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+  // Start timer
   HAL_TIM_Base_Start(&TimHandle);
-
-  #ifdef SUPPORT_BUTTONS  
-  /*Configure GPIO pin : PB10 */
-  GPIO_InitStruct.Pin             = BUTTON1_RIGHT_PIN;
-  GPIO_InitStruct.Mode            = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Speed           = GPIO_SPEED_FREQ_MEDIUM;
-  GPIO_InitStruct.Pull            = GPIO_PULLUP;
-  HAL_GPIO_Init(BUTTON1_RIGHT_PORT, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PB11 */
-  GPIO_InitStruct2.Pin            = BUTTON2_RIGHT_PIN;
-  GPIO_InitStruct2.Mode           = GPIO_MODE_INPUT;
-  GPIO_InitStruct2.Speed          = GPIO_SPEED_FREQ_MEDIUM;
-  GPIO_InitStruct2.Pull           = GPIO_PULLUP;
-  HAL_GPIO_Init(BUTTON2_RIGHT_PORT, &GPIO_InitStruct2);
-  #endif
 }
 #endif
 
