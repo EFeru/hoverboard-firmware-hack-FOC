@@ -90,19 +90,7 @@ uint16_t pwm_captured_ch1_value = 500;
 uint16_t pwm_captured_ch2_value = 500;
 uint32_t pwm_timeout = 0;
 
-int PWM_Signal_Correct(int x, int max, int min) {
-  int outVal = 0;
-  if(x > -PWM_DEADBAND && x < PWM_DEADBAND) {
-    outVal = 0;
-  } else if(x > 0) {
-    outVal = (float)CLAMP(x-PWM_DEADBAND, 0, max - PWM_DEADBAND) / (max - PWM_DEADBAND) * 1000;
-  } else {
-    outVal = 0 - ((float)CLAMP(x+PWM_DEADBAND, min + PWM_DEADBAND, 0) / (min + PWM_DEADBAND) * 1000);
-  }
-  return outVal;
-}
-
-void PWM_ISR_CH1_Callback() {
+void PWM_ISR_CH1_Callback(void) {
   // Dummy loop with 16 bit count wrap around
   uint16_t rc_signal = TIM2->CNT;
   TIM2->CNT = 0;
@@ -114,7 +102,7 @@ void PWM_ISR_CH1_Callback() {
   }
 }
 
-void PWM_ISR_CH2_Callback() {
+void PWM_ISR_CH2_Callback(void) {
   // Dummy loop with 16 bit count wrap around
   uint16_t rc_signal = TIM2->CNT;
   TIM2->CNT = 0;
@@ -127,34 +115,34 @@ void PWM_ISR_CH2_Callback() {
 }
 
 // SysTick executes once each ms
-void PWM_SysTick_Callback() {
+void PWM_SysTick_Callback(void) {
   pwm_timeout++;
   // Stop after 500 ms without PPM signal
   if(pwm_timeout > 500) {
     //pwm_captured_ch1_value = 500;
     pwm_captured_ch2_value = 500;
-    pwm_timeout = 0;
+    pwm_timeout = 500;
   }
 }
 
-void PWM_Init() {
+void PWM_Init(void) {
   // PWM Timer (TIM2)
   __HAL_RCC_TIM2_CLK_ENABLE();
-  TimHandle.Instance = TIM2;
-  TimHandle.Init.Period = UINT16_MAX;
-  TimHandle.Init.Prescaler = (SystemCoreClock/DELAY_TIM_FREQUENCY_US)-1;;
-  TimHandle.Init.ClockDivision = 0;
-  TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
+  TimHandle.Instance            = TIM2;
+  TimHandle.Init.Period         = UINT16_MAX;
+  TimHandle.Init.Prescaler      = (SystemCoreClock/DELAY_TIM_FREQUENCY_US)-1;;
+  TimHandle.Init.ClockDivision  = 0;
+  TimHandle.Init.CounterMode    = TIM_COUNTERMODE_UP;
   HAL_TIM_Base_Init(&TimHandle);
   
   
   // Channel 1 (steering)
   GPIO_InitTypeDef GPIO_InitStruct2;
   // Configure GPIO pin : PA2
-  GPIO_InitStruct2.Pin = GPIO_PIN_2;
-  GPIO_InitStruct2.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct2.Speed = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct2.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct2.Pin          = GPIO_PIN_2;
+  GPIO_InitStruct2.Mode         = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct2.Speed        = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct2.Pull         = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct2);
 
   // EXTI interrupt init
@@ -165,10 +153,10 @@ void PWM_Init() {
   // Channel 2 (speed)
   GPIO_InitTypeDef GPIO_InitStruct;
   /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pin           = GPIO_PIN_3;
+  GPIO_InitStruct.Mode          = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Speed         = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Pull          = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
