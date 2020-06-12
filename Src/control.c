@@ -88,40 +88,49 @@ void PPM_Init(void) {
 #ifdef CONTROL_PWM
 uint16_t pwm_captured_ch1_value = 500;
 uint16_t pwm_captured_ch2_value = 500;
-uint32_t pwm_timeout = 0;
+uint32_t pwm_timeout_ch1 = 0;
+uint32_t pwm_timeout_ch2 = 0;
 
 void PWM_ISR_CH1_Callback(void) {
   // Dummy loop with 16 bit count wrap around
-  uint16_t rc_signal = TIM2->CNT;
-  TIM2->CNT = 0;
-
-  if (IN_RANGE(rc_signal, 900, 2100)){
-    timeout = 0;
-    pwm_timeout = 0;
-    pwm_captured_ch1_value = CLAMP(rc_signal, 1000, 2000) - 1000;
+  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2)) {   // Rising  Edge interrupt -> reset timer
+    TIM2->CNT = 0;
+  } else {                                    // Falling Edge interrupt -> measure pulse duration
+    uint16_t rc_signal = TIM2->CNT;
+    if (IN_RANGE(rc_signal, 900, 2100)){
+      timeout = 0;
+      pwm_timeout_ch1 = 0;
+      pwm_captured_ch1_value = CLAMP(rc_signal, 1000, 2000) - 1000;
+    }
   }
 }
 
 void PWM_ISR_CH2_Callback(void) {
   // Dummy loop with 16 bit count wrap around
-  uint16_t rc_signal = TIM2->CNT;
-  TIM2->CNT = 0;
-
-  if (IN_RANGE(rc_signal, 900, 2100)){
-    timeout = 0;
-    pwm_timeout = 0;
-    pwm_captured_ch2_value = CLAMP(rc_signal, 1000, 2000) - 1000;
+  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3)) {   // Rising  Edge interrupt -> reset timer
+    TIM2->CNT = 0;
+  } else {                                    // Falling Edge interrupt -> measure pulse duration
+    uint16_t rc_signal = TIM2->CNT;
+    if (IN_RANGE(rc_signal, 900, 2100)){
+      timeout = 0;
+      pwm_timeout_ch2 = 0;
+      pwm_captured_ch2_value = CLAMP(rc_signal, 1000, 2000) - 1000;
+    }
   }
 }
 
 // SysTick executes once each ms
 void PWM_SysTick_Callback(void) {
-  pwm_timeout++;
+  pwm_timeout_ch1++;
+  pwm_timeout_ch2++;
   // Stop after 500 ms without PPM signal
-  if(pwm_timeout > 500) {
+  if(pwm_timeout_ch1 > 500) {
     pwm_captured_ch1_value = 500;
+    pwm_timeout_ch1 = 0;
+  }
+  if(pwm_timeout_ch2 > 500) {
     pwm_captured_ch2_value = 500;
-    pwm_timeout = 0;
+    pwm_timeout_ch2 = 0;
   }
 }
 
