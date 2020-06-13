@@ -86,17 +86,32 @@ void PPM_Init(void) {
 
 
 #ifdef CONTROL_PWM
+ /*
+  * Illustration of the PWM functionality
+  * CH1 ________|‾‾‾‾‾‾‾‾‾‾|________
+  * CH2 ______________|‾‾‾‾‾‾‾‾‾‾‾|________
+  *             ↑     ↑    ↑      ↑
+  * TIM2       RST  SAVE RC_CH1 RC_CH1
+ */
+
 uint16_t pwm_captured_ch1_value = 500;
 uint16_t pwm_captured_ch2_value = 500;
+uint16_t pwm_CNT_prev_ch1 = 0;
+uint16_t pwm_CNT_prev_ch2 = 0;
 uint32_t pwm_timeout_ch1 = 0;
 uint32_t pwm_timeout_ch2 = 0;
 
 void PWM_ISR_CH1_Callback(void) {
   // Dummy loop with 16 bit count wrap around
-  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2)) {   // Rising  Edge interrupt -> reset timer
-    TIM2->CNT = 0;
+  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2)) {   // Rising  Edge interrupt -> save timer value OR reset timer
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3)) {
+      pwm_CNT_prev_ch1 = TIM2->CNT;
+    } else {
+      TIM2->CNT = 0;
+      pwm_CNT_prev_ch1 = 0;
+    }
   } else {                                    // Falling Edge interrupt -> measure pulse duration
-    uint16_t rc_signal = TIM2->CNT;
+    uint16_t rc_signal = TIM2->CNT - pwm_CNT_prev_ch1;
     if (IN_RANGE(rc_signal, 900, 2100)){
       timeout = 0;
       pwm_timeout_ch1 = 0;
@@ -107,10 +122,15 @@ void PWM_ISR_CH1_Callback(void) {
 
 void PWM_ISR_CH2_Callback(void) {
   // Dummy loop with 16 bit count wrap around
-  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3)) {   // Rising  Edge interrupt -> reset timer
-    TIM2->CNT = 0;
+  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3)) {   // Rising  Edge interrupt -> save timer value OR reset timer
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2)) {
+      pwm_CNT_prev_ch2 = TIM2->CNT;
+    } else {
+      TIM2->CNT = 0;
+      pwm_CNT_prev_ch2 = 0;
+    }
   } else {                                    // Falling Edge interrupt -> measure pulse duration
-    uint16_t rc_signal = TIM2->CNT;
+    uint16_t rc_signal = TIM2->CNT - pwm_CNT_prev_ch2;
     if (IN_RANGE(rc_signal, 900, 2100)){
       timeout = 0;
       pwm_timeout_ch2 = 0;

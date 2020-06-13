@@ -171,7 +171,9 @@ void DMA1_Channel1_IRQHandler(void) {
     rtU_Left.i_DCLink     = curL_DC;    
     
     /* Step the controller */
+    #ifdef MOTOR_LEFT_ENA    
     BLDC_controller_step(rtM_Left);
+    #endif
 
     /* Get motor outputs here */
     ul            = rtY_Left.DC_phaA;
@@ -206,7 +208,9 @@ void DMA1_Channel1_IRQHandler(void) {
     rtU_Right.i_DCLink      = curR_DC;
 
     /* Step the controller */
+    #ifdef MOTOR_RIGHT_ENA
     BLDC_controller_step(rtM_Right);
+    #endif
 
     /* Get motor outputs here */
     ur            = rtY_Right.DC_phaA;
