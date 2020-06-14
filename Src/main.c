@@ -29,6 +29,7 @@
 #include "comms.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
+#include "protocolfunctions.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
@@ -196,12 +197,32 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
+  #if defined(CONTROL_SERIAL_USART2) && defined(VARIANT_BIPROPELLANT)
+    setup_protocol(&sUSART2);
+  #endif
+  #if defined(CONTROL_SERIAL_USART3) && defined(VARIANT_BIPROPELLANT)
+      setup_protocol(&sUSART3);
+  #endif
+
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
 
     readCommand();                        // Read Command: cmd1, cmd2
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
+
+  #if defined(CONTROL_SERIAL_USART2) && defined(VARIANT_BIPROPELLANT)
+            while ( serial_usart_buffer_count(&usart2_it_RXbuffer) > 0 ) {
+              protocol_byte( &sUSART2, (unsigned char) serial_usart_buffer_pop(&usart2_it_RXbuffer) );
+            }
+            protocol_tick( &sUSART2 );
+  #endif
+  #if defined(CONTROL_SERIAL_USART3) && defined(VARIANT_BIPROPELLANT)
+          while ( serial_usart_buffer_count(&usart3_it_RXbuffer) > 0 ) {
+            protocol_byte( &sUSART3, (unsigned char) serial_usart_buffer_pop(&usart3_it_RXbuffer) );
+          }
+          protocol_tick( &sUSART3 );
+  #endif
 
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
