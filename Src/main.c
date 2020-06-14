@@ -197,10 +197,17 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
-  #if defined(CONTROL_SERIAL_USART2) && defined(VARIANT_BIPROPELLANT)
+  #ifdef SERIAL_USART2_IT
+  USART2_IT_init();
+  #endif
+  #ifdef SERIAL_USART3_IT
+  USART3_IT_init();
+  #endif
+
+  #if defined(SERIAL_USART2_IT) && defined(VARIANT_BIPROPELLANT)
     setup_protocol(&sUSART2);
   #endif
-  #if defined(CONTROL_SERIAL_USART3) && defined(VARIANT_BIPROPELLANT)
+  #if defined(SERIAL_USART3_IT) && defined(VARIANT_BIPROPELLANT)
       setup_protocol(&sUSART3);
   #endif
 
@@ -211,13 +218,13 @@ int main(void) {
     readCommand();                        // Read Command: cmd1, cmd2
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
-  #if defined(CONTROL_SERIAL_USART2) && defined(VARIANT_BIPROPELLANT)
+  #if defined(SERIAL_USART2_IT) && defined(VARIANT_BIPROPELLANT)
             while ( serial_usart_buffer_count(&usart2_it_RXbuffer) > 0 ) {
               protocol_byte( &sUSART2, (unsigned char) serial_usart_buffer_pop(&usart2_it_RXbuffer) );
             }
             protocol_tick( &sUSART2 );
   #endif
-  #if defined(CONTROL_SERIAL_USART3) && defined(VARIANT_BIPROPELLANT)
+  #if defined(SERIAL_USART3_IT) && defined(VARIANT_BIPROPELLANT)
           while ( serial_usart_buffer_count(&usart3_it_RXbuffer) > 0 ) {
             protocol_byte( &sUSART3, (unsigned char) serial_usart_buffer_pop(&usart3_it_RXbuffer) );
           }

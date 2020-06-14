@@ -38,6 +38,9 @@ pb10 usart3 dma1 channel2/3
 #include "defines.h"
 #include "config.h"
 #include "setup.h"
+#include "comms.h"
+#include <string.h>
+#include "protocolfunctions.h"
 
 TIM_HandleTypeDef htim_right;
 TIM_HandleTypeDef htim_left;
@@ -53,6 +56,10 @@ DMA_HandleTypeDef hdma_usart3_rx;
 DMA_HandleTypeDef hdma_usart3_tx;
 volatile adc_buf_t adc_buffer;
 
+
+#ifdef SERIAL_USART2_IT
+  static int USART2WordLength = USART2_WORDLENGTH;
+#endif
 
 #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
  /* USART2 init function */
@@ -276,6 +283,92 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
   /* USER CODE END USART3_MspDeInit 1 */
   }
 } 
+#endif
+
+#ifdef SERIAL_USART2_IT
+void USART2_IT_init(){
+    memset((void*)&usart2_it_TXbuffer, 0, sizeof(usart2_it_TXbuffer));
+    memset((void*)&usart2_it_RXbuffer, 0, sizeof(usart2_it_RXbuffer));
+
+    HAL_NVIC_DisableIRQ(USART2_IRQn);
+
+    memset(&huart2, 0, sizeof(huart2));
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_USART2_CLK_ENABLE();
+
+    huart2.Instance          = USART2;
+    huart2.Init.BaudRate     = USART2_BAUD;
+    huart2.Init.WordLength   = USART2WordLength;
+    huart2.Init.StopBits     = UART_STOPBITS_1;
+    huart2.Init.Parity       = UART_PARITY_NONE;
+    huart2.Init.Mode         = UART_MODE_TX_RX;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+    huart2.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+    HAL_UART_Init(&huart2);
+
+    GPIO_InitTypeDef GPIO_InitStruct;
+    memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
+    GPIO_InitStruct.Pin      = GPIO_PIN_2;
+    GPIO_InitStruct.Pull     = GPIO_PULLUP;
+    GPIO_InitStruct.Mode     = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Speed    = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
+    GPIO_InitStruct.Pin      = GPIO_PIN_3;
+    GPIO_InitStruct.Pull     = GPIO_NOPULL;
+    GPIO_InitStruct.Mode     = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Speed    = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // start interrupt receive?
+    HAL_NVIC_SetPriority(USART2_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
+
+    __HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
+}
+#endif
+
+#ifdef SERIAL_USART3_IT
+void USART3_IT_init(){
+    memset((void *)&usart3_it_TXbuffer, 0, sizeof(usart3_it_TXbuffer));
+    memset((void *)&usart3_it_RXbuffer, 0, sizeof(usart3_it_RXbuffer));
+
+    memset(&huart3, 0, sizeof(huart3));
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_USART3_CLK_ENABLE();
+
+    huart3.Instance          = USART3;
+    huart3.Init.BaudRate     = USART3_BAUD;
+    huart3.Init.WordLength   = USART3_WORDLENGTH;
+    huart3.Init.StopBits     = UART_STOPBITS_1;
+    huart3.Init.Parity       = UART_PARITY_NONE;
+    huart3.Init.Mode         = UART_MODE_TX_RX;
+    huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+    huart3.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+    HAL_UART_Init(&huart3);
+
+    GPIO_InitTypeDef GPIO_InitStruct;
+    memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
+    GPIO_InitStruct.Pin      = GPIO_PIN_10;
+    GPIO_InitStruct.Pull     = GPIO_PULLUP;
+    GPIO_InitStruct.Mode     = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Speed    = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
+    GPIO_InitStruct.Pin      = GPIO_PIN_11;
+    GPIO_InitStruct.Pull     = GPIO_NOPULL;
+    GPIO_InitStruct.Mode     = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Speed    = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    // start interrupt receive?
+    HAL_NVIC_SetPriority(USART3_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(USART3_IRQn);
+
+    __HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
+}
 #endif
 
 DMA_HandleTypeDef hdma_i2c2_rx;

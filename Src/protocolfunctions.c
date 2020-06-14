@@ -1,27 +1,17 @@
 #include "defines.h"
 #include "config.h"
 #include "protocolfunctions.h"
-#include "bldc.h"
-#include "softwareserial.h"
-#include "flashcontent.h"
-#include "flashaccess.h"
+
 #include "comms.h"
 
 #include "stm32f1xx_hal.h"
-#ifdef CONTROL_SENSOR
-    #include "sensorcoms.h"
-#endif
-#include "hallinterrupts.h"
-#include "deadreckoner.h"
+
 
 #include <string.h>
 #include <stdlib.h>
 
 #include "control_structures.h"
 
-#ifdef SOFTWARE_SERIAL
-    PROTOCOL_STAT sSoftwareSerial;
-#endif
 #if defined(SERIAL_USART2_IT)
     PROTOCOL_STAT sUSART2;
 #endif
@@ -55,15 +45,15 @@ void fn_enable ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCOL
             if (!protocol_enable) {
                 // assume we will enable,
                 // set wanted posn to current posn, else we may rush into a wall
-                PosnData.wanted_posn_mm[0] = HallData[0].HallPosn_mm;
-                PosnData.wanted_posn_mm[1] = HallData[1].HallPosn_mm;
+//                PosnData.wanted_posn_mm[0] = HallData[0].HallPosn_mm;
+//                PosnData.wanted_posn_mm[1] = HallData[1].HallPosn_mm;
 
                 // clear speeds to zero
                 SpeedData.wanted_speed_mm_per_sec[0] = 0;
                 SpeedData.wanted_speed_mm_per_sec[1] = 0;
                 PWMData.pwm[0] = 0;
                 PWMData.pwm[1] = 0;
-                init_PID_control();
+//                init_PID_control();
             }
             enable = protocol_enable;
             break;
@@ -116,8 +106,8 @@ void fn_SpeedData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTO
     switch (cmd) {
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
-            control_type = CONTROL_TYPE_SPEED;
-            input_timeout_counter = 0;
+//            control_type = CONTROL_TYPE_SPEED;
+//            input_timeout_counter = 0;
             break;
     }
     fn_defaultProcessing(s, param, cmd, msg);
@@ -132,10 +122,12 @@ void fn_Position ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOC
     switch (cmd) {
         case PROTOCOL_CMD_READVAL:
         case PROTOCOL_CMD_SILENTREAD:
+        /*
             ((POSN*) (param->ptr))->LeftAbsolute = HallData[0].HallPosn_mm;
             ((POSN*) (param->ptr))->LeftOffset = HallData[0].HallPosn_mm - HallData[0].HallPosn_mm_lastread;
             ((POSN*) (param->ptr))->RightAbsolute = HallData[1].HallPosn_mm;
             ((POSN*) (param->ptr))->RightOffset = HallData[1].HallPosn_mm - HallData[1].HallPosn_mm_lastread;
+            */
             break;
     }
 
@@ -144,8 +136,10 @@ void fn_Position ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOC
     switch (cmd) {
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
+        /*
             HallData[0].HallPosn_mm_lastread = ((POSN*) (param->ptr))->LeftAbsolute;
             HallData[1].HallPosn_mm_lastread = ((POSN*) (param->ptr))->RightAbsolute;
+            */
             break;
     }
 }
@@ -162,7 +156,7 @@ void fn_PositionIncr ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PR
     switch (cmd) {
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
-            // if switching to control type POSITION,
+/*            // if switching to control type POSITION,
             if ((control_type != CONTROL_TYPE_POSITION) || !enable) {
                 control_type = CONTROL_TYPE_POSITION;
                 // then make sure we won't rush off somwehere strange
@@ -176,6 +170,7 @@ void fn_PositionIncr ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PR
             // increment our wanted position
             PosnData.wanted_posn_mm[0] += ((POSN_INCR*) (param->ptr))->Left;
             PosnData.wanted_posn_mm[1] += ((POSN_INCR*) (param->ptr))->Right;
+            */
             break;
     }
 }
@@ -200,10 +195,12 @@ void fn_RawPosition ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PRO
     switch (cmd) {
         case PROTOCOL_CMD_READVAL:
         case PROTOCOL_CMD_SILENTREAD:
+        /*
             ((PROTOCOL_POSN*) (param->ptr))->LeftAbsolute = HallData[0].HallPosn;
             ((PROTOCOL_POSN*) (param->ptr))->LeftOffset = HallData[0].HallPosn - HallData[0].HallPosn_lastread;
             ((PROTOCOL_POSN*) (param->ptr))->RightAbsolute = HallData[1].HallPosn;
             ((PROTOCOL_POSN*) (param->ptr))->RightOffset = HallData[1].HallPosn - HallData[1].HallPosn_lastread;
+            */
             break;
     }
 
@@ -212,8 +209,10 @@ void fn_RawPosition ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PRO
     switch (cmd) {
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
+        /*
             HallData[0].HallPosn_lastread = ((PROTOCOL_POSN*) (param->ptr))->LeftAbsolute;
             HallData[1].HallPosn_lastread = ((PROTOCOL_POSN*) (param->ptr))->RightAbsolute;
+            */
             break;
     }
 }
@@ -230,28 +229,6 @@ extern uint8_t disablepoweroff;
 
 extern uint8_t debug_out;
 
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Variable & Functions for 0x0C xytPosn
-
-// ded reckoning posn
-extern INTEGER_XYT_POSN xytPosn;
-
-void fn_xytPosn ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCOL_MSG3full *msg ) {
-
-    fn_defaultProcessing(s, param, cmd, msg);
-
-    switch (cmd) {
-        case PROTOCOL_CMD_WRITEVAL:
-        case PROTOCOL_CMD_READVALRESPONSE:
-            if (deadreconer) {
-                // reset xyt
-                reset( deadreconer, 1 );
-            }
-            break;
-    }
-
-}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,8 +248,8 @@ void fn_PWMData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCO
     switch (cmd) {
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
-            control_type = CONTROL_TYPE_PWM;
-            input_timeout_counter = 0;
+//            control_type = CONTROL_TYPE_PWM;
+//            input_timeout_counter = 0;
             break;
     }
 
@@ -316,9 +293,11 @@ void fn_BuzzerData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROT
     switch (cmd) {
         case PROTOCOL_CMD_READVAL:
         case PROTOCOL_CMD_SILENTREAD:
+        /*
             ((PROTOCOL_BUZZER_DATA*) (param->ptr))->buzzerFreq       = buzzerFreq;
             ((PROTOCOL_BUZZER_DATA*) (param->ptr))->buzzerLen        = buzzerLen;
             ((PROTOCOL_BUZZER_DATA*) (param->ptr))->buzzerPattern    = buzzerPattern;
+            */
             break;
     }
 
@@ -327,9 +306,11 @@ void fn_BuzzerData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROT
     switch (cmd) {
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
+        /*
             buzzerFreq      = ((PROTOCOL_BUZZER_DATA*) (param->ptr))->buzzerFreq;
             buzzerLen       = ((PROTOCOL_BUZZER_DATA*) (param->ptr))->buzzerLen;
             buzzerPattern   = ((PROTOCOL_BUZZER_DATA*) (param->ptr))->buzzerPattern;
+            */
             break;
     }
 }
@@ -342,56 +323,7 @@ void fn_BuzzerData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROT
 extern void change_PID_constants();
 extern void init_PID_control();
 
-extern volatile ELECTRICAL_PARAMS electrical_measurements;
-
-void fn_FlashContentMagic ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCOL_MSG3full *msg ) {
-
-    fn_defaultProcessing(s, param, cmd, msg);
-
-    switch (cmd) {
-        case PROTOCOL_CMD_WRITEVAL:
-        case PROTOCOL_CMD_READVALRESPONSE:
-            if (FlashContent.magic != CURRENT_MAGIC){
-                char temp[128];
-                sprintf(temp, "incorrect magic %d, should be %d\r\nFlash not written\r\n", FlashContent.magic, CURRENT_MAGIC);
-                consoleLog(temp);
-                FlashContent.magic = CURRENT_MAGIC;
-                return;
-            }
-            writeFlash( (unsigned char *)&FlashContent, sizeof(FlashContent) );
-            consoleLog("wrote flash\r\n");
-            break;
-    }
-}
-
-void fn_FlashContentPID ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCOL_MSG3full *msg ) {
-
-    fn_defaultProcessing(s, param, cmd, msg);
-
-    switch (cmd) {
-        case PROTOCOL_CMD_WRITEVAL:
-        case PROTOCOL_CMD_READVALRESPONSE:
-            change_PID_constants();
-            break;
-    }
-}
-
-void fn_FlashContentMaxCurrLim ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCOL_MSG3full *msg ) {
-
-    fn_defaultProcessing(s, param, cmd, msg);
-
-    switch (cmd) {
-        case PROTOCOL_CMD_WRITEVAL:
-        case PROTOCOL_CMD_READVALRESPONSE:
-            electrical_measurements.dcCurLim = MIN(DC_CUR_LIMIT, FlashContent.MaxCurrLim / 100);
-            break;
-    }
-}
-
-
-
-
-
+//extern volatile ELECTRICAL_PARAMS electrical_measurements;
 
 
 
@@ -407,19 +339,6 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
 
     int errors = 0;
-
-
-    #ifdef SOFTWARE_SERIAL
-
-      errors += protocol_init(&sSoftwareSerial);
-
-      sSoftwareSerial.send_serial_data=softwareserial_Send;
-      sSoftwareSerial.send_serial_data_wait=softwareserial_Send_Wait;
-      sSoftwareSerial.timeout1 = 500;
-      sSoftwareSerial.timeout2 = 100;
-      sSoftwareSerial.allow_ascii = 1;
-
-    #endif
 
     #if defined(SERIAL_USART2_IT)
       // initialise, even if CONTROL_SENSOR, as we may switch vuia software to use this....
@@ -451,7 +370,7 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
 
     // initialise ascii protocol functions
-    main_ascii_init(s);
+//    main_ascii_init(s);
 
 
     #ifdef CONTROL_SENSOR
@@ -459,7 +378,7 @@ int setup_protocol(PROTOCOL_STAT *s) {
         setParamHandler( s, 0x01, fn_SensorData );
     #endif
 
-        errors += setParamVariable( s, 0x02, UI_NONE, (void *)&HallData, sizeof(HallData) );
+//        errors += setParamVariable( s, 0x02, UI_NONE, (void *)&HallData, sizeof(HallData) );
 
         errors += setParamVariable( s, 0x03, UI_NONE, &SpeedData, sizeof(SpeedData) );
         setParamHandler( s, 0x03, fn_SpeedData );
@@ -467,25 +386,22 @@ int setup_protocol(PROTOCOL_STAT *s) {
         errors += setParamVariable( s, 0x04, UI_NONE, &Position, sizeof(Position) );
         setParamHandler( s, 0x04, fn_Position );
 
-        errors += setParamVariable( s, 0x05, UI_NONE, &PositionIncr, sizeof(PositionIncr) );
-        setParamHandler( s, 0x05, fn_PositionIncr );
+
 
         errors += setParamVariable( s, 0x06, UI_NONE, &PosnData, sizeof(PosnData) );
 
         errors += setParamVariable( s, 0x07, UI_NONE, &RawPosition, sizeof(RawPosition) );
         setParamHandler( s, 0x07, fn_RawPosition );
 
-        errors += setParamVariable( s, 0x08, UI_NONE, (void *)&electrical_measurements, sizeof(ELECTRICAL_PARAMS) );
+//        errors += setParamVariable( s, 0x08, UI_NONE, (void *)&electrical_measurements, sizeof(ELECTRICAL_PARAMS) );
 
         errors += setParamVariable( s, 0x09, UI_CHAR, &protocol_enable, sizeof(enable) );
         setParamHandler( s, 0x09, fn_enable );
 
-        errors += setParamVariable( s, 0x0A, UI_CHAR, &disablepoweroff, sizeof(disablepoweroff) );
+//        errors += setParamVariable( s, 0x0A, UI_CHAR, &disablepoweroff, sizeof(disablepoweroff) );
 
         errors += setParamVariable( s, 0x0B, UI_CHAR, &debug_out, sizeof(debug_out) );
 
-        errors += setParamVariable( s, 0x0C, UI_3LONG, &xytPosn, sizeof(xytPosn) );
-        setParamHandler( s, 0x0C, fn_xytPosn );
 
         errors += setParamVariable( s, 0x0D, UI_NONE, &PWMData, sizeof(PWMData) );
         setParamHandler( s, 0x0D, fn_PWMData );
@@ -496,39 +412,6 @@ int setup_protocol(PROTOCOL_STAT *s) {
         errors += setParamVariable( s, 0x21, UI_NONE, &BuzzerData, sizeof(BuzzerData) );
         setParamHandler( s, 0x21, fn_BuzzerData );
 
-        errors += setParamVariable( s, 0x80, UI_SHORT, &FlashContent.magic, sizeof(short) );
-        setParamHandler( s, 0x80, fn_FlashContentMagic );
-
-        errors += setParamVariable( s, 0x81, UI_SHORT, &FlashContent.PositionKpx100, sizeof(short) );
-        setParamHandler( s, 0x81, fn_FlashContentPID );
-
-        errors += setParamVariable( s, 0x82, UI_SHORT, &FlashContent.PositionKix100, sizeof(short) );
-        setParamHandler( s, 0x82, fn_FlashContentPID );
-
-        errors += setParamVariable( s, 0x83, UI_SHORT, &FlashContent.PositionKdx100, sizeof(short) );
-        setParamHandler( s, 0x83, fn_FlashContentPID );
-
-        errors += setParamVariable( s, 0x84, UI_SHORT, &FlashContent.PositionPWMLimit, sizeof(short) );
-        setParamHandler( s, 0x84, fn_FlashContentPID );
-
-        errors += setParamVariable( s, 0x85, UI_SHORT, &FlashContent.SpeedKpx100, sizeof(short) );
-        setParamHandler( s, 0x85, fn_FlashContentPID );
-
-        errors += setParamVariable( s, 0x86, UI_SHORT, &FlashContent.SpeedKix100, sizeof(short) );
-        setParamHandler( s, 0x86, fn_FlashContentPID );
-
-        errors += setParamVariable( s, 0x87, UI_SHORT, &FlashContent.SpeedKdx100, sizeof(short) );
-        setParamHandler( s, 0x87, fn_FlashContentPID );
-
-        errors += setParamVariable( s, 0x88, UI_SHORT, &FlashContent.SpeedPWMIncrementLimit, sizeof(short) );
-        setParamHandler( s, 0x88, fn_FlashContentPID );
-
-        errors += setParamVariable( s, 0x89, UI_SHORT, &FlashContent.MaxCurrLim, sizeof(short) );
-        setParamHandler( s, 0x89, fn_FlashContentMaxCurrLim );
-
-        errors += setParamVariable( s, 0x90, UI_NONE, &FlashContent.adc, sizeof(PROTOCOL_ADC_SETTINGS) );
-
-        errors += setParamVariable( s, 0xA0, UI_SHORT, &FlashContent.HoverboardEnable, sizeof(short) );
     return errors;
 
 }
