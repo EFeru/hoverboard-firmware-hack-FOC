@@ -758,11 +758,11 @@ void readCommand(void) {
       #else
         #ifdef SERIAL_ROBO
         
-          uint8_t a[2*sizeof(Serialcommand)-1];   // work on a doubled copy to crc32 test all offsets
-          memcpy((void*)a,  (void*)command, sizeof(Serialcommand));
-          memcpy((void*)(a+sizeof(Serialcommand)),  (void*)a, sizeof(Serialcommand)-1);
+          uint8_t a[2*sizeof(command)-1];   // work on a doubled copy to crc32 test all offsets
+          memcpy((void*)a,  (void*)command, sizeof(command));
+          memcpy((void*)(a+sizeof(command)),  (void*)a, sizeof(command)-1);
           
-          for (uint8_t iOffset=0; iOffset < sizeof(Serialcommand); iOffset++)
+          for (uint8_t iOffset=0; iOffset < sizeof(command); iOffset++)
           {
             Serialcommand* pCmd = (Serialcommand*) (a+iOffset);
             uint32_t crc = 0;
