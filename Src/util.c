@@ -34,6 +34,25 @@
 #include "hd44780.h"
 #endif
 
+#ifdef SERIAL_ROBO
+  uint32_t crc32_for_byte(uint32_t r) 
+  {
+    for(int j = 0; j < 8; ++j)
+      r = (r & 1? 0: (uint32_t)0xEDB88320L) ^ r >> 1;
+    return r ^ (uint32_t)0xFF000000L;
+  }
+
+  void crc32(const void *data, size_t n_bytes, uint32_t* crc) 
+  {
+    static uint32_t table[0x100];
+    if(!*table)
+      for(size_t i = 0; i < 0x100; ++i)
+        table[i] = crc32_for_byte(i);
+    for(size_t i = 0; i < n_bytes; ++i)
+      *crc = table[(uint8_t)*crc ^ ((uint8_t*)data)[i]] ^ *crc >> 8;
+  }
+#endif
+
 /* =========================== Variable Definitions =========================== */
 
 //------------------------------------------------------------------------
@@ -737,28 +756,60 @@ void readCommand(void) {
           }
         }  
       #else
-        if (command.start == SERIAL_START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
-          if (timeoutFlagSerial) {                      // Check for previous timeout flag  
-            if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
-              timeoutFlagSerial = 0;                    // Timeout flag cleared           
-          } else {
-            cmd1              = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
-            cmd2              = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
-            command.start     = 0xFFFF;                 // Change the Start Frame for timeout detection in the next cycle
-            timeoutCntSerial  = 0;                      // Reset the timeout counter         
+        #ifdef SERIAL_ROBO
+        
+          uint8_t a[2*sizeof(Serialcommand)-1];   // work on a doubled copy to crc32 test all offsets
+          memcpy((void*)a,  (void*)command, sizeof(Serialcommand));
+          memcpy((void*)(a+sizeof(Serialcommand)),  (void*)a, sizeof(Serialcommand)-1);
+          
+          for (uint8_t iOffset=0; iOffset < sizeof(Serialcommand); iOffset++)
+          {
+            Serialcommand* pCmd = (Serialcommand*) (a+iOffset);
+            uint32_t crc = 0;
+            crc32((const void *)pCmd, 4, &crc); // 2x uint16_t = 4 bytes
+            if  (pCmd->crc == crc) 
+            {
+              if (	(pCmd->steer >= INPUT_MIN) && (pCmd->steer <= INPUT_MAX) && (pCmd->speed >= INPUT_MIN) && (pCmd->speed <= INPUT_MAX) 	)
+              {
+                cmd1 = pCmd->steer;
+                cmd2 = pCmd->speed;
+                timeoutCntSerial = 0;
+              }
+              break;
+            }
           }
-        } else {
-          if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
+          if (timeoutCntSerial++ >= SERIAL_TIMEOUT) // Timeout qualification
+          {
             timeoutFlagSerial = 1;                      // Timeout detected
             timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
           }
-          // Most probably we are out-of-sync. Try to re-sync by reseting the DMA
-          if (command.start != SERIAL_START_FRAME && command.start != 0xFFFF && main_loop_counter % 2 == 0) {
-            HAL_UART_DMAStop(&huart);                
-            HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));            
+
+        #else // SERIAL_ROBO
+
+          if (command.start == SERIAL_START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
+            if (timeoutFlagSerial) {                      // Check for previous timeout flag  
+              if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
+                timeoutFlagSerial = 0;                    // Timeout flag cleared           
+            } else {
+              cmd1              = CLAMP((int16_t)command.steer, INPUT_MIN, INPUT_MAX);
+              cmd2              = CLAMP((int16_t)command.speed, INPUT_MIN, INPUT_MAX);
+              command.start     = 0xFFFF;                 // Change the Start Frame for timeout detection in the next cycle
+              timeoutCntSerial  = 0;                      // Reset the timeout counter         
+            }
+          } else {
+            if (timeoutCntSerial++ >= SERIAL_TIMEOUT) {   // Timeout qualification
+              timeoutFlagSerial = 1;                      // Timeout detected
+              timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
+            }
+            // Most probably we are out-of-sync. Try to re-sync by reseting the DMA
+            if (command.start != SERIAL_START_FRAME && command.start != 0xFFFF && main_loop_counter % 2 == 0) {
+              HAL_UART_DMAStop(&huart);                
+              HAL_UART_Receive_DMA(&huart, (uint8_t *)&command, sizeof(command));            
+            }
           }
-        }
-        #endif
+        #endif // SERIAL_ROBO
+
+      #endif
 
       if (timeoutFlagSerial) {                          // In case of timeout bring the system to a Safe State
         ctrlModReq  = 0;                                // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
