@@ -34,17 +34,6 @@
 #include "hd44780.h"
 #endif
 
-// ROBO begin
-extern float curL_DC;	// defined and updated in bldc.c
-extern float curR_DC;	// defined and updated in bldc.c
-
-#ifdef FEEDBACK_SERIAL_USART3
-  #define UART_DMA_CHANNEL DMA1_Channel2
-#endif
-#ifdef FEEDBACK_SERIAL_USART2
-  #define UART_DMA_CHANNEL DMA1_Channel7
-#endif
-// ROBO end
 
 void SystemClock_Config(void);
 
@@ -114,6 +103,17 @@ volatile uint32_t main_loop_counter;
 //------------------------------------------------------------------------
 #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
   #ifdef SERIAL_ROBO
+
+    extern float curL_DC;	// defined and updated in bldc.c
+    extern float curR_DC;	// defined and updated in bldc.c
+
+    #ifdef FEEDBACK_SERIAL_USART3
+      #define UART_DMA_CHANNEL DMA1_Channel2
+    #endif
+    #ifdef FEEDBACK_SERIAL_USART2
+      #define UART_DMA_CHANNEL DMA1_Channel7
+    #endif
+
     typedef struct{
       int16_t iSpeedL;		// rpm
       int16_t iSpeedR;		// rpm
@@ -446,8 +446,8 @@ int main(void) {
             Feedback.iHallSkippedR	= 0;
             Feedback.iTemp	= (int)	board_temp_deg_c;
             Feedback.iVolt	= (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC); // 362 = 36.2 V
-            Feedback.iAmpL = (int16_t)((float)curL_DC * 10.0f / A2BIT_CONV);    // 154 = 15.4 A
-            Feedback.iAmpR = (int16_t)((float)curR_DC * 10.0f / A2BIT_CONV);    // 1542 = 154.2 A
+            Feedback.iAmpL = (int16_t)((float)curL_DC / A2BIT_CONV);    // 154 = 15.4 A
+            Feedback.iAmpR = (int16_t)((float)curR_DC / A2BIT_CONV);    // 1542 = 154.2 A
             Feedback.crc = 0;
             crc32((const void *)&Feedback, sizeof(Feedback)-4, &Feedback.crc);
 
