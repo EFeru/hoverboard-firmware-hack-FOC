@@ -34,6 +34,18 @@
 #include "hd44780.h"
 #endif
 
+// ROBO begin
+extern float curL_DC;	// defined and updated in bldc.c
+extern float curR_DC;	// defined and updated in bldc.c
+
+#ifdef FEEDBACK_SERIAL_USART3
+  #define UART_DMA_CHANNEL DMA1_Channel2
+#endif
+#ifdef FEEDBACK_SERIAL_USART2
+  #define UART_DMA_CHANNEL DMA1_Channel7
+#endif
+// ROBO end
+
 void SystemClock_Config(void);
 
 //------------------------------------------------------------------------
@@ -101,18 +113,33 @@ volatile uint32_t main_loop_counter;
 // Local variables
 //------------------------------------------------------------------------
 #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
-typedef struct{
-  uint16_t  start;
-  int16_t   cmd1;
-  int16_t   cmd2;
-  int16_t   speedR_meas;
-  int16_t   speedL_meas;
-  int16_t   batVoltage;
-  int16_t   boardTemp;
-  uint16_t 	cmdLed;
-  uint16_t  checksum;
-} SerialFeedback;
-static SerialFeedback Feedback;
+  #ifdef SERIAL_ROBO
+    typedef struct{
+      int16_t iSpeedL;		// rpm
+      int16_t iSpeedR;		// rpm
+      uint16_t iHallSkippedL;
+      uint16_t iHallSkippedR;
+      uint16_t iTemp;		// °C
+      uint16_t iVolt;		// 100* V
+      int16_t iAmpL;		// 100* A
+      int16_t iAmpR;		// 100* A
+      uint32_t crc;
+    } SerialFeedback;
+  #else // SERIAL_ROBO
+    typedef struct{
+      uint16_t  start;
+      int16_t   cmd1;
+      int16_t   cmd2;
+      int16_t   speedR_meas;
+      int16_t   speedL_meas;
+      int16_t   batVoltage;
+      int16_t   boardTemp;
+      uint16_t 	cmdLed;
+      uint16_t  checksum;
+    } SerialFeedback;
+  #endif // SERIAL_ROBO
+
+  static SerialFeedback Feedback;
 #endif
 #if defined(FEEDBACK_SERIAL_USART2)
 static uint8_t sideboard_leds_L;
@@ -408,37 +435,65 @@ int main(void) {
 
     // ####### FEEDBACK SERIAL OUT #######
     #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
-      if (main_loop_counter % 2 == 0) {    // Send data periodically every 10 ms
-        Feedback.start	        = (uint16_t)SERIAL_START_FRAME;
-        Feedback.cmd1           = (int16_t)cmd1;
-        Feedback.cmd2           = (int16_t)cmd2;
-        Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
-        Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
-        Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
-        Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
+      if (main_loop_counter % 20 == 0)    // Send data periodically every 100 ms
+      {
+        #ifdef SERIAL_ROBO
+          if(UART_DMA_CHANNEL->CNDTR == 0) 
+          {
+            Feedback.iSpeedL	= (int16_t)rtY_Left.n_mot;      // rpm
+            Feedback.iSpeedR	= (int16_t)rtY_Right.n_mot;     // rpm
+            Feedback.iHallSkippedL	= 0;
+            Feedback.iHallSkippedR	= 0;
+            Feedback.iTemp	= (int)	board_temp_deg_c;
+            Feedback.iVolt	= (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC); // 362 = 36.2 V
+            Feedback.iAmpL = (int16_t)((float)curL_DC * 10.0f / A2BIT_CONV);    // 154 = 15.4 A
+            Feedback.iAmpR = (int16_t)((float)curR_DC * 10.0f / A2BIT_CONV);    // 1542 = 154.2 A
+            Feedback.crc = 0;
+            crc32((const void *)&Feedback, sizeof(Feedback)-4, &Feedback.crc);
 
-        #if defined(FEEDBACK_SERIAL_USART2)
-          if(DMA1_Channel7->CNDTR == 0) {
-            Feedback.cmdLed         = (uint16_t)sideboard_leds_L;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
-                                               ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
-            DMA1_Channel7->CCR     &= ~DMA_CCR_EN;
-            DMA1_Channel7->CNDTR    = sizeof(Feedback);
-            DMA1_Channel7->CMAR     = (uint32_t)&Feedback;
-            DMA1_Channel7->CCR     |= DMA_CCR_EN;          
+            UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;
+            UART_DMA_CHANNEL->CNDTR = sizeof(Feedback);
+            UART_DMA_CHANNEL->CMAR  = (uint32_t)&Feedback;
+            UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;
           }
-        #endif
-        #if defined(FEEDBACK_SERIAL_USART3)
-          if(DMA1_Channel2->CNDTR == 0) {
-            Feedback.cmdLed         = (uint16_t)sideboard_leds_R;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
-                                               ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
-            DMA1_Channel2->CCR     &= ~DMA_CCR_EN;
-            DMA1_Channel2->CNDTR    = sizeof(Feedback);
-            DMA1_Channel2->CMAR     = (uint32_t)&Feedback;
-            DMA1_Channel2->CCR     |= DMA_CCR_EN;          
-          }
-        #endif            
+
+        #else // SERIAL_ROBO
+          Feedback.start	        = (uint16_t)SERIAL_START_FRAME;
+          Feedback.cmd1           = (int16_t)cmd1;
+          Feedback.cmd2           = (int16_t)cmd2;
+          Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
+          Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
+          Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
+          Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
+
+          #if defined(FEEDBACK_SERIAL_USART2)
+            if(DMA1_Channel7->CNDTR == 0) {
+              Feedback.cmdLed         = (uint16_t)sideboard_leds_L;
+              Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                                ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+              DMA1_Channel7->CCR     &= ~DMA_CCR_EN;
+              DMA1_Channel7->CNDTR    = sizeof(Feedback);
+              DMA1_Channel7->CMAR     = (uint32_t)&Feedback;
+              DMA1_Channel7->CCR     |= DMA_CCR_EN;          
+            }
+          #endif
+          #if defined(FEEDBACK_SERIAL_USART3)
+            if(DMA1_Channel2->CNDTR == 0) {
+              Feedback.cmdLed         = (uint16_t)sideboard_leds_R;
+              Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                                ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+              DMA1_Channel2->CCR     &= ~DMA_CCR_EN;
+              DMA1_Channel2->CNDTR    = sizeof(Feedback);
+              DMA1_Channel2->CMAR     = (uint32_t)&Feedback;
+              DMA1_Channel2->CCR     |= DMA_CCR_EN;          
+            }
+          #endif            
+
+        #endif // SERIAL_ROBO
+
+
+
+
       }
     #endif
 
