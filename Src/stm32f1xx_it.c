@@ -236,7 +236,7 @@ void DMA1_Channel5_IRQHandler(void)
 void EXTI3_IRQHandler(void)
 {
   __HAL_GPIO_EXTI_CLEAR_IT(PPM_PIN);
-  PPM_ISR_Callback();    
+    PPM_ISR_Callback();
 }
 #endif
 #ifdef CONTROL_PPM_RIGHT
@@ -259,7 +259,7 @@ void EXTI2_IRQHandler(void)
 void EXTI3_IRQHandler(void)
 {
   __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH2);
-  PWM_ISR_CH2_Callback();    
+    PWM_ISR_CH2_Callback();
 }
 #endif
 #ifdef CONTROL_PWM_RIGHT
@@ -370,6 +370,26 @@ void USART3_IRQHandler(void)
   /* USER CODE END USART2_IRQn 1 */
 }
 #endif
+
+/////////////////////////////////////////
+// UART interrupts
+
+#if defined(SERIAL_USART2_IT)
+void USART2_IT_IRQ(USART_TypeDef *us);
+
+void USART2_IRQHandler(void){
+    USART2_IT_IRQ(USART2);
+}
+#endif
+
+#if defined(SERIAL_USART3_IT)
+void USART3_IT_IRQ(USART_TypeDef *us);
+
+void USART3_IRQHandler(void){
+    USART3_IT_IRQ(USART3);
+}
+#endif
+
 
 /******************************************************************************/
 /* STM32F1xx Peripheral Interrupt Handlers                                    */
