@@ -19,7 +19,7 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
 
 The original Hardware supports two 4-pin cables that originally were connected to the two sensor boards. They break out GND, 12/15V and USART2&3 of the Hoverboard mainboard. Both USART2&3 can be used for UART and I2C, PA2&3 can be used as 12bit ADCs. Note that while USART3 (right sideboard cable) is 5V tolerant, USART2 (left sideboard cable) is **not** 5V tolerant.
 
-Typically, the mainboard brain is an [STM32F103RCT6](/docs/literatur/[10]_STM32F103xC_datasheet.pdf), however some mainboards feature a [GD32F103RCT6](/docs/literatur/[11]_GD32F103xx-Datasheet-Rev-2.7.pdf) which is also supported by this firmware.
+Typically, the mainboard brain is an [STM32F103RCT6](/docs/literature/[10]_STM32F103xC_datasheet.pdf), however some mainboards feature a [GD32F103RCT6](/docs/literature/[11]_GD32F103xx-Datasheet-Rev-2.7.pdf) which is also supported by this firmware.
 
 For the reverse-engineered schematics of the mainboard, see [20150722_hoverboard_sch.pdf](/docs/20150722_hoverboard_sch.pdf)
 
@@ -27,7 +27,7 @@ For the reverse-engineered schematics of the mainboard, see [20150722_hoverboard
 ---
 ## FOC Firmware
  
-### Firmware Architecture
+### Architecture
 
 The firmware architecture includes:
 - **Estimations**: estimates the rotor position, angle and motor speed based on Hall sensors signal
