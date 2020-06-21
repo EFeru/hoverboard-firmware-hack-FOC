@@ -271,7 +271,7 @@ int main(void) {
       #ifdef VARIANT_UARTCAR
         // mm/s = (WHEEL_SIZE_INCHES * 25.4 * 3.142) * (rpm / 60)
         float fmms = WHEEL_SIZE_INCHES * 1.32994089;
-        long iSpeed =   abs(rtY_Left.n_mot) > abs(Right.n_mot) ? fmms * rtY_Left.n_mot : fmms * Right.n_mot;
+        long iSpeed =   abs(rtY_Left.n_mot) > abs(rtY_Right.n_mot) ? fmms * rtY_Left.n_mot : fmms * rtY_Right.n_mot;
         //todo: invert speed based on INVERT_R_DIRECTION and INVERT_L_DIRECTION
 
         long iSpeed_Goal = (cmd2 * 1000) / 36;  // 10*kmh -> mm/s
