@@ -125,6 +125,3 @@ typedef struct tag_POSN_INCR {
     int32_t Right;
 } POSN_INCR;
 #pragma pack(pop)
-
-
-extern int control_type;

@@ -30,6 +30,7 @@
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 #include "protocolfunctions.h"
+#include "control_structures.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
@@ -219,16 +220,28 @@ int main(void) {
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
   #if defined(SERIAL_USART2_IT) && defined(VARIANT_BIPROPELLANT)
-            while ( serial_usart_buffer_count(&usart2_it_RXbuffer) > 0 ) {
-              protocol_byte( &sUSART2, (unsigned char) serial_usart_buffer_pop(&usart2_it_RXbuffer) );
-            }
-            protocol_tick( &sUSART2 );
+    while ( serial_usart_buffer_count(&usart2_it_RXbuffer) > 0 ) {
+      protocol_byte( &sUSART2, (unsigned char) serial_usart_buffer_pop(&usart2_it_RXbuffer) );
+    }
+    protocol_tick( &sUSART2 );
+    if(sUSART3.ascii.enable_immediate)
+    {
+      timeout = 0;
+    }
+    cmd2 = (PWMData.pwm[0] + PWMData.pwm[1]) /2;   // Speed
+    cmd1 = PWMData.pwm[0] - cmd2;  // Steer
   #endif
   #if defined(SERIAL_USART3_IT) && defined(VARIANT_BIPROPELLANT)
-          while ( serial_usart_buffer_count(&usart3_it_RXbuffer) > 0 ) {
-            protocol_byte( &sUSART3, (unsigned char) serial_usart_buffer_pop(&usart3_it_RXbuffer) );
-          }
-          protocol_tick( &sUSART3 );
+    while ( serial_usart_buffer_count(&usart3_it_RXbuffer) > 0 ) {
+      protocol_byte( &sUSART3, (unsigned char) serial_usart_buffer_pop(&usart3_it_RXbuffer) );
+    }
+    protocol_tick( &sUSART3 );
+    if(sUSART3.ascii.enable_immediate)
+    {
+      timeout = 0;
+    }
+    cmd2 = (PWMData.pwm[0] + PWMData.pwm[1]) /2;   // Speed
+    cmd1 = PWMData.pwm[0] - cmd2;  // Steer
   #endif
 
     #ifndef VARIANT_TRANSPOTTER

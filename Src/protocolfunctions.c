@@ -20,6 +20,7 @@
 #endif
 
 extern volatile uint32_t input_timeout_counter; // global variable for input timeout
+extern uint32_t timeout;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -249,7 +250,7 @@ void fn_PWMData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCO
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
 //            control_type = CONTROL_TYPE_PWM;
-//            input_timeout_counter = 0;
+            timeout= 0;
             break;
     }
 
@@ -370,7 +371,7 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
 
     // initialise ascii protocol functions
-//    main_ascii_init(s);
+    main_ascii_init(s);
 
 
     #ifdef CONTROL_SENSOR
