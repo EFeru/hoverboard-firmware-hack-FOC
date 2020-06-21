@@ -17,6 +17,7 @@
   //#define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
   //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
+  //#define VARIANT_UARTCAR     // Variant for car with serial control (robo durden)
   //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
 #endif
@@ -144,6 +145,10 @@
 #define PHASE_ADV_MAX   25              // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
 #define FIELD_WEAK_HI   1500            // [-] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
 #define FIELD_WEAK_LO   1000            // [-] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
+
+
+
+
 // ########################### END OF MOTOR CONTROL ########################
 
 
@@ -329,6 +334,28 @@
 // ############################# END OF VARIANT_IBUS SETTINGS ############################
 
 
+// ############################ VARIANT_UARTCAR SETTINGS ############################
+#ifdef VARIANT_UARTCAR  // by Robo Durden
+  #undef  CTRL_MOD_REQ
+  #define CTRL_MOD_REQ        1         // uartCar has it's own closed loop in main.c
+                                        // speed is 10*km/h so 60 would be 6.0 km/h
+  #define WHEEL_SIZE_INCHES 6.5                      
+
+  //#define CONTROL_SERIAL_USART2         // long cable USART2 only 3.3V !!!
+  //#define FEEDBACK_SERIAL_USART2        // long cable USART2 only 3.3V !!!
+  #define CONTROL_SERIAL_USART3         // short cable USART3 is 5V compatible
+  #define FEEDBACK_SERIAL_USART3        // short cable USART3 is 5V compatible
+
+  #define SPEED_COEFFICIENT   16384     //  1.0f
+  #define STEER_COEFFICIENT   0         //  0.0f
+  // #define INVERT_R_DIRECTION           // Invert rotation of right motor
+  // #define INVERT_L_DIRECTION           // Invert rotation of left motor
+
+
+  #define MAX_RECUPERATION 3.0  //increase gas when more then 3.0 amps go back into the battery
+                                // my chain drive is to loose to take more then 3 Amps :-/
+
+#endif
 
 // ############################ VARIANT_HOVERCAR SETTINGS ############################
 #ifdef VARIANT_HOVERCAR

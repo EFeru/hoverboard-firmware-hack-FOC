@@ -61,6 +61,12 @@ extern ExtY rtY_Right;                  /* External outputs */
 extern int16_t cmd1;                    // normalized input value. -1000 to 1000
 extern int16_t cmd2;                    // normalized input value. -1000 to 1000
 
+#ifdef SPEED_IS_KMH // ROBO
+  int16_t cmd2Goal;	// goal speed for SPEED_IS_KMH
+#endif
+
+
+
 extern int16_t speedAvg;                // Average measured speed
 extern int16_t speedAvgAbs;             // Average measured speed in absolute
 extern uint8_t timeoutFlagADC;          // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
@@ -220,6 +226,9 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
+  #ifdef SPEED_IS_KMH // ROBO
+    cmd2Goal = 0;	// goal speed for SPEED_IS_KMH
+  #endif
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
@@ -258,6 +267,39 @@ int main(void) {
           cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);          
         }
       #endif
+
+      #ifdef VARIANT_UARTCAR
+        // mm/s = (WHEEL_SIZE_INCHES * 25.4 * 3.142) * (rpm / 60)
+        float fmms = WHEEL_SIZE_INCHES * 1.32994089;
+        long iSpeed =   abs(rtY_Left.n_mot) > abs(Right.n_mot) ? fmms * rtY_Left.n_mot : fmms * Right.n_mot;
+        //todo: invert speed based on INVERT_R_DIRECTION and INVERT_L_DIRECTION
+
+        long iSpeed_Goal = (cmd2 * 1000) / 36;  // 10*kmh -> mm/s
+        if (	(abs(iSpeed_Goal) < 56)	&& (abs(cmd2Goal) < 50)	)	// iSpeed_Goal = 56 = 0.2 km/h
+            speed = cmd2Goal = 0;
+      #ifdef MAX_RECUPERATION
+        else if ( (float)(curL_DC+curR_DC)/(2.0*A2BIT_CONV) < -MAX_RECUPERATION)
+        {
+          cmd2Goal += 5;
+          if (cmd2Goal > 1000)	cmd2Goal = 1000;
+        }
+      #endif
+        else if (iSpeed > (iSpeed_Goal + 56))	// 28 = 27.777 = 0.1 km/h
+        {
+          cmd2Goal -= CLAMP((iSpeed-iSpeed_Goal)/56,  1,3);
+          if (  (iSpeed_Goal > 56)  && (cmd2Goal < 2)  ) cmd2Goal = 2;   // don't set backward speed when iSpeed_goal is set forwards
+          else if (cmd2Goal < -1000)	cmd2Goal = -1000;
+        }
+        else if (iSpeed < (iSpeed_Goal -56))
+        {
+          //cmd2Goal += 3;
+          cmd2Goal += CLAMP((iSpeed_Goal-iSpeed)/56,  1,3);
+          if (  (iSpeed_Goal < -56)  && (cmd2Goal > -2)  ) cmd2Goal = -2;   // don't set forward speed when iSpeed_goal is set backwards
+          else if (cmd2Goal > 1000)	cmd2Goal = 1000;
+        }
+        cmd2 = cmd2Goal;
+      #endif
+
 
       // ####### LOW-PASS FILTER #######
       rateLimiter16(cmd1, RATE, &steerRateFixdt);
