@@ -61,8 +61,8 @@ extern ExtY rtY_Right;                  /* External outputs */
 extern int16_t cmd1;                    // normalized input value. -1000 to 1000
 extern int16_t cmd2;                    // normalized input value. -1000 to 1000
 
-#ifdef SPEED_IS_KMH // ROBO
-  int16_t cmd2Goal;	// goal speed for SPEED_IS_KMH
+#ifdef VARIANT_UARTCAR // ROBO
+  int16_t cmd2Goal;	// goal speed for VARIANT_UARTCAR
 #endif
 
 
@@ -226,8 +226,8 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
-  #ifdef SPEED_IS_KMH // ROBO
-    cmd2Goal = 0;	// goal speed for SPEED_IS_KMH
+  #ifdef VARIANT_UARTCAR // ROBO
+    cmd2Goal = 0;	// goal speed for VARIANT_UARTCAR
   #endif
 
   while(1) {
