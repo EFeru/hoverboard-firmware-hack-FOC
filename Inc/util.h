@@ -64,6 +64,7 @@
     } SerialSideboard;
 #endif
 
+static int16_t curL_DC = 0, curR_DC = 0;    //ROBO made static
 
 
 

@@ -52,7 +52,6 @@ static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
 int16_t curL_phaA = 0, curL_phaB = 0;
 int16_t curR_phaB = 0, curR_phaC = 0;
 
-static int16_t curL_DC = 0, curR_DC = 0;    //ROBO made static
 
 volatile int pwml = 0;
 volatile int pwmr = 0;
