@@ -294,6 +294,7 @@ int main(void) {
         long iSpeed_Goal = (cmd2 * 1000) / 36;  // 10*kmh -> mm/s
         if (	(abs(iSpeed_Goal) < 56)	&& (abs(cmd2Goal) < 50)	)	// iSpeed_Goal = 56 = 0.2 km/h
             speed = cmd2Goal = 0;
+/*
       #ifdef MAX_RECUPERATION
         else if ( (float)(curL_DC+curR_DC)/(2.0*A2BIT_CONV) < MAX_RECUPERATION * -1)
         {
@@ -301,6 +302,7 @@ int main(void) {
           if (cmd2Goal > 1000)	cmd2Goal = 1000;
         }
       #endif
+  */
         else if (iSpeed > (iSpeed_Goal + 56))	// 28 = 27.777 = 0.1 km/h
         {
           cmd2Goal -= CLAMP((iSpeed-iSpeed_Goal)/56,  1,3);
