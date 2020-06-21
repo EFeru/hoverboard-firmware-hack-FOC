@@ -339,6 +339,8 @@
   #undef  CTRL_MOD_REQ
   #define CTRL_MOD_REQ        1         // uartCar has it's own closed loop in main.c
                                         // speed is 10*km/h so 60 would be 6.0 km/h
+  #define FILTER              20000     // ignore DEFAULT_FILTER for new closed loop  [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
+                                        
   #define WHEEL_SIZE_INCHES 6.5                      
 
   //#define CONTROL_SERIAL_USART2         // long cable USART2 only 3.3V !!!
