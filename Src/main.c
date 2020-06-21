@@ -269,16 +269,33 @@ int main(void) {
       #endif
 
       #ifdef VARIANT_UARTCAR
-        // mm/s = (WHEEL_SIZE_INCHES * 25.4 * 3.142) * (rpm / 60)
-        float fmms = WHEEL_SIZE_INCHES * 1.32994089;
-        long iSpeed =   abs(rtY_Left.n_mot) > abs(rtY_Right.n_mot) ? fmms * rtY_Left.n_mot : fmms * rtY_Right.n_mot;
+        
+        float fmms = WHEEL_SIZE_INCHES * 1.32994089;  // mm/s = (WHEEL_SIZE_INCHES * 25.4 * 3.142) * (rpm / 60)
+        long iSpeed;
+        if (abs(rtY_Left.n_mot) > abs(rtY_Right.n_mot))
+        {
+          #ifdef INVERT_L_DIRECTION
+            iSpeed = -fmms * rtY_Left.n_mot;
+          #else
+            iSpeed = fmms * rtY_Left.n_mot;
+          #endif
+        } 
+        else
+        {
+          #ifdef INVERT_R_DIRECTION
+            iSpeed = -fmms * rtY_Right.n_mot;
+          #else
+            iSpeed = fmms * rtY_Right.n_mot;
+          #endif
+        } 
+
         //todo: invert speed based on INVERT_R_DIRECTION and INVERT_L_DIRECTION
 
         long iSpeed_Goal = (cmd2 * 1000) / 36;  // 10*kmh -> mm/s
         if (	(abs(iSpeed_Goal) < 56)	&& (abs(cmd2Goal) < 50)	)	// iSpeed_Goal = 56 = 0.2 km/h
             speed = cmd2Goal = 0;
       #ifdef MAX_RECUPERATION
-        else if ( (float)(curL_DC+curR_DC)/(2.0*A2BIT_CONV) < -MAX_RECUPERATION)
+        else if ( (float)(curL_DC+curR_DC)/(2.0*A2BIT_CONV) < MAX_RECUPERATION * -1)
         {
           cmd2Goal += 5;
           if (cmd2Goal > 1000)	cmd2Goal = 1000;
