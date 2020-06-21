@@ -30,12 +30,16 @@ void consoleScope(void) {
     uart_buf[8] = CLAMP(ch_buf[7]+127, 0, 255);
     uart_buf[9] = '\n';
 
-    if(UART_DMA_CHANNEL_TX->CNDTR == 0) {
-      UART_DMA_CHANNEL_TX->CCR  &= ~DMA_CCR_EN;
-      UART_DMA_CHANNEL_TX->CNDTR = 10;
-      UART_DMA_CHANNEL_TX->CMAR  = (uint32_t)uart_buf;
-      UART_DMA_CHANNEL_TX->CCR  |= DMA_CCR_EN;
+    #ifdef DEBUG_SERIAL_USART2
+    if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
+      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)uart_buf, strLength);	 
     }
+    #endif
+    #ifdef DEBUG_SERIAL_USART3
+    if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
+      HAL_UART_Transmit_DMA(&huart3, (uint8_t *)uart_buf, strLength);	 
+    }
+    #endif
   #endif
 
   #if defined DEBUG_SERIAL_ASCII && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
@@ -44,24 +48,34 @@ void consoleScope(void) {
     strLength = sprintf((char *)(uintptr_t)uart_buf,
                 "1:%i 2:%i 3:%i 4:%i 5:%i 6:%i 7:%i 8:%i\r\n",
                 ch_buf[0], ch_buf[1], ch_buf[2], ch_buf[3], ch_buf[4], ch_buf[5], ch_buf[6], ch_buf[7]);
-
-    if(UART_DMA_CHANNEL_TX->CNDTR == 0) {
-      UART_DMA_CHANNEL_TX->CCR  &= ~DMA_CCR_EN;
-      UART_DMA_CHANNEL_TX->CNDTR = strLength;
-      UART_DMA_CHANNEL_TX->CMAR  = (uint32_t)uart_buf;
-      UART_DMA_CHANNEL_TX->CCR  |= DMA_CCR_EN;
+                
+    #ifdef DEBUG_SERIAL_USART2
+    if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
+      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)uart_buf, strLength);	 
     }
+    #endif
+    #ifdef DEBUG_SERIAL_USART3
+    if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
+      HAL_UART_Transmit_DMA(&huart3, (uint8_t *)uart_buf, strLength);	 
+    }
+    #endif
   #endif
+
+
 }
 
 void consoleLog(char *message)
 {
   #if defined DEBUG_SERIAL_ASCII && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
-    if(UART_DMA_CHANNEL_TX->CNDTR == 0) {
-      UART_DMA_CHANNEL_TX->CCR  &= ~DMA_CCR_EN;
-      UART_DMA_CHANNEL_TX->CNDTR = strlen((char *)(uintptr_t)message);
-      UART_DMA_CHANNEL_TX->CMAR  = (uint32_t)message;
-      UART_DMA_CHANNEL_TX->CCR  |= DMA_CCR_EN;
+    #ifdef DEBUG_SERIAL_USART2
+    if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
+      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)message, strlen((char *)(uintptr_t)message));	 
     }
+    #endif
+    #ifdef DEBUG_SERIAL_USART3
+    if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
+      HAL_UART_Transmit_DMA(&huart3, (uint8_t *)message, strlen((char *)(uintptr_t)message));	 
+    }
+    #endif
   #endif
 }

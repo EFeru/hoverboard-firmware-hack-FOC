@@ -1,5 +1,5 @@
 // *******************************************************************
-//  Arduino Nano 3.3V example code
+//  Arduino Nano 5V example code
 //  for   https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC
 //
 //  Copyright (C) 2019-2020 Emanuel FERU <aerdronix@gmail.com>
@@ -12,14 +12,14 @@
 // • The data packaging includes a Start Frame, checksum, and re-syncronization capability for reliable communication
 // 
 // CONFIGURATION on the hoverboard side in config.h:
-// • Option 1: Serial on Left Sensor cable (long wired cable)
-//   #define CONTROL_SERIAL_USART2
-//   #define FEEDBACK_SERIAL_USART2
-//   // #define DEBUG_SERIAL_USART2
-// • Option 2: Serial on Right Sensor cable (short wired cable) - recommended, so the ADCs on the other cable are still available
+// • Option 1: Serial on Right Sensor cable (short wired cable) - recommended, since the USART3 pins are 5V tolerant.
 //   #define CONTROL_SERIAL_USART3
 //   #define FEEDBACK_SERIAL_USART3
 //   // #define DEBUG_SERIAL_USART3
+// • Option 2: Serial on Left Sensor cable (long wired cable) - use only with 3.3V devices! The USART2 pins are not 5V tolerant!
+//   #define CONTROL_SERIAL_USART2
+//   #define FEEDBACK_SERIAL_USART2
+//   // #define DEBUG_SERIAL_USART2
 // *******************************************************************
 
 // ########################## DEFINES ##########################

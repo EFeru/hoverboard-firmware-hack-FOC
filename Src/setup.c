@@ -37,6 +37,7 @@ pb10 usart3 dma1 channel2/3
 
 #include "defines.h"
 #include "config.h"
+#include "setup.h"
 
 TIM_HandleTypeDef htim_right;
 TIM_HandleTypeDef htim_left;
@@ -53,178 +54,227 @@ DMA_HandleTypeDef hdma_usart3_tx;
 volatile adc_buf_t adc_buffer;
 
 
-#if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
-    defined(FEEDBACK_SERIAL_USAR2) || defined(DEBUG_SERIAL_USART2)
-void UART2_Init(void) {
-
-  /* The code below is commented out - otwerwise Serial Receive does not work */
-  // #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
-  //   /* DMA1_Channel6_IRQn interrupt configuration */
-  //   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 5, 6);
-  //   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
-  //   /* DMA1_Channel7_IRQn interrupt configuration */
-  //   HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 5, 7);
-  //   HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
-  // #endif
-
-  // Disable serial interrupt - it is not needed 
-  HAL_NVIC_DisableIRQ(DMA1_Channel6_IRQn);    // Rx Channel
-  HAL_NVIC_DisableIRQ(DMA1_Channel7_IRQn);    // Tx Channel
-
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+ /* USART2 init function */
+ void UART2_Init(void)
+{
+  /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_USART2_CLK_ENABLE();
-
-  huart2.Instance           = USART2;
-  huart2.Init.BaudRate      = USART2_BAUD;
-  huart2.Init.WordLength    = USART2_WORDLENGTH;
-  huart2.Init.StopBits      = UART_STOPBITS_1;
-  huart2.Init.Parity        = UART_PARITY_NONE;
-  huart2.Init.HwFlowCtl     = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling  = UART_OVERSAMPLING_16;
-  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-    huart2.Init.Mode        = UART_MODE_TX_RX;
-  #elif defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
-    huart2.Init.Mode        = UART_MODE_TX;
-  #endif
+  
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
+  /* DMA1_Channel7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
+  
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = USART2_BAUD;
+  huart2.Init.WordLength = USART2_WORDLENGTH;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   HAL_UART_Init(&huart2);
+}
+#endif
 
-  #if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
-    USART2->CR3 |= USART_CR3_DMAT;  // | USART_CR3_DMAR | USART_CR3_OVRDIS;
-  #endif
+#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+/* USART3 init function */
+void UART3_Init(void)
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
-  GPIO_InitTypeDef GPIO_InitStruct;
-  GPIO_InitStruct.Pin       = GPIO_PIN_2;
-  GPIO_InitStruct.Pull      = GPIO_PULLUP; //GPIO_NOPULL;
-  GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  /* DMA interrupt init */
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+  
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = USART3_BAUD;
+  huart3.Init.WordLength = USART3_WORDLENGTH;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  HAL_UART_Init(&huart3);
+}
+#endif
 
-  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-    GPIO_InitStruct.Pin     = GPIO_PIN_3;
-    GPIO_InitStruct.Mode    = GPIO_MODE_INPUT; //GPIO_MODE_AF_PP;
+void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if(uartHandle->Instance==USART2)
+  {
+  /* USER CODE BEGIN USART2_MspInit 0 */
+
+  /* USER CODE END USART2_MspInit 0 */
+    /* USART2 clock enable */
+    __HAL_RCC_USART2_CLK_ENABLE();
+  
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    /**USART2 GPIO Configuration    
+    PA2     ------> USART2_TX
+    PA3     ------> USART2_RX 
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* Peripheral DMA init*/
-    hdma_usart2_rx.Instance                 = DMA1_Channel6;
-    hdma_usart2_rx.Init.Direction           = DMA_PERIPH_TO_MEMORY;
-    hdma_usart2_rx.Init.PeriphInc           = DMA_PINC_DISABLE;
-    hdma_usart2_rx.Init.MemInc              = DMA_MINC_ENABLE;
+    GPIO_InitStruct.Pin = GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* USART2 DMA Init */
+    /* USART2_RX Init */
+    hdma_usart2_rx.Instance = DMA1_Channel6;
+    hdma_usart2_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_usart2_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_usart2_rx.Init.MemInc = DMA_MINC_ENABLE;
     hdma_usart2_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    hdma_usart2_rx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-    hdma_usart2_rx.Init.Mode                = DMA_CIRCULAR; //DMA_NORMAL;
-    hdma_usart2_rx.Init.Priority            = DMA_PRIORITY_LOW;
+    hdma_usart2_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_usart2_rx.Init.Mode = DMA_CIRCULAR;
+    hdma_usart2_rx.Init.Priority = DMA_PRIORITY_LOW;
     HAL_DMA_Init(&hdma_usart2_rx);
-    __HAL_LINKDMA(&huart2, hdmarx, hdma_usart2_rx);
-  #endif
+    __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart2_rx);
 
-  hdma_usart2_tx.Instance                   = DMA1_Channel7;
-  hdma_usart2_tx.Init.Direction             = DMA_MEMORY_TO_PERIPH;
-  hdma_usart2_tx.Init.PeriphInc             = DMA_PINC_DISABLE;
-  hdma_usart2_tx.Init.MemInc                = DMA_MINC_ENABLE;
-  hdma_usart2_tx.Init.PeriphDataAlignment   = DMA_PDATAALIGN_BYTE;
-  hdma_usart2_tx.Init.MemDataAlignment      = DMA_MDATAALIGN_BYTE;
-  hdma_usart2_tx.Init.Mode                  = DMA_NORMAL;
-  hdma_usart2_tx.Init.Priority              = DMA_PRIORITY_LOW;
-  HAL_DMA_Init(&hdma_usart2_tx);
+    /* USART2_TX Init */
+    hdma_usart2_tx.Instance = DMA1_Channel7;
+    hdma_usart2_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_usart2_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_usart2_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_usart2_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_usart2_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_usart2_tx.Init.Mode = DMA_NORMAL;
+    hdma_usart2_tx.Init.Priority = DMA_PRIORITY_LOW;
+    HAL_DMA_Init(&hdma_usart2_tx);
+    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart2_tx);
 
-  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-    __HAL_LINKDMA(&huart2, hdmatx, hdma_usart2_tx);
-  #endif
-  #if defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)
-    DMA1_Channel7->CPAR     = (uint32_t) & (USART2->DR);
-    DMA1_Channel7->CNDTR    = 0;
-    DMA1->IFCR              = DMA_IFCR_CTCIF7 | DMA_IFCR_CHTIF7 | DMA_IFCR_CGIF7;
-  #endif
+    /* USART2 interrupt Init */
+    HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
+  /* USER CODE BEGIN USART2_MspInit 1 */
+	__HAL_UART_ENABLE_IT (uartHandle, UART_IT_IDLE);  // Enable the USART IDLE line detection interrupt
+  /* USER CODE END USART2_MspInit 1 */
+  }
+  else if(uartHandle->Instance==USART3)
+  {
+  /* USER CODE BEGIN USART3_MspInit 0 */
 
-}
-#endif
-
-#if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || \
-    defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
-void UART3_Init(void) {
-
-  /* The code below is commented out - otwerwise Serial Receive does not work */
-  // #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-  //   /* DMA1_Channel3_IRQn interrupt configuration */
-  //   HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 3);
-  //   HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-  //   /* DMA1_Channel2_IRQn interrupt configuration */
-  //   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 2);
-  //   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  // #endif
-
-  // Disable serial interrupt - it is not needed 
-  HAL_NVIC_DisableIRQ(DMA1_Channel3_IRQn);  // Rx Channel
-  HAL_NVIC_DisableIRQ(DMA1_Channel2_IRQn);  // Tx Channel
-
-  __HAL_RCC_DMA1_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_USART3_CLK_ENABLE();
-
-  huart3.Instance             = USART3;
-  huart3.Init.BaudRate        = USART3_BAUD;
-  huart3.Init.WordLength      = USART3_WORDLENGTH;
-  huart3.Init.StopBits        = UART_STOPBITS_1;
-  huart3.Init.Parity          = UART_PARITY_NONE;
-  huart3.Init.HwFlowCtl       = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling    = UART_OVERSAMPLING_16;
-  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-    huart3.Init.Mode          = UART_MODE_TX_RX;
-  #elif defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
-    huart3.Init.Mode          = UART_MODE_TX;
-  #endif
-  HAL_UART_Init(&huart3);
-
-  #if defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
-    USART3->CR3 |= USART_CR3_DMAT;  // | USART_CR3_DMAR | USART_CR3_OVRDIS;
-  #endif
-
-  GPIO_InitTypeDef GPIO_InitStruct;
-  GPIO_InitStruct.Pin         = GPIO_PIN_10;
-  GPIO_InitStruct.Pull        = GPIO_PULLUP;
-  GPIO_InitStruct.Mode        = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Speed       = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-    GPIO_InitStruct.Pin       = GPIO_PIN_11;
-    GPIO_InitStruct.Mode      = GPIO_MODE_INPUT;
+  /* USER CODE END USART3_MspInit 0 */
+    /* USART3 clock enable */
+    __HAL_RCC_USART3_CLK_ENABLE();
+  
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    /**USART3 GPIO Configuration    
+    PB10     ------> USART3_TX
+    PB11     ------> USART3_RX 
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_10;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    /* Peripheral DMA init*/
-    hdma_usart3_rx.Instance                   = DMA1_Channel3;
-    hdma_usart3_rx.Init.Direction             = DMA_PERIPH_TO_MEMORY;
-    hdma_usart3_rx.Init.PeriphInc             = DMA_PINC_DISABLE;
-    hdma_usart3_rx.Init.MemInc                = DMA_MINC_ENABLE;
-    hdma_usart3_rx.Init.PeriphDataAlignment   = DMA_PDATAALIGN_BYTE;
-    hdma_usart3_rx.Init.MemDataAlignment      = DMA_MDATAALIGN_BYTE;
-    hdma_usart3_rx.Init.Mode                  = DMA_CIRCULAR; //DMA_NORMAL;
-    hdma_usart3_rx.Init.Priority              = DMA_PRIORITY_LOW;
+    GPIO_InitStruct.Pin = GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* USART3 DMA Init */
+    /* USART3_RX Init */
+    hdma_usart3_rx.Instance = DMA1_Channel3;
+    hdma_usart3_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_usart3_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_usart3_rx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_usart3_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_usart3_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_usart3_rx.Init.Mode = DMA_CIRCULAR;
+    hdma_usart3_rx.Init.Priority = DMA_PRIORITY_LOW;
     HAL_DMA_Init(&hdma_usart3_rx);
-    __HAL_LINKDMA(&huart3, hdmarx, hdma_usart3_rx);
-  #endif
+    __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart3_rx);
 
-  hdma_usart3_tx.Instance                     = DMA1_Channel2;
-  hdma_usart3_tx.Init.Direction               = DMA_MEMORY_TO_PERIPH;
-  hdma_usart3_tx.Init.PeriphInc               = DMA_PINC_DISABLE;
-  hdma_usart3_tx.Init.MemInc                  = DMA_MINC_ENABLE;
-  hdma_usart3_tx.Init.PeriphDataAlignment     = DMA_PDATAALIGN_BYTE;
-  hdma_usart3_tx.Init.MemDataAlignment        = DMA_MDATAALIGN_BYTE;
-  hdma_usart3_tx.Init.Mode                    = DMA_NORMAL;
-  hdma_usart3_tx.Init.Priority                = DMA_PRIORITY_LOW;
-  HAL_DMA_Init(&hdma_usart3_tx);
+    /* USART3_TX Init */
+    hdma_usart3_tx.Instance = DMA1_Channel2;
+    hdma_usart3_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_usart3_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_usart3_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_usart3_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_usart3_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_usart3_tx.Init.Mode = DMA_NORMAL;
+    hdma_usart3_tx.Init.Priority = DMA_PRIORITY_LOW;
+    HAL_DMA_Init(&hdma_usart3_tx);
+    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart3_tx);
 
-  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-    __HAL_LINKDMA(&huart3, hdmatx, hdma_usart3_tx);
-  #endif
-  #if defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)
-    DMA1_Channel2->CPAR     = (uint32_t) & (USART3->DR);
-    DMA1_Channel2->CNDTR    = 0;
-    DMA1->IFCR              = DMA_IFCR_CTCIF2 | DMA_IFCR_CHTIF2 | DMA_IFCR_CGIF2;
-  #endif  
+    /* USART3 interrupt Init */
+    HAL_NVIC_SetPriority(USART3_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USART3_IRQn);
+  /* USER CODE BEGIN USART3_MspInit 1 */
+	__HAL_UART_ENABLE_IT (uartHandle, UART_IT_IDLE);  // Enable the USART IDLE line detection interrupt
+  /* USER CODE END USART3_MspInit 1 */
+  }
 }
-#endif
+
+void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
+{
+
+  if(uartHandle->Instance==USART2)
+  {
+  /* USER CODE BEGIN USART2_MspDeInit 0 */
+
+  /* USER CODE END USART2_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_USART2_CLK_DISABLE();
+  
+    /**USART2 GPIO Configuration    
+    PA2     ------> USART2_TX
+    PA3     ------> USART2_RX 
+    */
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2|GPIO_PIN_3);
+
+    /* USART2 DMA DeInit */
+    HAL_DMA_DeInit(uartHandle->hdmarx);
+    HAL_DMA_DeInit(uartHandle->hdmatx);
+
+    /* USART2 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(USART2_IRQn);
+  /* USER CODE BEGIN USART2_MspDeInit 1 */
+
+  /* USER CODE END USART2_MspDeInit 1 */
+  }
+  else if(uartHandle->Instance==USART3)
+  {
+  /* USER CODE BEGIN USART3_MspDeInit 0 */
+
+  /* USER CODE END USART3_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_USART3_CLK_DISABLE();
+  
+    /**USART3 GPIO Configuration    
+    PB10     ------> USART3_TX
+    PB11     ------> USART3_RX 
+    */
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10|GPIO_PIN_11);
+
+    /* USART3 DMA DeInit */
+    HAL_DMA_DeInit(uartHandle->hdmarx);
+    HAL_DMA_DeInit(uartHandle->hdmatx);
+
+    /* USART3 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(USART3_IRQn);
+  /* USER CODE BEGIN USART3_MspDeInit 1 */
+
+  /* USER CODE END USART3_MspDeInit 1 */
+  }
+} 
+
 
 DMA_HandleTypeDef hdma_i2c2_rx;
 DMA_HandleTypeDef hdma_i2c2_tx;
