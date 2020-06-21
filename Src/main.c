@@ -110,8 +110,8 @@ volatile uint32_t main_loop_counter;
 #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
   #ifdef SERIAL_ROBO
 
-    extern float curL_DC;	// defined and updated in bldc.c
-    extern float curR_DC;	// defined and updated in bldc.c
+    extern int16_t curL_DC;	// defined and updated in bldc.c
+    extern int16_t curR_DC;	// defined and updated in bldc.c
 
     #ifdef FEEDBACK_SERIAL_USART3
       #define UART_DMA_CHANNEL DMA1_Channel2
@@ -283,9 +283,9 @@ int main(void) {
         else
         {
           #ifdef INVERT_R_DIRECTION
-            iSpeed = -fmms * rtY_Right.n_mot;
-          #else
             iSpeed = fmms * rtY_Right.n_mot;
+          #else
+            iSpeed = -fmms * rtY_Right.n_mot;
           #endif
         } 
 
@@ -294,15 +294,13 @@ int main(void) {
         long iSpeed_Goal = (cmd2 * 1000) / 36;  // 10*kmh -> mm/s
         if (	(abs(iSpeed_Goal) < 56)	&& (abs(cmd2Goal) < 50)	)	// iSpeed_Goal = 56 = 0.2 km/h
             speed = cmd2Goal = 0;
-/*
       #ifdef MAX_RECUPERATION
-        else if ( (float)(curL_DC+curR_DC)/(2.0*A2BIT_CONV) < MAX_RECUPERATION * -1)
+        else if ( (float)(curL_DC+curR_DC)/(-2.0*A2BIT_CONV) < MAX_RECUPERATION * -1)
         {
           cmd2Goal += 5;
           if (cmd2Goal > 1000)	cmd2Goal = 1000;
         }
       #endif
-  */
         else if (iSpeed > (iSpeed_Goal + 56))	// 28 = 27.777 = 0.1 km/h
         {
           cmd2Goal -= CLAMP((iSpeed-iSpeed_Goal)/56,  1,3);
@@ -317,6 +315,14 @@ int main(void) {
           else if (cmd2Goal > 1000)	cmd2Goal = 1000;
         }
         cmd2 = cmd2Goal;
+
+        Feedback.iHallSkippedL	= (uint16_t) iSpeed;
+        Feedback.iHallSkippedL	= (uint16_t) iSpeed_Goal;
+        Feedback.iTemp	= (uint16_t)cmd2;
+        Feedback.iVolt	= (uint16_t)cmd2Goal;
+        Feedback.iAmpL = (int16_t)-curL_DC;
+        Feedback.iAmpR = (int16_t)-curR_DC;
+
       #endif
 
 
@@ -503,12 +509,15 @@ int main(void) {
           {
             Feedback.iSpeedL	= (int16_t)rtY_Left.n_mot;      // rpm
             Feedback.iSpeedR	= (int16_t)rtY_Right.n_mot;     // rpm
+            /*
             Feedback.iHallSkippedL	= 0;
             Feedback.iHallSkippedR	= 0;
             Feedback.iTemp	= (int)	board_temp_deg_c;
             Feedback.iVolt	= (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC); // 362 = 36.2 V
-            Feedback.iAmpL = (int16_t)((float)curL_DC / A2BIT_CONV);    // 154 = 15.4 A
-            Feedback.iAmpR = (int16_t)((float)curR_DC / A2BIT_CONV);    // 1542 = 154.2 A
+            Feedback.iAmpL = (int16_t)((float)-curL_DC / A2BIT_CONV);    // 154 = 15.4 A
+            Feedback.iAmpR = (int16_t)((float)-curR_DC / A2BIT_CONV);    // 1542 = 154.2 A
+            */
+
             Feedback.crc = 0;
             crc32((const void *)&Feedback, sizeof(Feedback)-4, &Feedback.crc);
 
