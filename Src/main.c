@@ -192,7 +192,7 @@ int main(void) {
   int16_t speedL     = 0, speedR     = 0;
   int16_t lastSpeedL = 0, lastSpeedR = 0;
 
-  int32_t board_temp_adcFixdt = adc_buffer.temp << 20;  // Fixed-point filter output initialized with current ADC converted to fixed-point
+  int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 

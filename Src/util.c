@@ -1186,10 +1186,10 @@ void sideboardSensors(uint8_t sensors) {
 
 /* =========================== Filtering Functions =========================== */
 
-  /* Low pass filter fixed-point 32 bits: fixdt(1,32,20)
-  * Max:  2047.9375
-  * Min: -2048
-  * Res:  0.0625
+  /* Low pass filter fixed-point 32 bits: fixdt(1,32,16)
+  * Max:  32767.99998474121
+  * Min: -32768
+  * Res:  1.52587890625e-05
   * 
   * Inputs:       u     = int16 or int32
   * Outputs:      y     = fixdt(1,32,16)
