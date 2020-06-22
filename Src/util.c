@@ -102,41 +102,6 @@ uint8_t  timeoutFlagSerial = 0;         // Timeout Flag for Rx Serial command: 0
 uint8_t  ctrlModReqRaw = CTRL_MOD_REQ;
 uint8_t  ctrlModReq    = CTRL_MOD_REQ;  // Final control mode request 
 
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-uint8_t rx_buffer_L[SERIAL_BUFFER_SIZE];	    // USART Rx DMA circular buffer
-static uint32_t rx_buffer_L_len = ARRAY_LEN(rx_buffer_L);
-#endif
-#if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-static int16_t  timeoutCntSerial_L  = 0;  		// Timeout counter for Rx Serial command
-static uint8_t  timeoutFlagSerial_L = 0;  		// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
-#endif
-#if defined(SIDEBOARD_SERIAL_USART2)
-SerialSideboard Sideboard_L;
-SerialSideboard Sideboard_L_raw;
-static uint32_t Sideboard_L_len = sizeof(Sideboard_L);
-#endif
-
-#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-uint8_t rx_buffer_R[SERIAL_BUFFER_SIZE];	    // USART Rx DMA circular buffer
-static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
-#endif
-#if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-static int16_t  timeoutCntSerial_R  = 0;  		// Timeout counter for Rx Serial command
-static uint8_t  timeoutFlagSerial_R = 0;  		// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
-#endif
-#if defined(SIDEBOARD_SERIAL_USART3)
-SerialSideboard Sideboard_R;
-SerialSideboard Sideboard_R_raw;
-static uint32_t Sideboard_R_len = sizeof(Sideboard_R);
-#endif
-
-#if !defined(VARIANT_HOVERBOARD) && (defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3))
-static uint8_t  sensor1_prev;           // holds the previous sensor1 state
-static uint8_t  sensor2_prev;           // holds the previous sensor2 state
-static uint8_t  sensor1_index;          // holds the press index number for sensor1, when used as a button
-static uint8_t  sensor2_index;          // holds the press index number for sensor2, when used as a button
-#endif
-
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 LCD_PCF8574_HandleTypeDef lcd;
 #endif
@@ -165,24 +130,6 @@ uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300};     // Dummy virtual address to av
 static int16_t INPUT_MAX;             // [-] Input target maximum limitation
 static int16_t INPUT_MIN;             // [-] Input target minimum limitation
 
-#if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
-static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
-#endif
-
-#if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-static SerialCommand command;
-static SerialCommand command_raw;
-static uint32_t command_len = sizeof(command);
-  #ifdef CONTROL_IBUS
-  static uint16_t ibus_chksum;
-  static uint16_t ibus_captured_value[IBUS_NUM_CHANNELS];
-  #endif
-#endif
-
-#ifdef SUPPORT_BUTTONS
-static uint8_t button1, button2;
-#endif
-
 #ifdef CONTROL_ADC
   static uint8_t  cur_spd_valid = 0;
   static uint8_t  adc_cal_valid = 0;
@@ -200,6 +147,59 @@ static uint8_t button1, button2;
   #else
   static uint16_t ADC2_MID_CAL = 0;
   #endif
+#endif
+
+#if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
+static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
+#endif
+
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+static uint8_t rx_buffer_L[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
+static uint32_t rx_buffer_L_len = ARRAY_LEN(rx_buffer_L);
+#endif
+#if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+static uint16_t timeoutCntSerial_L  = 0;  		// Timeout counter for Rx Serial command
+static uint8_t  timeoutFlagSerial_L = 0;  		// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+#endif
+#if defined(SIDEBOARD_SERIAL_USART2)
+SerialSideboard Sideboard_L;
+SerialSideboard Sideboard_L_raw;
+static uint32_t Sideboard_L_len = sizeof(Sideboard_L);
+#endif
+
+#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+static uint8_t rx_buffer_R[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
+static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
+#endif
+#if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+static uint16_t timeoutCntSerial_R  = 0;  		// Timeout counter for Rx Serial command
+static uint8_t  timeoutFlagSerial_R = 0;  		// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+#endif
+#if defined(SIDEBOARD_SERIAL_USART3)
+SerialSideboard Sideboard_R;
+SerialSideboard Sideboard_R_raw;
+static uint32_t Sideboard_R_len = sizeof(Sideboard_R);
+#endif
+
+#if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
+static SerialCommand command;
+static SerialCommand command_raw;
+static uint32_t command_len = sizeof(command);
+  #ifdef CONTROL_IBUS
+  static uint16_t ibus_chksum;
+  static uint16_t ibus_captured_value[IBUS_NUM_CHANNELS];
+  #endif
+#endif
+
+#if !defined(VARIANT_HOVERBOARD) && (defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3))
+static uint8_t  sensor1_prev;           // holds the previous sensor1 state
+static uint8_t  sensor2_prev;           // holds the previous sensor2 state
+static uint8_t  sensor1_index;          // holds the press index number for sensor1, when used as a button
+static uint8_t  sensor2_index;          // holds the press index number for sensor2, when used as a button
+#endif
+
+#ifdef SUPPORT_BUTTONS
+static uint8_t button1, button2;
 #endif
 
 #ifdef VARIANT_HOVERCAR
