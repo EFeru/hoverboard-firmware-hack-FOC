@@ -23,6 +23,8 @@
 
 #include <stdint.h>
 
+
+// Rx Structures USART
 #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
   #ifdef CONTROL_IBUS    
     typedef struct{
@@ -66,6 +68,7 @@ void calcAvgSpeed(void);
 void adcCalibLim(void);
 void updateCurSpdLim(void);
 void saveConfig(void);
+int  addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max);
 
 // Poweroff Functions
 void poweroff(void);
@@ -84,7 +87,7 @@ void usart_process_command(SerialCommand *command_in, SerialCommand *command_out
 #if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
 void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sideboard_out, uint8_t usart_idx);
 #endif
-int  addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max);
+void UART_EndRxTransfer(UART_HandleTypeDef *huart);
 
 // Sideboard functions
 void sideboardLeds(uint8_t *leds);

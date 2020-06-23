@@ -24,6 +24,7 @@
 #define DEFINES_H
 
 #include "stm32f1xx_hal.h"
+#include "config.h"
 
 #define LEFT_HALL_U_PIN GPIO_PIN_5
 #define LEFT_HALL_V_PIN GPIO_PIN_6
@@ -188,5 +189,5 @@ void PWM_ISR_CH2_Callback(void);
 #define SENSOR2_SET    			(0x02)
 #define SENSOR_MPU    			(0x04)
 
-#endif
+#endif // DEFINES_H
 

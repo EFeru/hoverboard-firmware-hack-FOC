@@ -156,6 +156,7 @@ static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
 #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
 static uint8_t rx_buffer_L[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
 static uint32_t rx_buffer_L_len = ARRAY_LEN(rx_buffer_L);
+static uint32_t old_pos;
 #endif
 #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
 static uint16_t timeoutCntSerial_L  = 0;  		// Timeout counter for Rx Serial command
@@ -170,6 +171,7 @@ static uint32_t Sideboard_L_len = sizeof(Sideboard_L);
 #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 static uint8_t rx_buffer_R[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
 static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
+static uint32_t old_pos;
 #endif
 #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 static uint16_t timeoutCntSerial_R  = 0;  		// Timeout counter for Rx Serial command
@@ -548,6 +550,26 @@ void saveConfig() {
   #endif 
 }
 
+ /*
+ * Add Dead-band to a signal
+ * This function realizes a dead-band around 0 and scales the input within a min and a max
+ */
+int addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max) {
+#if defined(CONTROL_PPM) || defined(CONTROL_PWM)
+  int outVal = 0;
+  if(u > -deadBand && u < deadBand) {
+    outVal = 0;
+  } else if(u > 0) {
+    outVal = (INPUT_MAX * CLAMP(u - deadBand, 0, max - deadBand)) / (max - deadBand);
+  } else {
+    outVal = (INPUT_MIN * CLAMP(u + deadBand, min + deadBand, 0)) / (min + deadBand);
+  }
+  return outVal;
+#else
+  return 0;
+#endif
+}
+
 
 
 /* =========================== Poweroff Functions =========================== */
@@ -776,8 +798,7 @@ void readCommand(void) {
  */
 void usart2_rx_check(void)
 {
-  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-  static uint32_t old_pos;
+  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)  
   uint32_t pos;
   pos = rx_buffer_L_len - __HAL_DMA_GET_COUNTER(huart2.hdmarx);         // Calculate current position in buffer
   #endif
@@ -847,7 +868,6 @@ void usart2_rx_check(void)
 void usart3_rx_check(void)
 {
   #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-  static uint32_t old_pos;
   uint32_t pos;  
   pos = rx_buffer_R_len - __HAL_DMA_GET_COUNTER(huart3.hdmarx);         // Calculate current position in buffer
   #endif
@@ -1014,35 +1034,36 @@ void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sid
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *uartHandle) {
   #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
   if(uartHandle->Instance == USART2) {
+    HAL_DMA_Abort(uartHandle->hdmarx);
+    UART_EndRxTransfer(uartHandle);
     HAL_UART_Receive_DMA(uartHandle, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));
+    old_pos = 0;
   }
   #endif
   #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
   if(uartHandle->Instance == USART3) {
+    HAL_DMA_Abort(uartHandle->hdmarx);
+    UART_EndRxTransfer(uartHandle);
     HAL_UART_Receive_DMA(uartHandle, (uint8_t *)rx_buffer_R, sizeof(rx_buffer_R));
+    old_pos = 0;
   }
   #endif
 }
 
+/**
+  * @brief  End ongoing Rx transfer on UART peripheral (following error detection or Reception completion).
+  * @param  huart: UART handle.
+  * @retval None
+  */
+void UART_EndRxTransfer(UART_HandleTypeDef *huart)
+{
+  /* Disable RXNE (Interrupt Enable) and PE (Parity Error) interrupts */
+  CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
+  /* Disable EIE (Frame error, noise error, overrun error) interrupts */
+  CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
- /*
- * Add Dead-band to a signal
- * This function realizes a dead-band around 0 and scales the input within a min and a max
- */
-int addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max) {
-#if defined(CONTROL_PPM) || defined(CONTROL_PWM)
-  int outVal = 0;
-  if(u > -deadBand && u < deadBand) {
-    outVal = 0;
-  } else if(u > 0) {
-    outVal = (INPUT_MAX * CLAMP(u - deadBand, 0, max - deadBand)) / (max - deadBand);
-  } else {
-    outVal = (INPUT_MIN * CLAMP(u + deadBand, min + deadBand, 0)) / (min + deadBand);
-  }
-  return outVal;
-#else
-  return 0;
-#endif
+  /* At end of Rx process, restore huart->RxState to Ready */
+  huart->RxState = HAL_UART_STATE_READY;
 }
 
 
