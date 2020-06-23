@@ -45,7 +45,7 @@ extern ExtU rtU_Right;                  /* External inputs */
 extern ExtY rtY_Right;                  /* External outputs */
 // ###############################################################################
 
-static int16_t pwm_margin = 100;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
+static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
 
 extern uint8_t ctrlModReq;
 static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
