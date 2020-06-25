@@ -85,10 +85,10 @@ extern SerialSideboard Sideboard_L;
 #if defined(SIDEBOARD_SERIAL_USART3)
 extern SerialSideboard Sideboard_R;
 #endif
-#if defined(CONTROL_PPM) && defined(DEBUG_SERIAL_USART3)
+#if (defined(CONTROL_PPM_LEFT) && defined(DEBUG_SERIAL_USART3)) || (defined(CONTROL_PPM_RIGHT) && defined(DEBUG_SERIAL_USART2))
 extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
 #endif
-#if defined(CONTROL_PWM) && defined(DEBUG_SERIAL_USART3)
+#if (defined(CONTROL_PWM_LEFT) && defined(DEBUG_SERIAL_USART3)) || (defined(CONTROL_PWM_RIGHT) && defined(DEBUG_SERIAL_USART2))
 extern volatile uint16_t pwm_captured_ch1_value;
 extern volatile uint16_t pwm_captured_ch2_value;
 #endif
@@ -392,11 +392,11 @@ int main(void) {
         setScopeChannel(0, (int16_t)adc_buffer.l_tx2);          // 1: ADC1
         setScopeChannel(1, (int16_t)adc_buffer.l_rx2);          // 2: ADC2
         #endif
-        #ifdef CONTROL_PPM
+        #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
         setScopeChannel(0, ppm_captured_value[0]);              // 1: CH1
         setScopeChannel(1, ppm_captured_value[1]);              // 2: CH2
         #endif
-        #ifdef CONTROL_PWM
+        #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
         setScopeChannel(0, pwm_captured_ch1_value);             // 1: CH1
         setScopeChannel(1, pwm_captured_ch2_value);             // 2: CH2
         #endif

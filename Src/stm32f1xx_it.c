@@ -166,11 +166,11 @@ void PendSV_Handler(void) {
 /**
 * @brief This function handles System tick timer.
 */
-#ifdef CONTROL_PPM
+#if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
 void PPM_SysTick_Callback(void);
 #endif
 
-#ifdef CONTROL_PWM
+#if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
 void PWM_SysTick_Callback(void);
 #endif
 
@@ -181,11 +181,11 @@ void SysTick_Handler(void) {
   HAL_IncTick();
   HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-#ifdef CONTROL_PPM
+#if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
   PPM_SysTick_Callback();
 #endif
 
-#ifdef CONTROL_PWM
+#if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
   PWM_SysTick_Callback();
 #endif
   /* USER CODE END SysTick_IRQn 1 */
@@ -232,25 +232,47 @@ void DMA1_Channel5_IRQHandler(void)
 }
 #endif
 
-#ifdef CONTROL_PPM
+#ifdef CONTROL_PPM_LEFT
 void EXTI3_IRQHandler(void)
 {
+  __HAL_GPIO_EXTI_CLEAR_IT(PPM_PIN);
+  PPM_ISR_Callback();    
+}
+#endif
+#ifdef CONTROL_PPM_RIGHT
+void EXTI15_10_IRQHandler(void)
+{
+  if(__HAL_GPIO_EXTI_GET_IT(PPM_PIN) != RESET) {
+    __HAL_GPIO_EXTI_CLEAR_IT(PPM_PIN);
     PPM_ISR_Callback();
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_3);
+  }
 }
 #endif
 
-#ifdef CONTROL_PWM
-void EXTI3_IRQHandler(void)
-{
-    PWM_ISR_CH2_Callback();
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_3);
+#ifdef CONTROL_PWM_LEFT
+void EXTI2_IRQHandler(void)
+{    
+  __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH1);
+  PWM_ISR_CH1_Callback();
 }
 
-void EXTI2_IRQHandler(void)
+void EXTI3_IRQHandler(void)
 {
+  __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH2);
+  PWM_ISR_CH2_Callback();    
+}
+#endif
+#ifdef CONTROL_PWM_RIGHT
+void EXTI15_10_IRQHandler(void)
+{
+  if(__HAL_GPIO_EXTI_GET_IT(PWM_PIN_CH1) != RESET) {
+    __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH1);
     PWM_ISR_CH1_Callback();
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_2);
+  }
+  if(__HAL_GPIO_EXTI_GET_IT(PWM_PIN_CH2) != RESET) {
+    __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH2);
+    PWM_ISR_CH2_Callback();
+  }
 }
 #endif
 

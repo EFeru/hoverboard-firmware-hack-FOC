@@ -19,7 +19,7 @@ extern I2C_HandleTypeDef hi2c2;
 extern DMA_HandleTypeDef hdma_i2c2_rx;
 extern DMA_HandleTypeDef hdma_i2c2_tx;
 
-#ifdef CONTROL_PPM
+#if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
 uint16_t ppm_captured_value[PPM_NUM_CHANNELS + 1] = {500, 500};
 uint16_t ppm_captured_value_buffer[PPM_NUM_CHANNELS+1] = {500, 500};
 uint32_t ppm_timeout = 0;
@@ -61,13 +61,13 @@ void PPM_SysTick_Callback(void) {
 }
 
 void PPM_Init(void) {
-  GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
   /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Pin = PPM_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(PPM_PORT, &GPIO_InitStruct);
 
   __HAL_RCC_TIM2_CLK_ENABLE();
   TimHandle.Instance = TIM2;
@@ -85,7 +85,7 @@ void PPM_Init(void) {
 #endif
 
 
-#ifdef CONTROL_PWM
+#if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
  /*
   * Illustration of the PWM functionality
   * CH1 ________|‾‾‾‾‾‾‾‾‾‾|________
@@ -103,8 +103,8 @@ uint32_t pwm_timeout_ch2 = 0;
 
 void PWM_ISR_CH1_Callback(void) {
   // Dummy loop with 16 bit count wrap around
-  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2)) {   // Rising  Edge interrupt -> save timer value OR reset timer
-    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3)) {
+  if(HAL_GPIO_ReadPin(PWM_PORT_CH1, PWM_PIN_CH1)) {   // Rising  Edge interrupt -> save timer value OR reset timer
+    if (HAL_GPIO_ReadPin(PWM_PORT_CH2, PWM_PIN_CH2)) {
       pwm_CNT_prev_ch1 = TIM2->CNT;
     } else {
       TIM2->CNT = 0;
@@ -122,8 +122,8 @@ void PWM_ISR_CH1_Callback(void) {
 
 void PWM_ISR_CH2_Callback(void) {
   // Dummy loop with 16 bit count wrap around
-  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3)) {   // Rising  Edge interrupt -> save timer value OR reset timer
-    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2)) {
+  if(HAL_GPIO_ReadPin(PWM_PORT_CH2, PWM_PIN_CH2)) {   // Rising  Edge interrupt -> save timer value OR reset timer
+    if (HAL_GPIO_ReadPin(PWM_PORT_CH1, PWM_PIN_CH1)) {
       pwm_CNT_prev_ch2 = TIM2->CNT;
     } else {
       TIM2->CNT = 0;
@@ -162,35 +162,39 @@ void PWM_Init(void) {
   TimHandle.Init.Prescaler      = (SystemCoreClock/DELAY_TIM_FREQUENCY_US)-1;;
   TimHandle.Init.ClockDivision  = 0;
   TimHandle.Init.CounterMode    = TIM_COUNTERMODE_UP;
-  HAL_TIM_Base_Init(&TimHandle);
-  
+  HAL_TIM_Base_Init(&TimHandle);  
   
   // Channel 1 (steering)
-  GPIO_InitTypeDef GPIO_InitStruct2;
-  // Configure GPIO pin : PA2
-  GPIO_InitStruct2.Pin          = GPIO_PIN_2;
+  GPIO_InitTypeDef GPIO_InitStruct1 = {0};
+  // Configure GPIO pin : PA2 (Left) or PB10 (Right)
+  GPIO_InitStruct1.Pin          = PWM_PIN_CH1;
+  GPIO_InitStruct1.Mode         = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct1.Speed        = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct1.Pull         = GPIO_PULLDOWN;
+  HAL_GPIO_Init(PWM_PORT_CH1, &GPIO_InitStruct1);
+
+  // Channel 2 (speed)
+  GPIO_InitTypeDef GPIO_InitStruct2 = {0};
+  /*Configure GPIO pin : PA3 (Left) or PB11 (Right) */
+  GPIO_InitStruct2.Pin          = PWM_PIN_CH2;
   GPIO_InitStruct2.Mode         = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct2.Speed        = GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct2.Pull         = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct2);
+  HAL_GPIO_Init(PWM_PORT_CH2, &GPIO_InitStruct2);
 
-  // EXTI interrupt init
+  #ifdef CONTROL_PWM_LEFT
+  /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-
-
-  // Channel 2 (speed)
-  GPIO_InitTypeDef GPIO_InitStruct;
-  /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin           = GPIO_PIN_3;
-  GPIO_InitStruct.Mode          = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Speed         = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Pull          = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+  #endif
+
+  #ifdef CONTROL_PWM_RIGHT
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  #endif
 
   // Start timer
   HAL_TIM_Base_Start(&TimHandle);

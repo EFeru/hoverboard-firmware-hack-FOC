@@ -55,11 +55,11 @@ extern uint8_t nunchuk_data[6];
 extern volatile uint32_t timeout;       // global variable for timeout
 extern volatile uint32_t main_loop_counter;
 
-#ifdef CONTROL_PPM
+#if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
 extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
 #endif
 
-#ifdef CONTROL_PWM
+#if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
 extern volatile uint16_t pwm_captured_ch1_value;
 extern volatile uint16_t pwm_captured_ch2_value;
 #endif
@@ -156,7 +156,6 @@ static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
 #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
 static uint8_t rx_buffer_L[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
 static uint32_t rx_buffer_L_len = ARRAY_LEN(rx_buffer_L);
-static uint32_t old_pos;
 #endif
 #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
 static uint16_t timeoutCntSerial_L  = 0;  		// Timeout counter for Rx Serial command
@@ -171,7 +170,6 @@ static uint32_t Sideboard_L_len = sizeof(Sideboard_L);
 #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 static uint8_t rx_buffer_R[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
 static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
-static uint32_t old_pos;
 #endif
 #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 static uint16_t timeoutCntSerial_R  = 0;  		// Timeout counter for Rx Serial command
@@ -200,12 +198,12 @@ static uint8_t  sensor1_index;          // holds the press index number for sens
 static uint8_t  sensor2_index;          // holds the press index number for sensor2, when used as a button
 #endif
 
-#ifdef SUPPORT_BUTTONS
+#if defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
 static uint8_t button1, button2;
 #endif
 
 #ifdef VARIANT_HOVERCAR
-  static uint8_t brakePressed;
+static uint8_t brakePressed;
 #endif
 
 
@@ -255,11 +253,11 @@ void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !
 }
 
 void Input_Init(void) {
-  #ifdef CONTROL_PPM
+  #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
     PPM_Init();
   #endif
 
-  #ifdef CONTROL_PWM
+ #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
     PWM_Init();
   #endif
 
@@ -276,9 +274,11 @@ void Input_Init(void) {
   #endif
   #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     HAL_UART_Receive_DMA(&huart2, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));
+    UART_DisableRxErrors(&huart2);
   #endif
   #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     HAL_UART_Receive_DMA(&huart3, (uint8_t *)rx_buffer_R, sizeof(rx_buffer_R));
+    UART_DisableRxErrors(&huart3);
   #endif
 
   #ifdef CONTROL_ADC  
@@ -356,6 +356,23 @@ void Input_Init(void) {
   #endif
 }
 
+/**
+  * @brief  Disable Rx Errors detection interrupts on UART peripheral (since we do not want DMA to be stopped)
+  *         The incorrect data will be filtered based on the START_FRAME and checksum.
+  * @param  huart: UART handle.
+  * @retval None
+  */
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
+    defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+void UART_DisableRxErrors(UART_HandleTypeDef *huart)
+{
+  /* Disable PE (Parity Error) interrupts */
+  CLEAR_BIT(huart->Instance->CR1, USART_CR1_PEIE);
+
+  /* Disable EIE (Frame error, noise error, overrun error) interrupts */
+  CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
+}
+#endif
 
 
 /* =========================== General Functions =========================== */
@@ -555,7 +572,7 @@ void saveConfig() {
  * This function realizes a dead-band around 0 and scales the input within a min and a max
  */
 int addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max) {
-#if defined(CONTROL_PPM) || defined(CONTROL_PWM)
+#if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT) || defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
   int outVal = 0;
   if(u > -deadBand && u < deadBand) {
     outVal = 0;
@@ -662,22 +679,25 @@ void readCommand(void) {
       }
     #endif
 
-    #ifdef CONTROL_PPM
+    #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
       cmd1 = CLAMP(addDeadBand((ppm_captured_value[0] - 500) * 2, PPM_DEADBAND, PPM_CH1_MIN, PPM_CH1_MAX), INPUT_MIN, INPUT_MAX);
       cmd2 = CLAMP(addDeadBand((ppm_captured_value[1] - 500) * 2, PPM_DEADBAND, PPM_CH2_MIN, PPM_CH2_MAX), INPUT_MIN, INPUT_MAX);
 			#ifdef SUPPORT_BUTTONS
 				button1 = ppm_captured_value[5] > 500;
 				button2 = 0;
+      #elif defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
+        button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
+        button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
 			#endif
       // float scale = ppm_captured_value[2] / 1000.0f;     // not used for now, uncomment if needed
     #endif
 
-    #ifdef CONTROL_PWM
+    #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
       cmd1 = CLAMP(addDeadBand((pwm_captured_ch1_value - 500) * 2, PWM_DEADBAND, PWM_CH1_MIN, PWM_CH1_MAX), INPUT_MIN, INPUT_MAX);
       cmd2 = CLAMP(addDeadBand((pwm_captured_ch2_value - 500) * 2, PWM_DEADBAND, PWM_CH2_MIN, PWM_CH2_MAX), INPUT_MIN, INPUT_MAX);
-      #ifdef SUPPORT_BUTTONS
-        button1 = !HAL_GPIO_ReadPin(BUTTON1_RIGHT_PORT, BUTTON1_RIGHT_PIN);
-        button2 = !HAL_GPIO_ReadPin(BUTTON2_RIGHT_PORT, BUTTON2_RIGHT_PIN);
+      #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
+        button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
+        button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
       #endif
     #endif
 
@@ -722,12 +742,10 @@ void readCommand(void) {
         }        
       #endif
 
-      // use ADCs as button inputs:
-			#ifdef SUPPORT_BUTTONS
-				button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
-				button2 = (uint8_t)(adc_buffer.l_rx2 > 2000);  // ADC2
-			#endif
-
+      #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
+        button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
+        button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
+      #endif
       timeout = 0;
     #endif
 
@@ -753,6 +771,11 @@ void readCommand(void) {
       } else {
         ctrlModReq  = ctrlModReqRaw;                    // Follow the Mode request
       }
+
+      #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
+        button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
+        button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
+      #endif
       timeout = 0;
     #endif
 
@@ -799,6 +822,7 @@ void readCommand(void) {
 void usart2_rx_check(void)
 {
   #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)  
+  static uint32_t old_pos;
   uint32_t pos;
   pos = rx_buffer_L_len - __HAL_DMA_GET_COUNTER(huart2.hdmarx);         // Calculate current position in buffer
   #endif
@@ -868,6 +892,7 @@ void usart2_rx_check(void)
 void usart3_rx_check(void)
 {
   #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+  static uint32_t old_pos;
   uint32_t pos;  
   pos = rx_buffer_R_len - __HAL_DMA_GET_COUNTER(huart3.hdmarx);         // Calculate current position in buffer
   #endif
@@ -940,7 +965,7 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len)
       consoleLog("-- Command received --\r\n");						
 			// handle_input(*userCommand);                      // -> Create this function to handle the user commands
 		}
-    }
+  }
 }
 #endif // SERIAL_DEBUG
 
@@ -1022,49 +1047,6 @@ void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sid
 	}
 }
 #endif
-
-
-/*
- * UART User Error Callback
- * - According to the STM documentation, when a DMA transfer error occurs during a DMA read or a write access,
- *   the faulty channel is automatically disabled through a hardware clear of its EN bit
- * - For hoverboard applications, the UART communication can be unrealiable, disablind the DMA transfer
- * - therefore the DMA needs to be re-started
- */
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *uartHandle) {
-  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-  if(uartHandle->Instance == USART2) {
-    HAL_DMA_Abort(uartHandle->hdmarx);
-    UART_EndRxTransfer(uartHandle);
-    HAL_UART_Receive_DMA(uartHandle, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));
-    old_pos = 0;
-  }
-  #endif
-  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-  if(uartHandle->Instance == USART3) {
-    HAL_DMA_Abort(uartHandle->hdmarx);
-    UART_EndRxTransfer(uartHandle);
-    HAL_UART_Receive_DMA(uartHandle, (uint8_t *)rx_buffer_R, sizeof(rx_buffer_R));
-    old_pos = 0;
-  }
-  #endif
-}
-
-/**
-  * @brief  End ongoing Rx transfer on UART peripheral (following error detection or Reception completion).
-  * @param  huart: UART handle.
-  * @retval None
-  */
-void UART_EndRxTransfer(UART_HandleTypeDef *huart)
-{
-  /* Disable RXNE (Interrupt Enable) and PE (Parity Error) interrupts */
-  CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
-  /* Disable EIE (Frame error, noise error, overrun error) interrupts */
-  CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
-
-  /* At end of Rx process, restore huart->RxState to Ready */
-  huart->RxState = HAL_UART_STATE_READY;
-}
 
 
 /* =========================== Sideboard Functions =========================== */

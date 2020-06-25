@@ -58,6 +58,7 @@
 void BLDC_Init(void);
 void Input_Lim_Init(void);
 void Input_Init(void);
+void UART_DisableRxErrors(UART_HandleTypeDef *huart);
 
 // General Functions
 void poweronMelody(void);
@@ -87,7 +88,6 @@ void usart_process_command(SerialCommand *command_in, SerialCommand *command_out
 #if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
 void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sideboard_out, uint8_t usart_idx);
 #endif
-void UART_EndRxTransfer(UART_HandleTypeDef *huart);
 
 // Sideboard functions
 void sideboardLeds(uint8_t *leds);

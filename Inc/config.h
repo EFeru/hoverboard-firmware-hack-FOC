@@ -153,7 +153,6 @@
 #define INACTIVITY_TIMEOUT      	8       // Minutes of not driving until poweroff. it is not very precise.
 #define BEEPS_BACKWARD          	1       // 0 or 1
 #define FLASH_WRITE_KEY           0x1234  // Flash writing key, used when writing data to flash memory
-// #define SUPPORT_BUTTONS							  // Define for buttons support on ADC, Nunchuck
 
 /* FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
  * Value of COEFFICIENT is in fixdt(1,16,14)
@@ -192,7 +191,7 @@
 */
 
 // #define DEBUG_SERIAL_USART2          // left sensor board cable, disable if ADC or PPM is used!
-#if defined(VARIANT_ADC) || defined(VARIANT_PPM)
+#if defined(VARIANT_ADC)
   #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 
@@ -232,6 +231,8 @@
   #define ADC2_MIN            0         // min ADC2-value while poti at minimum-position (0 - 4095)
   #define ADC2_MID            2048      // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
   #define ADC2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
+  // #define SUPPORT_BUTTONS_LEFT          // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
+  // #define SUPPORT_BUTTONS_RIGHT         // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
 // ############################# END OF VARIANT_ADC SETTINGS #########################
 
@@ -246,6 +247,8 @@
   // #define SIDEBOARD_SERIAL_USART3
   #define CONTROL_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
   #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  // #define SUPPORT_BUTTONS_LEFT          // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
+  // #define SUPPORT_BUTTONS_RIGHT         // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
 // ######################## END OF VARIANT_USART SETTINGS #########################
 
@@ -264,6 +267,7 @@
   #define FILTER             3276    //  0.05f
   #define SPEED_COEFFICIENT  8192    //  0.5f
   #define STEER_COEFFICIENT  62259   // -0.2f
+  // #define SUPPORT_BUTTONS            // Define for Nunchuck buttons support
 #endif
 // ############################# END OF VARIANT_NUNCHUK SETTINGS #########################
 
@@ -275,14 +279,18 @@
  * left sensor board cable. Channel 1: steering, Channel 2: speed.
  * https://gist.github.com/peterpoetzi/1b63a4a844162196613871767189bd05
 */
-  #define CONTROL_PPM                 // use PPM-Sum as input. disable CONTROL_SERIAL_USART2!
+  #define CONTROL_PPM_LEFT            // use PPM-Sum as input on the LEFT cable . disable CONTROL_SERIAL_USART2!
+  // #define CONTROL_PPM_RIGHT           // use PPM-Sum as input on the RIGHT cable. disable CONTROL_SERIAL_USART3!
   #define PPM_NUM_CHANNELS    6       // total number of PPM channels to receive, even if they are not used.
   #define PPM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define PPM_CH1_MAX         1000    // (0 - 1000)
   #define PPM_CH1_MIN        -1000    // (-1000 - 0)
   #define PPM_CH2_MAX         1000    // (0 - 1000)
-  #define PPM_CH2_MIN        -1000    // (-1000 - 0)  
+  #define PPM_CH2_MIN        -1000    // (-1000 - 0)
+  // #define SUPPORT_BUTTONS             // Define for PPM buttons support
+  // #define SUPPORT_BUTTONS_LEFT        // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
+  // #define SUPPORT_BUTTONS_RIGHT       // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
 // ############################# END OF VARIANT_PPM SETTINGS ############################
 
@@ -293,7 +301,8 @@
  * left sensor board cable. Connect PA2 to channel 1 and PA3 to channel 2 on receiver.
  * Channel 1: steering, Channel 2: speed.
 */
-  #define CONTROL_PWM                         // use RC PWM as input. disable DEBUG_SERIAL_USART2!
+  #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
+  // #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
   #define PWM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define PWM_CH1_MAX         1000    // (0 - 1000)
@@ -303,9 +312,10 @@
   #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
   #define STEER_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14. If you do not want any steering, set it to 0.
-  // #define SUPPORT_BUTTONS          // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
   // #define INVERT_R_DIRECTION
   // #define INVERT_L_DIRECTION
+  // #define SUPPORT_BUTTONS_LEFT        // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
+  // #define SUPPORT_BUTTONS_RIGHT       // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
 // ############################# END OF VARIANT_PPM SETTINGS ############################
 
@@ -344,11 +354,11 @@
   #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
   #define SPEED_COEFFICIENT   16384     //  1.0f
   #define STEER_COEFFICIENT   0         //  0.0f
-  // #define INVERT_R_DIRECTION           // Invert rotation of right motor
-  // #define INVERT_L_DIRECTION           // Invert rotation of left motor
+  // #define INVERT_R_DIRECTION            // Invert rotation of right motor
+  // #define INVERT_L_DIRECTION            // Invert rotation of left motor
   #define SIDEBOARD_SERIAL_USART3
   #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-  // #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  // #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 
 // Multiple tap detection: default DOUBLE Tap on Brake pedal (4 pulses)
@@ -436,8 +446,11 @@
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
-#if defined(CONTROL_SERIAL_USART2) && defined(CONTROL_SERIAL_USART3)
-  #error CONTROL_SERIAL_USART2 and CONTROL_SERIAL_USART3 not allowed, choose one.
+
+// General checks
+#if (defined(CONTROL_ADC)     || defined(CONTROL_SERIAL_USART2) || defined(CONTROL_PPM_LEFT)  || defined(CONTROL_PWM_LEFT)) && \
+    (defined(CONTROL_NUNCHUK) || defined(CONTROL_SERIAL_USART3) || defined(CONTROL_PPM_RIGHT) || defined(CONTROL_PWM_RIGHT))
+  #warning !! Multiple control input sources defined !! If NOT handled correctly, it can lead to undesired behavior!
 #endif
 
 #if defined(CONTROL_SERIAL_USART2) && defined(SIDEBOARD_SERIAL_USART2)
@@ -460,34 +473,88 @@
   #error DEBUG_SERIAL_USART2 and DEBUG_SERIAL_USART3 not allowed, choose one.
 #endif
 
+#if defined(CONTROL_PPM_LEFT) && defined(CONTROL_PPM_RIGHT)
+  #error CONTROL_PPM_LEFT and CONTROL_PPM_RIGHT not allowed, choose one.
+#endif
+
+#if defined(CONTROL_PWM_LEFT) && defined(CONTROL_PWM_RIGHT)
+  #error CONTROL_PWM_LEFT and CONTROL_PWM_RIGHT not allowed, choose one.
+#endif
+
+#if defined(SUPPORT_BUTTONS_LEFT) && defined(SUPPORT_BUTTONS_RIGHT)
+  #error SUPPORT_BUTTONS_LEFT and SUPPORT_BUTTONS_RIGHT not allowed, choose one.
+#endif
+
+
+// LEFT cable checks
 #if defined(CONTROL_ADC) && (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2))
   #error CONTROL_ADC and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
-#if (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)) && defined(CONTROL_PPM)
-  #error CONTROL_PPM and SERIAL_USART2 not allowed. It is on the same cable.
+#if defined(CONTROL_PPM_LEFT) && (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2))
+  #error CONTROL_PPM_LEFT and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
-#if (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2)) && defined(CONTROL_PWM)
-  #error CONTROL_PWM and SERIAL_USART2 not allowed. It is on the same cable.
+#if defined(CONTROL_PWM_LEFT) && (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2))
+  #error CONTROL_PWM_LEFT and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
-#if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(CONTROL_PWM) && defined(SUPPORT_BUTTONS)
-  #error SUPPORT_BUTTONS and SERIAL_USART3 not allowed for VARIANT_PWM. It is on the same cable.
+#if defined(SUPPORT_BUTTONS_LEFT) && (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2))
+  #error SUPPORT_BUTTONS_LEFT and SERIAL_USART2 not allowed. It is on the same cable.
 #endif
 
-#if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(CONTROL_NUNCHUK)
+#if defined(SUPPORT_BUTTONS_LEFT) && (defined(CONTROL_ADC) || defined(CONTROL_PPM_LEFT) || defined(CONTROL_PWM_LEFT))
+  #error SUPPORT_BUTTONS_LEFT and (CONTROL_ADC or CONTROL_PPM_LEFT or CONTROL_PWM_LEFT) not allowed. It is on the same cable.
+#endif
+
+#if defined(CONTROL_ADC) && (defined(CONTROL_PPM_LEFT) || defined(CONTROL_PWM_LEFT))
+  #error CONTROL_ADC and (CONTROL_PPM_LEFT or CONTROL_PWM_LEFT) not allowed. It is on the same cable.
+#endif
+
+#if defined(CONTROL_PPM_LEFT) && defined(CONTROL_PWM_LEFT)
+  #error CONTROL_PPM_LEFT and CONTROL_PWM_LEFT not allowed. It is on the same cable.
+#endif
+
+
+// RIGHT cable checks
+#if defined(CONTROL_NUNCHUK) && (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3))
   #error CONTROL_NUNCHUK and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
-#if (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3)) && defined(DEBUG_I2C_LCD)
+#if defined(CONTROL_PPM_RIGHT) && (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3))
+  #error CONTROL_PPM_RIGHT and SERIAL_USART3 not allowed. It is on the same cable.
+#endif
+
+#if defined(CONTROL_PWM_RIGHT) && (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3))
+  #error CONTROL_PWM_RIGHT and SERIAL_USART3 not allowed. It is on the same cable.
+#endif
+
+#if defined(DEBUG_I2C_LCD) && (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3))
   #error DEBUG_I2C_LCD and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
-#if defined(CONTROL_ADC) && (defined(CONTROL_PPM) || defined(CONTROL_PWM) || defined(CONTROL_NUNCHUK)) || defined(CONTROL_PPM) && (defined(CONTROL_PWM) || defined(CONTROL_NUNCHUK)) || defined(CONTROL_PWM) && defined(CONTROL_NUNCHUK)
-  #error only 1 input method allowed. use CONTROL_ADC or CONTROL_PPM or CONTROL_PWM or CONTROL_NUNCHUK.
+#if defined(SUPPORT_BUTTONS_RIGHT) && (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3))
+  #error SUPPORT_BUTTONS_RIGHT and SERIAL_USART3 not allowed. It is on the same cable.
 #endif
 
+#if defined(SUPPORT_BUTTONS_RIGHT) && (defined(CONTROL_NUNCHUK) || defined(CONTROL_PPM_RIGHT) || defined(CONTROL_PWM_RIGHT) || defined(DEBUG_I2C_LCD))
+  #error SUPPORT_BUTTONS_RIGHT and (CONTROL_NUNCHUK or CONTROL_PPM_RIGHT or CONTROL_PWM_RIGHT or DEBUG_I2C_LCD) not allowed. It is on the same cable.
+#endif
+
+#if defined(CONTROL_NUNCHUK) && (defined(CONTROL_PPM_RIGHT) || defined(CONTROL_PWM_RIGHT) || defined(DEBUG_I2C_LCD))
+  #error CONTROL_NUNCHUK and (CONTROL_PPM_RIGHT or CONTROL_PWM_RIGHT or DEBUG_I2C_LCD) not allowed. It is on the same cable.
+#endif
+
+#if defined(DEBUG_I2C_LCD) && (defined(CONTROL_PPM_RIGHT) || defined(CONTROL_PWM_RIGHT))
+  #error DEBUG_I2C_LCD and (CONTROL_PPM_RIGHT or CONTROL_PWM_RIGHT) not allowed. It is on the same cable.
+#endif
+
+#if defined(CONTROL_PPM_RIGHT) && defined(CONTROL_PWM_RIGHT)
+  #error CONTROL_PPM_RIGHT and CONTROL_PWM_RIGHT not allowed. It is on the same cable.
+#endif
+
+
+// Functional checks
 #if defined(ADC_PROTECT_ENA) && ((ADC1_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC1_MAX + ADC_PROTECT_THRESH) >= 4095)
   #warning ADC1 Protection NOT possible! Adjust the ADC thresholds.
   #undef ADC_PROTECT_ENA
@@ -498,7 +565,7 @@
   #undef ADC_PROTECT_ENA
 #endif
 
-#if defined(CONTROL_PPM) && !defined(PPM_NUM_CHANNELS)
+#if (defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)) && !defined(PPM_NUM_CHANNELS)
   #error Total number of PPM channels needs to be set
 #endif
 // ############################# END OF VALIDATE SETTINGS ############################
