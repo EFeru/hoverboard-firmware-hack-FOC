@@ -32,7 +32,7 @@
 #else
   #define DELAY_IN_MAIN_LOOP    5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
 #endif
-#define TIMEOUT                 5     // number of wrong / missing input commands before emergency off
+#define TIMEOUT                30     // number of wrong / missing input commands before emergency off
 #define A2BIT_CONV             50     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
 
 // ADC conversion time definitions
@@ -259,6 +259,8 @@
   #define SERIAL_USART3_IT
   #define USART2_BAUD 115200
   #define USART3_BAUD 115200
+  #undef TIMEOUT
+  #define TIMEOUT                30     // number of wrong / missing input commands before emergency off
 #endif
   #define SERIAL_USART_IT_BUFFERTYPE unsigned char
   #define USART2_WORDLENGTH UART_WORDLENGTH_8B

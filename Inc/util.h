@@ -107,5 +107,7 @@ typedef struct {
 } MultipleTap;
 void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x);
 
+extern uint8_t ctrlModReq;
+
 #endif
 

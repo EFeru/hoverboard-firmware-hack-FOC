@@ -45,15 +45,8 @@
 
 ///////////////////////////////////////////////
 // extern variables you want to read/write here
-#ifdef CONTROL_SENSOR
-extern SENSOR_DATA sensor_data[2];
-extern int sensor_control;
-extern int sensor_stabilise;
-#endif
 
 // from main.c
-extern void change_PID_constants();
-
 extern uint8_t enable; // global variable for motor enable
 
 
@@ -67,10 +60,6 @@ static int steerB = 0;
 
 
 ///////////////////////////////////////////////
-
-
-extern int protocol_post(PROTOCOL_STAT *s, PROTOCOL_MSG3full *msg);
-
 
 
 int immediate_dir(PROTOCOL_STAT *s, char byte, char *ascii_out) {
@@ -125,9 +114,6 @@ int immediate_quit(PROTOCOL_STAT *s, char byte, char *ascii_out) {
     PWMData.pwm[1] = CLAMP(speedB -  steerB, -1000, 1000);
     PWMData.pwm[0] = CLAMP(speedB +  steerB, -1000, 1000);
     SpeedData.wanted_speed_mm_per_sec[0] = SpeedData.wanted_speed_mm_per_sec[1] = speedB;
-#ifdef CONTROL_SENSOR
-    sensor_control = 0;
-#endif
     enable = 0;
     sprintf(ascii_out, "Immediate commands disabled\r\n");
     return 1;
@@ -183,22 +169,6 @@ int line_set_alarm(PROTOCOL_STAT *s, char *cmd, char *ascii_out) {
     sprintf(ascii_out, "Alarm set to %d %d %d\r\n", a, b, c);
     return 1;
 }
-
-int line_toggle_sensor_control(PROTOCOL_STAT *s, char *cmd, char *ascii_out) {
-#ifdef CONTROL_SENSOR
-//case 'B':
-    sensor_control ^= 1;
-    control_type = 0;
-    speedB = 0;
-    steerB = 0;
-    SpeedData.wanted_speed_mm_per_sec[0] = SpeedData.wanted_speed_mm_per_sec[1] = speedB;
-    PosnData.wanted_posn_mm[0] = HallData[0].HallPosn_mm;
-    PosnData.wanted_posn_mm[1] = HallData[1].HallPosn_mm;
-    sprintf(ascii_out, "Sensor control now %d\r\n", sensor_control);
-#endif
-    return 1;
-}
-
 
 int line_electrical(PROTOCOL_STAT *s, char *cmd, char *ascii_out) {
 //case 'c':
@@ -493,7 +463,6 @@ int line_reset_firmware(PROTOCOL_STAT *s, char *cmd, char *ascii_out) {
 int line_read_memory(PROTOCOL_STAT *s, char *cmd, char *ascii_out) {
 // memory read hex address
 //case 'M':
-    unsigned char tmp[100];
     unsigned char *addr = 0;
     unsigned int len = 4;
     if (cmd[1] == 'f') {
@@ -537,7 +506,6 @@ int main_ascii_init(PROTOCOL_STAT *s){
 
 
     ascii_add_line_fn( 'A', line_set_alarm, "set alarm");
-    ascii_add_line_fn( 'B', line_toggle_sensor_control, "toggle sensor control");
     ascii_add_line_fn( 'C', line_electrical, "show electrical measurements");
     ascii_add_line_fn( 'S', line_main_timing_stats, "show main loop timing stats");
     ascii_add_line_fn( 'E', line_debug_control, "dEbug control, E->off, Ec->console on, Es->console+scope");
