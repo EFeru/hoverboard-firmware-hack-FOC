@@ -281,6 +281,11 @@
 */
   #define CONTROL_PPM_LEFT            // use PPM-Sum as input on the LEFT cable . disable CONTROL_SERIAL_USART2!
   // #define CONTROL_PPM_RIGHT           // use PPM-Sum as input on the RIGHT cable. disable CONTROL_SERIAL_USART3!
+  #ifdef CONTROL_PPM_RIGHT
+    #define DEBUG_SERIAL_USART2       // left sensor cable debug
+  #else
+    #define DEBUG_SERIAL_USART3       // right sensor cable debug
+  #endif
   #define PPM_NUM_CHANNELS    6       // total number of PPM channels to receive, even if they are not used.
   #define PPM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
@@ -303,6 +308,11 @@
 */
   #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
   // #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
+  #ifdef CONTROL_PWM_RIGHT
+    #define DEBUG_SERIAL_USART2       // left sensor cable debug
+  #else
+    #define DEBUG_SERIAL_USART3       // right sensor cable debug
+  #endif
   #define PWM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define PWM_CH1_MAX         1000    // (0 - 1000)
