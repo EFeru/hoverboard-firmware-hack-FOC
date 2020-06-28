@@ -5,7 +5,7 @@
 #include "setup.h"
 #include "config.h"
 #include "comms.h"
-#include "protocolfunctions.h"
+#include "bipropellantProtocolMachine.h"
 
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;

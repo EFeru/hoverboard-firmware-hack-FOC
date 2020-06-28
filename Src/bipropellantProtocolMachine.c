@@ -1,6 +1,6 @@
 #include "defines.h"
 #include "config.h"
-#include "protocolfunctions.h"
+#include "bipropellantProtocolMachine.h"
 
 #include "comms.h"
 #include "util.h"
@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "control_structures.h"
+#include "bipropellantProtocolStructs.h"
 
 #if defined(SERIAL_USART2_DMA)
     PROTOCOL_STAT sUSART2;

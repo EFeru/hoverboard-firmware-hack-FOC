@@ -22,14 +22,14 @@
 #include "config.h"
 
 
-#include "protocolfunctions.h"
+#include "bipropellantProtocolMachine.h"
 #include "protocol.h"
 #include "comms.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "control_structures.h"
+#include "bipropellantProtocolStructs.h"
 
 
 //////////////////////////////////////////////////////////

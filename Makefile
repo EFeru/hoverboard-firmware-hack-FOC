@@ -46,10 +46,10 @@ Src/hd44780.c \
 Src/pcf8574.c \
 Src/comms.c \
 Src/stm32f1xx_it.c \
-Src/hbprotocol/protocol.c \
-Src/hbprotocol/machine_protocol.c \
-Src/hbprotocol/ascii_protocol.c \
-Src/hbprotocol/cobsr.c \
+Src/bipropellantProtocol/protocol.c \
+Src/bipropellantProtocol/machine_protocol.c \
+Src/bipropellantProtocol/ascii_protocol.c \
+Src/bipropellantProtocol/cobsr.c \
 Src/ascii_proto_funcs.c \
 Src/protocolfunctions.c \
 Src/BLDC_controller_data.c \
@@ -103,7 +103,7 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -IInc \
--ISrc/hbprotocol \
+-ISrc/bipropellantProtocol \
 -IDrivers/STM32F1xx_HAL_Driver/Inc \
 -IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \

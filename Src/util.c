@@ -29,7 +29,7 @@
 #include "util.h"
 #include "BLDC_controller.h"
 #include "rtwtypes.h"
-#include "protocolfunctions.h"
+#include "bipropellantProtocolMachine.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"

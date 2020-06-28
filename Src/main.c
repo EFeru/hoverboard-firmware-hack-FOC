@@ -29,8 +29,8 @@
 #include "comms.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
-#include "protocolfunctions.h"
-#include "control_structures.h"
+#include "bipropellantProtocolMachine.h"
+#include "bipropellantProtocolStructs.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
