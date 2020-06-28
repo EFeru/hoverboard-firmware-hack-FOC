@@ -276,7 +276,7 @@ void EXTI15_10_IRQHandler(void)
 }
 #endif
 
-#if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
+#if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
 void DMA1_Channel6_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
@@ -303,7 +303,7 @@ void DMA1_Channel7_IRQHandler(void)
 }
 #endif
 
-#if defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
+#if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 /**
   * @brief This function handles DMA1 channel2 global interrupt.
   */
@@ -333,7 +333,7 @@ void DMA1_Channel3_IRQHandler(void)
 }
 #endif
 
-#if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
+#if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
 /**
   * @brief This function handles USART2 global interrupt.
   */
@@ -352,7 +352,7 @@ void USART2_IRQHandler(void)
 }
 #endif
 
-#if defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
+#if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 /**
   * @brief This function handles USART3 global interrupt.
   */
@@ -370,26 +370,6 @@ void USART3_IRQHandler(void)
   /* USER CODE END USART2_IRQn 1 */
 }
 #endif
-
-/////////////////////////////////////////
-// UART interrupts
-
-#if defined(SERIAL_USART2_IT)
-void USART2_IT_IRQ(USART_TypeDef *us);
-
-void USART2_IRQHandler(void){
-    USART2_IT_IRQ(USART2);
-}
-#endif
-
-#if defined(SERIAL_USART3_IT)
-void USART3_IT_IRQ(USART_TypeDef *us);
-
-void USART3_IRQHandler(void){
-    USART3_IT_IRQ(USART3);
-}
-#endif
-
 
 /******************************************************************************/
 /* STM32F1xx Peripheral Interrupt Handlers                                    */

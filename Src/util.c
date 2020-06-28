@@ -154,7 +154,7 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
 static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
 #endif
 
-#if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
+#if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
 static uint8_t rx_buffer_L[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
 static uint32_t rx_buffer_L_len = ARRAY_LEN(rx_buffer_L);
 #endif
@@ -168,7 +168,7 @@ SerialSideboard Sideboard_L_raw;
 static uint32_t Sideboard_L_len = sizeof(Sideboard_L);
 #endif
 
-#if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
+#if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 static uint8_t rx_buffer_R[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
 static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
 #endif
@@ -267,24 +267,24 @@ void Input_Init(void) {
     Nunchuk_Init();
   #endif
 
-  #if (defined(SERIAL_USART2_IT) || defined(SERIAL_USART2_DMA)) && defined(VARIANT_BIPROPELLANT)
+  #if defined(SERIAL_USART2_DMA) && defined(VARIANT_BIPROPELLANT)
     setup_protocol(&sUSART2);
   #endif
-  #if (defined(SERIAL_USART3_IT) || defined(SERIAL_USART3_DMA)) && defined(VARIANT_BIPROPELLANT)
+  #if defined(SERIAL_USART3_DMA) && defined(VARIANT_BIPROPELLANT)
     setup_protocol(&sUSART3);
   #endif
 
-  #if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
+  #if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     UART2_Init();
   #endif
-  #if defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
+  #if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     UART3_Init();
   #endif
-  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
+  #if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     HAL_UART_Receive_DMA(&huart2, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));
     UART_DisableRxErrors(&huart2);
   #endif
-  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
+  #if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     HAL_UART_Receive_DMA(&huart3, (uint8_t *)rx_buffer_R, sizeof(rx_buffer_R));
     UART_DisableRxErrors(&huart3);
   #endif
@@ -370,9 +370,8 @@ void Input_Init(void) {
   * @param  huart: UART handle.
   * @retval None
   */
-#if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
-    defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || \
-    defined(SERIAL_USART2_DMA) || defined(SERIAL_USART3_DMA)
+#if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
+    defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 void UART_DisableRxErrors(UART_HandleTypeDef *huart)
 {
   /* Disable PE (Parity Error) interrupts */
@@ -830,7 +829,7 @@ void readCommand(void) {
  */
 void usart2_rx_check(void)
 {
-  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
+  #if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
   static uint32_t old_pos;
   uint32_t pos;
   pos = rx_buffer_L_len - __HAL_DMA_GET_COUNTER(huart2.hdmarx);         // Calculate current position in buffer
@@ -885,7 +884,7 @@ void usart2_rx_check(void)
   }
   #endif // SIDEBOARD_SERIAL_USART2
 
-  #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
+  #if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
   old_pos = pos;                                                        // Update old position
   if (old_pos == rx_buffer_L_len) {                                     // Check and manually update if we reached end of buffer
     old_pos = 0;
@@ -900,7 +899,7 @@ void usart2_rx_check(void)
  */
 void usart3_rx_check(void)
 {
-  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
+  #if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
   static uint32_t old_pos;
   uint32_t pos;
   pos = rx_buffer_R_len - __HAL_DMA_GET_COUNTER(huart3.hdmarx);         // Calculate current position in buffer
@@ -955,7 +954,7 @@ void usart3_rx_check(void)
   }
   #endif // SIDEBOARD_SERIAL_USART3
 
-  #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
+  #if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
   old_pos = pos;                                                        // Update old position
   if (old_pos == rx_buffer_R_len) {                                     // Check and manually update if we reached end of buffer
     old_pos = 0;

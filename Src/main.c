@@ -198,14 +198,6 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
-  #ifdef SERIAL_USART2_IT
-  USART2_IT_init();
-  #endif
-  #ifdef SERIAL_USART3_IT
-  USART3_IT_init();
-  #endif
-
-
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
@@ -213,26 +205,16 @@ int main(void) {
     readCommand();                        // Read Command: cmd1, cmd2
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
-  #if defined(VARIANT_BIPROPELLANT) && (defined(SERIAL_USART2_IT) || defined(SERIAL_USART2_DMA))
-  #if defined(SERIAL_USART2_IT)
-    while ( serial_usart_buffer_count(&usart2_it_RXbuffer) > 0 ) {
-      protocol_byte( &sUSART2, (unsigned char) serial_usart_buffer_pop(&usart2_it_RXbuffer) );
-    }
-  #endif
+  #if defined(VARIANT_BIPROPELLANT) && defined(SERIAL_USART2_DMA)
     protocol_tick( &sUSART2 );
-    if(sUSART3.ascii.enable_immediate)
+    if(sUSART2.ascii.enable_immediate)
     {
       timeout = 0;
     }
     cmd2 = (PWMData.pwm[0] + PWMData.pwm[1]) /2;   // Speed
     cmd1 = PWMData.pwm[0] - cmd2;  // Steer
   #endif
-  #if defined(VARIANT_BIPROPELLANT) && (defined(SERIAL_USART3_IT) || defined(SERIAL_USART3_DMA))
-  #if defined(SERIAL_USART3_IT)
-    while ( serial_usart_buffer_count(&usart3_it_RXbuffer) > 0 ) {
-      protocol_byte( &sUSART3, (unsigned char) serial_usart_buffer_pop(&usart3_it_RXbuffer) );
-    }
-  #endif
+  #if defined(VARIANT_BIPROPELLANT) && defined(SERIAL_USART3_DMA)
     protocol_tick( &sUSART3 );
     if(sUSART3.ascii.enable_immediate)
     {

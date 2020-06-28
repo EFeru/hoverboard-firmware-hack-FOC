@@ -31,8 +31,6 @@ void MX_ADC1_Init(void);
 void MX_ADC2_Init(void);
 void UART2_Init(void);
 void UART3_Init(void);
-void USART2_IT_init();
-void USART3_IT_init();
 
 #endif
 

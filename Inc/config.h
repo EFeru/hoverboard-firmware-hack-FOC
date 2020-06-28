@@ -255,8 +255,6 @@
 
 // ############################ VARIANT_BIPROPELLANT SETTINGS ############################
 #ifdef VARIANT_BIPROPELLANT
-//  #define SERIAL_USART2_IT
-//  #define SERIAL_USART3_IT
 //  #define SERIAL_USART2_DMA
   #define SERIAL_USART3_DMA
   #define USART2_BAUD 115200
@@ -266,11 +264,10 @@
   #undef BEEPS_BACKWARD
   #define BEEPS_BACKWARD          	0       // 0 or 1
   #define SERIAL_BUFFER_SIZE      64                      // [bytes] Size of Serial Rx buffer. Make sure it is always larger than the structure size
+  #define USART2_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
+  #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
-  #define SERIAL_USART_IT_BUFFERTYPE unsigned char
-  #define USART2_WORDLENGTH UART_WORDLENGTH_8B
-  #define USART3_WORDLENGTH UART_WORDLENGTH_8B
-// ######################## END OF VARIANT_USART SETTINGS #########################
+// ######################## END OF VARIANT_BIPROPELLANT SETTINGS #########################
 
 
 // ################################# VARIANT_NUNCHUK SETTINGS ############################
@@ -383,11 +380,11 @@
   #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
   #define SPEED_COEFFICIENT   16384     //  1.0f
   #define STEER_COEFFICIENT   0         //  0.0f
-  // #define INVERT_R_DIRECTION           // Invert rotation of right motor
-  // #define INVERT_L_DIRECTION           // Invert rotation of left motor
+  // #define INVERT_R_DIRECTION            // Invert rotation of right motor
+  // #define INVERT_L_DIRECTION            // Invert rotation of left motor
   #define SIDEBOARD_SERIAL_USART3
   #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-  // #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  // #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 #endif
 
 // Multiple tap detection: default DOUBLE Tap on Brake pedal (4 pulses)
@@ -454,7 +451,6 @@
 #if defined(DEBUG_SERIAL_USART3)
   #define SERIAL_USART3_DMA
 #endif
-
 // ########################### UART SETIINGS ############################
 
 

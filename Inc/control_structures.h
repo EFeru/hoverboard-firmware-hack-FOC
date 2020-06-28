@@ -26,8 +26,6 @@
 //// control structures used in firmware
 
 // used in main
-extern PROTOCOL_POSN_DATA PosnData;
-
 extern PROTOCOL_SPEED_DATA SpeedData;
 
 extern PROTOCOL_PWM_DATA PWMData;
