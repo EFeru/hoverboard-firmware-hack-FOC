@@ -86,14 +86,6 @@ void fn_SpeedData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTO
 
 extern uint8_t disablepoweroff;
 
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Variable & Functions for 0x0B debug_out
-
-extern uint8_t debug_out;
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Variable & Functions for 0x0D PWMData and 0x0E PWMData.pwm
 
@@ -239,9 +231,6 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
 //        errors += setParamVariable( s, 0x0A, UI_CHAR, &disablepoweroff, sizeof(disablepoweroff) );
 
-        errors += setParamVariable( s, 0x0B, UI_CHAR, &debug_out, sizeof(debug_out) );
-
-
         errors += setParamVariable( s, 0x0D, UI_NONE, &PWMData, sizeof(PWMData) );
         setParamHandler( s, 0x0D, fn_PWMData );
 
@@ -253,15 +242,4 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
     return errors;
 
-}
-
-
-void consoleLog(char *message) {
-    #if defined(SERIAL_USART2_DMA)
-        if (debug_out) protocol_send_text(&sUSART2, message, PROTOCOL_SOM_NOACK);
-    #endif
-
-    #if defined(SERIAL_USART3_DMA)
-        if (debug_out) protocol_send_text(&sUSART3, message, PROTOCOL_SOM_NOACK);
-    #endif
 }

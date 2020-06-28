@@ -50,7 +50,6 @@
 extern uint8_t enable; // global variable for motor enable
 
 
-extern uint8_t debug_out;
 extern uint8_t buzzerFreq;    // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern; // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t enablescope; // enable scope on values
@@ -181,26 +180,6 @@ int line_main_timing_stats(PROTOCOL_STAT *s, char *cmd, char *ascii_out) {
     // we don't have float printing
     return 1;
 }
-
-
-int line_debug_control(PROTOCOL_STAT *s, char *cmd, char *ascii_out) {
-//case 'E':
-    if (strlen(cmd) == 1){
-        debug_out = 0;
-        enablescope = 0;
-    } else {
-        if ((cmd[1] | 0x20) == 's'){
-            enablescope = 1;
-            debug_out = 1;
-        }
-        if ((cmd[1] | 0x20) == 'c'){
-            debug_out = 1;
-        }
-    }
-    sprintf(ascii_out, "debug_out now %d\r\nenablescope now %d\r\n", debug_out, enablescope);
-    return 1;
-}
-
 
 
 // NOTE: needs params
@@ -508,7 +487,6 @@ int main_ascii_init(PROTOCOL_STAT *s){
     ascii_add_line_fn( 'A', line_set_alarm, "set alarm");
     ascii_add_line_fn( 'C', line_electrical, "show electrical measurements");
     ascii_add_line_fn( 'S', line_main_timing_stats, "show main loop timing stats");
-    ascii_add_line_fn( 'E', line_debug_control, "dEbug control, E->off, Ec->console on, Es->console+scope");
 
     ascii_add_line_fn( 'R', line_reset_firmware, " - R! -> Reset Firmware");
     ascii_add_line_fn( 'T', line_test_message, "tt - send a test protocol message ");

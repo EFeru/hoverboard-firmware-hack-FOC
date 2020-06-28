@@ -26,6 +26,7 @@
 
 void setScopeChannel(uint8_t ch, int16_t val);
 void consoleScope(void);
+void consoleLog(char *message);
 
 #endif
 

@@ -5,6 +5,7 @@
 #include "setup.h"
 #include "config.h"
 #include "comms.h"
+#include "protocolfunctions.h"
 
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
@@ -12,10 +13,7 @@ extern UART_HandleTypeDef huart3;
 static volatile uint8_t uart_buf[100];
 static volatile int16_t ch_buf[8];
 
-uint8_t debug_out = 1;
 uint8_t enablescope = 1;
-
-//volatile char char_buf[300];
 
 void setScopeChannel(uint8_t ch, int16_t val) {
   ch_buf[ch] = val;
@@ -70,6 +68,33 @@ void consoleScope(void) {
 
 
 }
+
+void consoleLog(char *message)
+{
+  #if defined DEBUG_SERIAL_ASCII && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
+    #ifdef DEBUG_SERIAL_USART2
+    if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
+      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)message, strlen((char *)(uintptr_t)message));
+    }
+    #endif
+    #ifdef DEBUG_SERIAL_USART3
+    if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
+      HAL_UART_Transmit_DMA(&huart3, (uint8_t *)message, strlen((char *)(uintptr_t)message));
+    }
+    #endif
+  #endif
+
+  #if defined(VARIANT_BIPROPELLANT)
+    #if defined(SERIAL_USART2_DMA)
+        protocol_send_text(&sUSART2, message, PROTOCOL_SOM_NOACK);
+    #endif
+
+    #if defined(SERIAL_USART3_DMA)
+        protocol_send_text(&sUSART3, message, PROTOCOL_SOM_NOACK);
+    #endif
+  #endif
+}
+
 
 #if defined(SERIAL_USART2_DMA) && VARIANT_BIPROPELLANT
 int USART2_DMA_send(unsigned char *data, int len) {
