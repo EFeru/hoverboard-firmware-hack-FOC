@@ -256,11 +256,16 @@
 // ############################ VARIANT_BIPROPELLANT SETTINGS ############################
 #ifdef VARIANT_BIPROPELLANT
 //  #define SERIAL_USART2_IT
-  #define SERIAL_USART3_IT
+//  #define SERIAL_USART3_IT
+//  #define SERIAL_USART2_DMA
+  #define SERIAL_USART3_DMA
   #define USART2_BAUD 115200
   #define USART3_BAUD 115200
   #undef TIMEOUT
   #define TIMEOUT                30     // number of wrong / missing input commands before emergency off
+  #undef BEEPS_BACKWARD
+  #define BEEPS_BACKWARD          	0       // 0 or 1
+  #define SERIAL_BUFFER_SIZE      64                      // [bytes] Size of Serial Rx buffer. Make sure it is always larger than the structure size
 #endif
   #define SERIAL_USART_IT_BUFFERTYPE unsigned char
   #define USART2_WORDLENGTH UART_WORDLENGTH_8B
@@ -443,6 +448,13 @@
   #define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
   #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
+#if defined(DEBUG_SERIAL_USART2)
+  #define SERIAL_USART2_DMA
+#endif
+#if defined(DEBUG_SERIAL_USART3)
+  #define SERIAL_USART3_DMA
+#endif
+
 // ########################### UART SETIINGS ############################
 
 

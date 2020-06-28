@@ -9,16 +9,6 @@
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
-
-#ifdef DEBUG_SERIAL_USART3
-#define UART_DMA_CHANNEL DMA1_Channel2
-#endif
-
-#ifdef DEBUG_SERIAL_USART2
-#define UART_DMA_CHANNEL DMA1_Channel7
-#endif
-
-
 static volatile uint8_t uart_buf[100];
 static volatile int16_t ch_buf[8];
 
@@ -58,12 +48,12 @@ void consoleScope(void) {
 
     #ifdef DEBUG_SERIAL_USART2
     if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
-      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)uart_buf, strLength);	 
+      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)uart_buf, strLength);
     }
     #endif
     #ifdef DEBUG_SERIAL_USART3
     if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-      HAL_UART_Transmit_DMA(&huart3, (uint8_t *)uart_buf, strLength);	 
+      HAL_UART_Transmit_DMA(&huart3, (uint8_t *)uart_buf, strLength);
     }
     #endif
   #endif
@@ -77,12 +67,12 @@ void consoleScope(void) {
 
     #ifdef DEBUG_SERIAL_USART2
     if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
-      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)uart_buf, strLength);	 
+      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)uart_buf, strLength);
     }
   #endif
     #ifdef DEBUG_SERIAL_USART3
     if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-      HAL_UART_Transmit_DMA(&huart3, (uint8_t *)uart_buf, strLength);	 
+      HAL_UART_Transmit_DMA(&huart3, (uint8_t *)uart_buf, strLength);
     }
     #endif
   #endif
@@ -144,6 +134,20 @@ void USART2_IT_IRQ(USART_TypeDef *us) {
   return;
 }
 
+#endif
+
+#if defined(SERIAL_USART2_DMA) && VARIANT_BIPROPELLANT
+int USART2_DMA_send(unsigned char *data, int len) {
+  HAL_UART_Transmit_DMA(&huart2, (uint8_t *)data, len);
+  return 1;
+}
+#endif
+
+#if defined(SERIAL_USART3_DMA) && VARIANT_BIPROPELLANT
+int USART3_DMA_send(unsigned char *data, int len) {
+  HAL_UART_Transmit_DMA(&huart3, (uint8_t *)data, len);
+  return 1;
+}
 #endif
 
 #ifdef SERIAL_USART3_IT

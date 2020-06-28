@@ -251,7 +251,7 @@ void EXTI15_10_IRQHandler(void)
 
 #ifdef CONTROL_PWM_LEFT
 void EXTI2_IRQHandler(void)
-{    
+{
   __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH1);
   PWM_ISR_CH1_Callback();
 }
@@ -276,7 +276,7 @@ void EXTI15_10_IRQHandler(void)
 }
 #endif
 
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+#if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
 void DMA1_Channel6_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
@@ -303,7 +303,7 @@ void DMA1_Channel7_IRQHandler(void)
 }
 #endif
 
-#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
 /**
   * @brief This function handles DMA1 channel2 global interrupt.
   */
@@ -333,7 +333,7 @@ void DMA1_Channel3_IRQHandler(void)
 }
 #endif
 
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+#if defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(SERIAL_USART2_DMA)
 /**
   * @brief This function handles USART2 global interrupt.
   */
@@ -352,7 +352,7 @@ void USART2_IRQHandler(void)
 }
 #endif
 
-#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(SERIAL_USART3_DMA)
 /**
   * @brief This function handles USART3 global interrupt.
   */
@@ -363,7 +363,7 @@ void USART3_IRQHandler(void)
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart3);
   /* USER CODE BEGIN USART2_IRQn 1 */
-  if(RESET != __HAL_UART_GET_IT_SOURCE(&huart3, UART_IT_IDLE)) {  // Check for IDLE line interrupt  
+  if(RESET != __HAL_UART_GET_IT_SOURCE(&huart3, UART_IT_IDLE)) {  // Check for IDLE line interrupt
       __HAL_UART_CLEAR_IDLEFLAG(&huart3);                         // Clear IDLE line flag (otherwise it will continue to enter interrupt)
       usart3_rx_check();                                          // Check for data to process
   }

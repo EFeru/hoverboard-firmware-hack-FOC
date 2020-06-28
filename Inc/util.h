@@ -26,20 +26,20 @@
 
 // Rx Structures USART
 #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-  #ifdef CONTROL_IBUS    
+  #ifdef CONTROL_IBUS
     typedef struct{
       uint8_t  start;
-      uint8_t  type; 
+      uint8_t  type;
       uint8_t  channels[IBUS_NUM_CHANNELS*2];
       uint8_t  checksuml;
-      uint8_t  checksumh;    
+      uint8_t  checksumh;
     } SerialCommand;
   #else
     typedef struct{
-      uint16_t  start; 
+      uint16_t  start;
       int16_t   steer;
       int16_t   speed;
-      uint16_t  checksum;    
+      uint16_t  checksum;
     } SerialCommand;
   #endif
 #endif
@@ -79,7 +79,7 @@ void poweroffPressCheck(void);
 void readCommand(void);
 void usart2_rx_check(void);
 void usart3_rx_check(void);
-#if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+#if defined(SERIAL_USART2_DMA) || defined(SERIAL_USART3_DMA)
 void usart_process_debug(uint8_t *userCommand, uint32_t len);
 #endif
 #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)

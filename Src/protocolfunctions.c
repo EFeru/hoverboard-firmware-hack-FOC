@@ -12,10 +12,10 @@
 
 #include "control_structures.h"
 
-#if defined(SERIAL_USART2_IT)
+#if defined(SERIAL_USART2_IT) || defined(SERIAL_USART2_DMA)
     PROTOCOL_STAT sUSART2;
 #endif
-#if defined(SERIAL_USART3_IT)
+#if defined(SERIAL_USART3_IT) || defined(SERIAL_USART3_DMA)
     PROTOCOL_STAT sUSART3;
 #endif
 
@@ -111,7 +111,7 @@ void fn_PWMData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCO
     switch (cmd) {
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
-            ctrlModReq = 3; // 1 = VOLTAGE mode (default), 2 = SPEED mode, 3 = TORQUE mode.
+            ctrlModReq = 1; // 1 = VOLTAGE mode (default), 2 = SPEED mode, 3 = TORQUE mode.
             timeout= 0;
             break;
     }
@@ -221,6 +221,33 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
     #endif
 
+    #if defined(SERIAL_USART2_DMA)
+
+      extern int USART2_DMA_send(unsigned char *data, int len);
+
+      errors += protocol_init(&sUSART2);
+
+      sUSART2.send_serial_data=USART2_DMA_send;
+      sUSART2.send_serial_data_wait=USART2_DMA_send;
+      sUSART2.timeout1 = 500;
+      sUSART2.timeout2 = 100;
+      sUSART2.allow_ascii = 1;
+
+    #endif
+
+    #if defined(SERIAL_USART3_DMA)
+
+      extern int USART3_DMA_send(unsigned char *data, int len);
+
+      errors += protocol_init(&sUSART3);
+
+      sUSART3.send_serial_data=USART3_DMA_send;
+      sUSART3.send_serial_data_wait=USART3_DMA_send;
+      sUSART3.timeout1 = 500;
+      sUSART3.timeout2 = 100;
+      sUSART3.allow_ascii = 1;
+
+    #endif
 
     // initialise ascii protocol functions
     main_ascii_init(s);
@@ -257,11 +284,11 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
 
 void consoleLog(char *message) {
-    #ifdef SERIAL_USART2_IT
+    #if defined(SERIAL_USART2_IT) || defined(SERIAL_USART2_DMA)
         if (debug_out) protocol_send_text(&sUSART2, message, PROTOCOL_SOM_NOACK);
     #endif
 
-    #if defined(SERIAL_USART3_IT)
+    #if defined(SERIAL_USART3_IT) || defined(SERIAL_USART3_DMA)
         if (debug_out) protocol_send_text(&sUSART3, message, PROTOCOL_SOM_NOACK);
     #endif
 }

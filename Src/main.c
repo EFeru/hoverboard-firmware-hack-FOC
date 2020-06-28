@@ -128,12 +128,12 @@ static uint8_t sideboard_leds_R;
 
 #ifdef VARIANT_TRANSPOTTER
   extern uint8_t  nunchuk_connected;
-  extern float    setDistance;  
+  extern float    setDistance;
 
   static uint8_t  checkRemote = 0;
   static uint16_t distance;
   static float    steering;
-  static int      distanceErr;  
+  static int      distanceErr;
   static int      lastDistance = 0;
   static uint16_t transpotter_counter = 0;
 #endif
@@ -186,7 +186,7 @@ int main(void) {
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);
 
   HAL_ADC_Start(&hadc1);
-  HAL_ADC_Start(&hadc2);  
+  HAL_ADC_Start(&hadc2);
 
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
@@ -205,12 +205,6 @@ int main(void) {
   USART3_IT_init();
   #endif
 
-  #if defined(SERIAL_USART2_IT) && defined(VARIANT_BIPROPELLANT)
-    setup_protocol(&sUSART2);
-  #endif
-  #if defined(SERIAL_USART3_IT) && defined(VARIANT_BIPROPELLANT)
-      setup_protocol(&sUSART3);
-  #endif
 
 
   while(1) {
@@ -219,10 +213,12 @@ int main(void) {
     readCommand();                        // Read Command: cmd1, cmd2
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
-  #if defined(SERIAL_USART2_IT) && defined(VARIANT_BIPROPELLANT)
+  #if defined(VARIANT_BIPROPELLANT) && (defined(SERIAL_USART2_IT) || defined(SERIAL_USART2_DMA))
+  #if defined(SERIAL_USART2_IT)
     while ( serial_usart_buffer_count(&usart2_it_RXbuffer) > 0 ) {
       protocol_byte( &sUSART2, (unsigned char) serial_usart_buffer_pop(&usart2_it_RXbuffer) );
     }
+  #endif
     protocol_tick( &sUSART2 );
     if(sUSART3.ascii.enable_immediate)
     {
@@ -231,10 +227,12 @@ int main(void) {
     cmd2 = (PWMData.pwm[0] + PWMData.pwm[1]) /2;   // Speed
     cmd1 = PWMData.pwm[0] - cmd2;  // Steer
   #endif
-  #if defined(SERIAL_USART3_IT) && defined(VARIANT_BIPROPELLANT)
+  #if defined(VARIANT_BIPROPELLANT) && (defined(SERIAL_USART3_IT) || defined(SERIAL_USART3_DMA))
+  #if defined(SERIAL_USART3_IT)
     while ( serial_usart_buffer_count(&usart3_it_RXbuffer) > 0 ) {
       protocol_byte( &sUSART3, (unsigned char) serial_usart_buffer_pop(&usart3_it_RXbuffer) );
     }
+  #endif
     protocol_tick( &sUSART3 );
     if(sUSART3.ascii.enable_immediate)
     {
@@ -253,10 +251,10 @@ int main(void) {
         consoleLog("-- Motors enabled --\r\n");
       }
 
-      // ####### VARIANT_HOVERCAR ####### 
+      // ####### VARIANT_HOVERCAR #######
       #ifdef VARIANT_HOVERCAR
         // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
-        uint16_t speedBlend;       
+        uint16_t speedBlend;
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50);     // speedBlend [0,1] is within [10 rpm, 60rpm]
 
         // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
@@ -264,16 +262,16 @@ int main(void) {
           multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBreak);   // Break pedal in this case is "cmd1" variable
         }
 
-        // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving          
+        // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving
         if (cmd1 > 20) {
           cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);
         }
 
-        // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
+        // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
         if (speedAvg > 0) {
           cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
         } else {
-          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);          
+          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);
         }
       #endif
 
@@ -283,12 +281,12 @@ int main(void) {
       filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
-      speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer    
+      speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer
 
       // ####### VARIANT_HOVERCAR #######
-      #ifdef VARIANT_HOVERCAR        
+      #ifdef VARIANT_HOVERCAR
         if (!MultipleTapBreak.b_multipleTap) {  // Check driving direction
-          speed = steer + speed;                // Forward driving          
+          speed = steer + speed;                // Forward driving
         } else {
           speed = steer - speed;                // Reverse driving
         }
@@ -391,7 +389,7 @@ int main(void) {
               nunchuk_connected = 1;
             }
           }
-        }   
+        }
       #endif
 
       #ifdef SUPPORT_LCD
@@ -465,7 +463,7 @@ int main(void) {
         #if defined(FEEDBACK_SERIAL_USART2)
           if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
             Feedback.cmdLed         = (uint16_t)sideboard_leds_L;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas
                                                ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
             HAL_UART_Transmit_DMA(&huart2, (uint8_t *)&Feedback, sizeof(Feedback));
@@ -474,12 +472,12 @@ int main(void) {
         #if defined(FEEDBACK_SERIAL_USART3)
           if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
             Feedback.cmdLed         = (uint16_t)sideboard_leds_R;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas
                                                ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
             HAL_UART_Transmit_DMA(&huart3, (uint8_t *)&Feedback, sizeof(Feedback));
           }
-        #endif            
+        #endif
       }
     #endif
 
@@ -493,7 +491,7 @@ int main(void) {
       enable        = 0;
       buzzerFreq    = 8;
       buzzerPattern = 1;
-    } else if (timeoutFlagADC || timeoutFlagSerial) {           // beep in case of ADC or Serial timeout - fast beep      
+    } else if (timeoutFlagADC || timeoutFlagSerial) {           // beep in case of ADC or Serial timeout - fast beep
       buzzerFreq    = 24;
       buzzerPattern = 1;
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {  // beep if mainboard gets hot
