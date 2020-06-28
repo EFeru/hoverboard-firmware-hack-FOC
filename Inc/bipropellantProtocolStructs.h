@@ -20,7 +20,11 @@
 ////////////////////////////////////////////////////////////////////
 // structures used in main repo which may mirror protocol structures
 ////////////////////////////////////////////////////////////////////
-#pragma once
+
+// Define to prevent recursive inclusion
+#ifndef BIPROPELLANTPROTOCOLSTRUCTS_H
+#define BIPROPELLANTPROTOCOLSTRUCTS_H
+
 #include "protocol.h"
 
 //// control structures used in firmware
@@ -86,3 +90,5 @@ typedef struct tag_ELECTRICAL_PARAMS{
 
 } ELECTRICAL_PARAMS;
 #pragma pack(pop)
+
+#endif
