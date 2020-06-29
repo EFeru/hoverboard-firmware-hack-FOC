@@ -255,8 +255,8 @@
 
 // ############################ VARIANT_BIPROPELLANT SETTINGS ############################
 #ifdef VARIANT_BIPROPELLANT
-//  #define SERIAL_USART2_DMA
-  #define SERIAL_USART3_DMA
+//  #define USART2_ENABLE
+  #define USART3_ENABLE
   #define USART2_BAUD 115200
   #define USART3_BAUD 115200
   #undef TIMEOUT
@@ -445,11 +445,11 @@
   #define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
   #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
-#if defined(DEBUG_SERIAL_USART2)
-  #define SERIAL_USART2_DMA
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2)
+  #define USART2_ENABLE
 #endif
-#if defined(DEBUG_SERIAL_USART3)
-  #define SERIAL_USART3_DMA
+#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3)
+  #define USART3_ENABLE
 #endif
 // ########################### UART SETIINGS ############################
 

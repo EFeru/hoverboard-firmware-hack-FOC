@@ -205,23 +205,24 @@ int main(void) {
     readCommand();                        // Read Command: cmd1, cmd2
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
-  #if defined(VARIANT_BIPROPELLANT) && defined(SERIAL_USART2_DMA)
-    protocol_tick( &sUSART2 );
-    if(sUSART2.ascii.enable_immediate)
-    {
-      timeout = 0;
-    }
+  #if defined(VARIANT_BIPROPELLANT)
+    #if defined(USART2_ENABLE)
+      protocol_tick( &sUSART2 );
+      if(sUSART2.ascii.enable_immediate)
+      {
+        timeout = 0;
+      }
+    #endif
+    #if defined(USART3_ENABLE)
+      protocol_tick( &sUSART3 );
+      if(sUSART3.ascii.enable_immediate)
+      {
+        timeout = 0;
+      }
+    #endif
     cmd2 = (PWMData.pwm[0] + PWMData.pwm[1]) /2;   // Speed
     cmd1 = PWMData.pwm[0] - cmd2;  // Steer
-  #endif
-  #if defined(VARIANT_BIPROPELLANT) && defined(SERIAL_USART3_DMA)
-    protocol_tick( &sUSART3 );
-    if(sUSART3.ascii.enable_immediate)
-    {
-      timeout = 0;
-    }
-    cmd2 = (PWMData.pwm[0] + PWMData.pwm[1]) /2;   // Speed
-    cmd1 = PWMData.pwm[0] - cmd2;  // Steer
+
   #endif
 
     #ifndef VARIANT_TRANSPOTTER

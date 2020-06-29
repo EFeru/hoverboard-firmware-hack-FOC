@@ -12,10 +12,10 @@
 
 #include "bipropellantProtocolStructs.h"
 
-#if defined(SERIAL_USART2_DMA)
+#if defined(USART2_ENABLE)
     PROTOCOL_STAT sUSART2;
 #endif
-#if defined(SERIAL_USART3_DMA)
+#if defined(USART3_ENABLE)
     PROTOCOL_STAT sUSART3;
 #endif
 
@@ -186,7 +186,7 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
     int errors = 0;
 
-    #if defined(SERIAL_USART2_DMA)
+    #if defined(USART2_ENABLE)
 
       extern int USART2_DMA_send(unsigned char *data, int len);
 
@@ -200,7 +200,7 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
     #endif
 
-    #if defined(SERIAL_USART3_DMA)
+    #if defined(USART3_ENABLE)
 
       extern int USART3_DMA_send(unsigned char *data, int len);
 

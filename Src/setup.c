@@ -54,7 +54,7 @@ DMA_HandleTypeDef hdma_usart3_tx;
 volatile adc_buf_t adc_buffer;
 
 
-#if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+#if defined(USART2_ENABLE)
  /* USART2 init function */
  void UART2_Init(void)
 {
@@ -80,7 +80,7 @@ volatile adc_buf_t adc_buffer;
 }
 #endif
 
-#if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(USART3_ENABLE) || defined(FEEDBACK_SERIAL_USART3)
 /* USART3 init function */
 void UART3_Init(void)
 {
@@ -107,8 +107,7 @@ void UART3_Init(void)
 }
 #endif
 
-#if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
-    defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(USART2_ENABLE) || defined(USART3_ENABLE)
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};

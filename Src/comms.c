@@ -85,25 +85,25 @@ void consoleLog(char *message)
   #endif
 
   #if defined(VARIANT_BIPROPELLANT)
-    #if defined(SERIAL_USART2_DMA)
+    #if defined(USART2_ENABLE)
         protocol_send_text(&sUSART2, message, PROTOCOL_SOM_NOACK);
     #endif
 
-    #if defined(SERIAL_USART3_DMA)
+    #if defined(USART3_ENABLE)
         protocol_send_text(&sUSART3, message, PROTOCOL_SOM_NOACK);
     #endif
   #endif
 }
 
 
-#if defined(SERIAL_USART2_DMA) && VARIANT_BIPROPELLANT
+#if defined(USART2_ENABLE)
 int USART2_DMA_send(unsigned char *data, int len) {
   HAL_UART_Transmit_DMA(&huart2, (uint8_t *)data, len);
   return 1;
 }
 #endif
 
-#if defined(SERIAL_USART3_DMA) && VARIANT_BIPROPELLANT
+#if defined(USART3_ENABLE)
 int USART3_DMA_send(unsigned char *data, int len) {
   HAL_UART_Transmit_DMA(&huart3, (uint8_t *)data, len);
   return 1;

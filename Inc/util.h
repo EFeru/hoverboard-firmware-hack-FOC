@@ -79,15 +79,6 @@ void poweroffPressCheck(void);
 void readCommand(void);
 void usart2_rx_check(void);
 void usart3_rx_check(void);
-#if defined(SERIAL_USART2_DMA) || defined(SERIAL_USART3_DMA)
-void usart_process_debug(uint8_t *userCommand, uint32_t len);
-#endif
-#if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-void usart_process_command(SerialCommand *command_in, SerialCommand *command_out, uint8_t usart_idx);
-#endif
-#if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
-void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sideboard_out, uint8_t usart_idx);
-#endif
 
 // Sideboard functions
 void sideboardLeds(uint8_t *leds);

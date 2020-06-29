@@ -154,7 +154,7 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
 static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
 #endif
 
-#if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+#if defined(USART2_ENABLE)
 static uint8_t rx_buffer_L[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
 static uint32_t rx_buffer_L_len = ARRAY_LEN(rx_buffer_L);
 #endif
@@ -168,7 +168,7 @@ SerialSideboard Sideboard_L_raw;
 static uint32_t Sideboard_L_len = sizeof(Sideboard_L);
 #endif
 
-#if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(USART3_ENABLE)
 static uint8_t rx_buffer_R[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
 static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
 #endif
@@ -267,24 +267,22 @@ void Input_Init(void) {
     Nunchuk_Init();
   #endif
 
-  #if defined(SERIAL_USART2_DMA) && defined(VARIANT_BIPROPELLANT)
-    setup_protocol(&sUSART2);
-  #endif
-  #if defined(SERIAL_USART3_DMA) && defined(VARIANT_BIPROPELLANT)
-    setup_protocol(&sUSART3);
+  #if defined(VARIANT_BIPROPELLANT)
+    #if defined(USART2_ENABLE)
+      setup_protocol(&sUSART2);
+    #endif
+    #if defined(USART3_ENABLE)
+      setup_protocol(&sUSART3);
+    #endif
   #endif
 
-  #if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+  #if defined(USART2_ENABLE)
     UART2_Init();
-  #endif
-  #if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-    UART3_Init();
-  #endif
-  #if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     HAL_UART_Receive_DMA(&huart2, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));
     UART_DisableRxErrors(&huart2);
   #endif
-  #if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+  #if defined(USART3_ENABLE)
+    UART3_Init();
     HAL_UART_Receive_DMA(&huart3, (uint8_t *)rx_buffer_R, sizeof(rx_buffer_R));
     UART_DisableRxErrors(&huart3);
   #endif
@@ -370,8 +368,7 @@ void Input_Init(void) {
   * @param  huart: UART handle.
   * @retval None
   */
-#if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
-    defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(USART2_ENABLE) || defined(USART3_ENABLE)
 void UART_DisableRxErrors(UART_HandleTypeDef *huart)
 {
   /* Disable PE (Parity Error) interrupts */
@@ -382,6 +379,121 @@ void UART_DisableRxErrors(UART_HandleTypeDef *huart)
 }
 #endif
 
+/* ====================== Private (static) Functions ======================= */
+
+#if defined(VARIANT_BIPROPELLANT)
+  #if defined(USART2_ENABLE)
+  static void usart_process_bipropellantProtocolUSART2(uint8_t *data, uint32_t len)
+  {
+    for (; len > 0; len--, data++) {
+      protocol_byte( &sUSART2, (unsigned char) *data );
+    }
+  }
+  #endif
+
+  #if defined(USART3_ENABLE)
+  static void usart_process_bipropellantProtocolUSART3(uint8_t *data, uint32_t len)
+  {
+    for (; len > 0; len--, data++) {
+      protocol_byte( &sUSART3, (unsigned char) *data );
+    }
+  }
+  #endif
+#endif //VARIANT_BIPROPELLANT
+
+/*
+ * Process Rx debug user command input
+ */
+#if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+static void usart_process_debug(uint8_t *userCommand, uint32_t len)
+{
+	for (; len > 0; len--, userCommand++) {
+		if (*userCommand != '\n' && *userCommand != '\r') { 	// Do not accept 'new line' and 'carriage return' commands
+      consoleLog("-- Command received --\r\n");
+			// handle_input(*userCommand);                      // -> Create this function to handle the user commands
+		}
+  }
+}
+#endif
+
+/*
+ * Process command Rx data
+ * - if the command_in data is valid (correct START_FRAME and checksum) copy the command_in to command_out
+ */
+#if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
+static void usart_process_command(SerialCommand *command_in, SerialCommand *command_out, uint8_t usart_idx)
+{
+  #ifdef CONTROL_IBUS
+    if (command_in->start == IBUS_LENGTH && command_in->type == IBUS_COMMAND) {
+      ibus_chksum = 0xFFFF - IBUS_LENGTH - IBUS_COMMAND;
+      for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i++) {
+        ibus_chksum -= command_in->channels[i];
+      }
+      if (ibus_chksum == (uint16_t)((command_in->checksumh << 8) + command_in->checksuml)) {
+        *command_out = *command_in;
+        if (usart_idx == 2) {             // Sideboard USART2
+          #ifdef CONTROL_SERIAL_USART2
+          timeoutCntSerial_L  = 0;        // Reset timeout counter
+          timeoutFlagSerial_L = 0;        // Clear timeout flag
+          #endif
+        } else if (usart_idx == 3) {      // Sideboard USART3
+          #ifdef CONTROL_SERIAL_USART3
+          timeoutCntSerial_R  = 0;        // Reset timeout counter
+          timeoutFlagSerial_R = 0;        // Clear timeout flag
+          #endif
+        }
+      }
+    }
+  #else
+  uint16_t checksum;
+	if (command_in->start == SERIAL_START_FRAME) {
+		checksum = (uint16_t)(command_in->start ^ command_in->steer ^ command_in->speed);
+		if (command_in->checksum == checksum) {
+			*command_out = *command_in;
+      if (usart_idx == 2) {             // Sideboard USART2
+        #ifdef CONTROL_SERIAL_USART2
+        timeoutCntSerial_L  = 0;        // Reset timeout counter
+        timeoutFlagSerial_L = 0;        // Clear timeout flag
+        #endif
+      } else if (usart_idx == 3) {      // Sideboard USART3
+        #ifdef CONTROL_SERIAL_USART3
+        timeoutCntSerial_R  = 0;        // Reset timeout counter
+        timeoutFlagSerial_R = 0;        // Clear timeout flag
+        #endif
+      }
+    }
+  }
+  #endif
+}
+#endif
+
+/*
+ * Process Sideboard Rx data
+ * - if the Sideboard_in data is valid (correct START_FRAME and checksum) copy the Sideboard_in to Sideboard_out
+ */
+#if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
+static void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sideboard_out, uint8_t usart_idx)
+{
+  uint16_t checksum;
+	if (Sideboard_in->start == SERIAL_START_FRAME) {
+		checksum = (uint16_t)(Sideboard_in->start ^ Sideboard_in->roll ^ Sideboard_in->pitch ^ Sideboard_in->yaw ^ Sideboard_in->sensors);
+		if (Sideboard_in->checksum == checksum) {
+			*Sideboard_out = *Sideboard_in;
+      if (usart_idx == 2) {             // Sideboard USART2
+        #ifdef SIDEBOARD_SERIAL_USART2
+        timeoutCntSerial_L  = 0;        // Reset timeout counter
+        timeoutFlagSerial_L = 0;        // Clear timeout flag
+        #endif
+      } else if (usart_idx == 3) {      // Sideboard USART3
+        #ifdef SIDEBOARD_SERIAL_USART3
+        timeoutCntSerial_R  = 0;        // Reset timeout counter
+        timeoutFlagSerial_R = 0;        // Clear timeout flag
+        #endif
+      }
+    }
+	}
+}
+#endif
 
 /* =========================== General Functions =========================== */
 
@@ -829,13 +941,12 @@ void readCommand(void) {
  */
 void usart2_rx_check(void)
 {
-  #if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+#if defined(USART2_ENABLE)
   static uint32_t old_pos;
   uint32_t pos;
   pos = rx_buffer_L_len - __HAL_DMA_GET_COUNTER(huart2.hdmarx);         // Calculate current position in buffer
-  #endif
 
-  #if defined(SERIAL_USART2_DMA)
+  #if defined(DEBUG_SERIAL_USART2)
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_L[old_pos], pos - old_pos);        // Process data
@@ -843,6 +954,19 @@ void usart2_rx_check(void)
       usart_process_debug(&rx_buffer_L[old_pos], rx_buffer_L_len - old_pos); // First Process data from the end of buffer
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
         usart_process_debug(&rx_buffer_L[0], pos);                      // Process remaining data
+      }
+    }
+  }
+	#endif
+
+  #if defined(VARIANT_BIPROPELLANT)
+  if (pos != old_pos) {                                                 // Check change in received data
+    if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
+      usart_process_bipropellantProtocolUSART2(&rx_buffer_L[old_pos], pos - old_pos);        // Process data
+    } else {                                                            // "Overflow" buffer mode
+      usart_process_bipropellantProtocolUSART2(&rx_buffer_L[old_pos], rx_buffer_L_len - old_pos); // First Process data from the end of buffer
+      if (pos > 0) {                                                    // Check and continue with beginning of buffer
+        usart_process_bipropellantProtocolUSART2(&rx_buffer_L[0], pos);                      // Process remaining data
       }
     }
   }
@@ -884,12 +1008,11 @@ void usart2_rx_check(void)
   }
   #endif // SIDEBOARD_SERIAL_USART2
 
-  #if defined(SERIAL_USART2_DMA) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
   old_pos = pos;                                                        // Update old position
   if (old_pos == rx_buffer_L_len) {                                     // Check and manually update if we reached end of buffer
     old_pos = 0;
   }
-	#endif
+#endif // USART2_ENABLE
 }
 
 
@@ -899,13 +1022,12 @@ void usart2_rx_check(void)
  */
 void usart3_rx_check(void)
 {
-  #if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(USART3_ENABLE)
   static uint32_t old_pos;
   uint32_t pos;
   pos = rx_buffer_R_len - __HAL_DMA_GET_COUNTER(huart3.hdmarx);         // Calculate current position in buffer
-  #endif
 
-  #if defined(SERIAL_USART3_DMA)
+  #if defined(DEBUG_SERIAL_USART3)
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_R[old_pos], pos - old_pos);        // Process data
@@ -913,6 +1035,19 @@ void usart3_rx_check(void)
       usart_process_debug(&rx_buffer_R[old_pos], rx_buffer_R_len - old_pos); // First Process data from the end of buffer
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
         usart_process_debug(&rx_buffer_R[0], pos);                      // Process remaining data
+      }
+    }
+  }
+	#endif
+
+  #if defined(VARIANT_BIPROPELLANT)
+  if (pos != old_pos) {                                                 // Check change in received data
+    if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
+      usart_process_bipropellantProtocolUSART3(&rx_buffer_R[old_pos], pos - old_pos);        // Process data
+    } else {                                                            // "Overflow" buffer mode
+      usart_process_bipropellantProtocolUSART3(&rx_buffer_R[old_pos], rx_buffer_R_len - old_pos); // First Process data from the end of buffer
+      if (pos > 0) {                                                    // Check and continue with beginning of buffer
+        usart_process_bipropellantProtocolUSART3(&rx_buffer_R[0], pos);                      // Process remaining data
       }
     }
   }
@@ -954,114 +1089,12 @@ void usart3_rx_check(void)
   }
   #endif // SIDEBOARD_SERIAL_USART3
 
-  #if defined(SERIAL_USART3_DMA) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
   old_pos = pos;                                                        // Update old position
   if (old_pos == rx_buffer_R_len) {                                     // Check and manually update if we reached end of buffer
     old_pos = 0;
   }
-	#endif
+#endif // USART3_ENABLE
 }
-
-/*
- * Process Rx debug user command input
- */
-#if defined(SERIAL_USART2_DMA) || defined(SERIAL_USART3_DMA)
-void usart_process_debug(uint8_t *userCommand, uint32_t len)
-{
-	for (; len > 0; len--, userCommand++) {
-  #if defined(VARIANT_BIPROPELLANT) && defined(SERIAL_USART2_DMA)
-    protocol_byte( &sUSART2, (unsigned char) *userCommand );
-  #elif defined(VARIANT_BIPROPELLANT) && defined(SERIAL_USART3_DMA)
-    protocol_byte( &sUSART3, (unsigned char) *userCommand );
-  #else
-		if (*userCommand != '\n' && *userCommand != '\r') { 	// Do not accept 'new line' and 'carriage return' commands
-      consoleLog("-- Command received --\r\n");
-			// handle_input(*userCommand);                      // -> Create this function to handle the user commands
-		}
-  #endif
-  }
-}
-#endif // SERIAL_DEBUG
-
-/*
- * Process command Rx data
- * - if the command_in data is valid (correct START_FRAME and checksum) copy the command_in to command_out
- */
-#if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-void usart_process_command(SerialCommand *command_in, SerialCommand *command_out, uint8_t usart_idx)
-{
-  #ifdef CONTROL_IBUS
-    if (command_in->start == IBUS_LENGTH && command_in->type == IBUS_COMMAND) {
-      ibus_chksum = 0xFFFF - IBUS_LENGTH - IBUS_COMMAND;
-      for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i++) {
-        ibus_chksum -= command_in->channels[i];
-      }
-      if (ibus_chksum == (uint16_t)((command_in->checksumh << 8) + command_in->checksuml)) {
-        *command_out = *command_in;
-        if (usart_idx == 2) {             // Sideboard USART2
-          #ifdef CONTROL_SERIAL_USART2
-          timeoutCntSerial_L  = 0;        // Reset timeout counter
-          timeoutFlagSerial_L = 0;        // Clear timeout flag
-          #endif
-        } else if (usart_idx == 3) {      // Sideboard USART3
-          #ifdef CONTROL_SERIAL_USART3
-          timeoutCntSerial_R  = 0;        // Reset timeout counter
-          timeoutFlagSerial_R = 0;        // Clear timeout flag
-          #endif
-        }
-      }
-    }
-  #else
-  uint16_t checksum;
-	if (command_in->start == SERIAL_START_FRAME) {
-		checksum = (uint16_t)(command_in->start ^ command_in->steer ^ command_in->speed);
-		if (command_in->checksum == checksum) {
-			*command_out = *command_in;
-      if (usart_idx == 2) {             // Sideboard USART2
-        #ifdef CONTROL_SERIAL_USART2
-        timeoutCntSerial_L  = 0;        // Reset timeout counter
-        timeoutFlagSerial_L = 0;        // Clear timeout flag
-        #endif
-      } else if (usart_idx == 3) {      // Sideboard USART3
-        #ifdef CONTROL_SERIAL_USART3
-        timeoutCntSerial_R  = 0;        // Reset timeout counter
-        timeoutFlagSerial_R = 0;        // Clear timeout flag
-        #endif
-      }
-    }
-  }
-  #endif
-}
-#endif
-
-/*
- * Process Sideboard Rx data
- * - if the Sideboard_in data is valid (correct START_FRAME and checksum) copy the Sideboard_in to Sideboard_out
- */
-#if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
-void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sideboard_out, uint8_t usart_idx)
-{
-  uint16_t checksum;
-	if (Sideboard_in->start == SERIAL_START_FRAME) {
-		checksum = (uint16_t)(Sideboard_in->start ^ Sideboard_in->roll ^ Sideboard_in->pitch ^ Sideboard_in->yaw ^ Sideboard_in->sensors);
-		if (Sideboard_in->checksum == checksum) {
-			*Sideboard_out = *Sideboard_in;
-      if (usart_idx == 2) {             // Sideboard USART2
-        #ifdef SIDEBOARD_SERIAL_USART2
-        timeoutCntSerial_L  = 0;        // Reset timeout counter
-        timeoutFlagSerial_L = 0;        // Clear timeout flag
-        #endif
-      } else if (usart_idx == 3) {      // Sideboard USART3
-        #ifdef SIDEBOARD_SERIAL_USART3
-        timeoutCntSerial_R  = 0;        // Reset timeout counter
-        timeoutFlagSerial_R = 0;        // Clear timeout flag
-        #endif
-      }
-    }
-	}
-}
-#endif
-
 
 /* =========================== Sideboard Functions =========================== */
 
