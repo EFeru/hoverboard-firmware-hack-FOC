@@ -47,14 +47,12 @@ extern ExtY rtY_Right;                  /* External outputs */
 
 static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
 
-static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
+int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
 int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
 int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
 
 volatile int pwml = 0;
 volatile int pwmr = 0;
-
-extern volatile adc_buf_t adc_buffer;
 
 extern volatile uint32_t timeout;
 
@@ -75,8 +73,8 @@ static int16_t offsetrrC    = 2000;
 static int16_t offsetdcl    = 2000;
 static int16_t offsetdcr    = 2000;
 
-int16_t        batVoltage       = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
-static int32_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 16;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
+int16_t batVoltage       = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
+int32_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 16;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
 
 
 uint8_t bldc_getMotorsEnable(void)

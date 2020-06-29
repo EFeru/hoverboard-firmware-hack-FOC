@@ -46,7 +46,6 @@ extern TIM_HandleTypeDef htim_left;
 extern TIM_HandleTypeDef htim_right;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
-extern volatile adc_buf_t adc_buffer;
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
   extern LCD_PCF8574_HandleTypeDef lcd;
   extern uint8_t LCDerrorFlag;
@@ -78,7 +77,6 @@ extern uint8_t buzzerFreq;              // global variable for the buzzer pitch.
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 
 extern volatile uint32_t timeout;       // global variable for timeout
-extern int16_t batVoltage;              // global variable for battery voltage
 
 #if defined(SIDEBOARD_SERIAL_USART2)
 extern SerialSideboard Sideboard_L;

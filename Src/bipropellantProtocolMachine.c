@@ -6,6 +6,7 @@
 #include "util.h"
 #include "stm32f1xx_hal.h"
 #include "bldc.h"
+#include "setup.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -21,15 +22,14 @@
 
 extern uint32_t timeout;
 
+extern int main_ascii_init(PROTOCOL_STAT *s); // from ascii_proto_funcs.c
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Variable & Functions for 0x09 enable
 
-extern int main_ascii_init(PROTOCOL_STAT *s); // from ascii_proto_funcs.c
-
-//////////////////////////////////////////////
-// make values safe before we change enable...
-
 static char protocol_enable = 0;
+
 void fn_enable ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCOL_MSG3full *msg ) {
     switch (cmd) {
         case PROTOCOL_CMD_READVAL:
@@ -75,12 +75,6 @@ void fn_SpeedData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTO
     }
     fn_defaultProcessing(s, param, cmd, msg);
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Variable & Functions for 0x0A disablepoweroff
-
-extern uint8_t disablepoweroff;
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Variable & Functions for 0x0D PWMData and 0x0E PWMData.pwm
@@ -165,10 +159,33 @@ void fn_BuzzerData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROT
     }
 }
 
-//extern volatile ELECTRICAL_PARAMS electrical_measurements;
 
+////////////////////////////////////////////////////////////////////////////////////////////
+// Variable & Functions for 0x08 Electrical Params
 
+extern int16_t curDC_max;
+extern int16_t curL_DC;
+extern int16_t curR_DC;
 
+void fn_electrictalParams ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCOL_MSG3full *msg ) {
+    switch (cmd) {
+        case PROTOCOL_CMD_READVAL:
+        case PROTOCOL_CMD_SILENTREAD:
+            if(param != NULL && param->ptr != NULL && param->len == sizeof(ELECTRICAL_PARAMS))
+            {
+                ELECTRICAL_PARAMS *measured = (ELECTRICAL_PARAMS*) param->ptr;
+                memset(measured, 0, sizeof(ELECTRICAL_PARAMS));
+                measured->bat_raw = adc_buffer.batt1;
+                measured->batteryVoltage = (float)batVoltageFixdt / (float)0xFFFF;
+                measured->board_temp_raw = adc_buffer.temp;
+                measured->dcCurLim = curDC_max;
+                measured->motors[0].dcAmps = curL_DC;
+                measured->motors[1].dcAmps = curR_DC;
+            }
+            break;
+    }
+    fn_defaultProcessingReadOnly(s, param, cmd, msg);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,12 +237,10 @@ int setup_protocol(PROTOCOL_STAT *s) {
         errors += setParamVariable( s, 0x03, UI_NONE, &SpeedData, sizeof(SpeedData) );
         setParamHandler( s, 0x03, fn_SpeedData );
 
-//        errors += setParamVariable( s, 0x08, UI_NONE, (void *)&electrical_measurements, sizeof(ELECTRICAL_PARAMS) );
+        setParamHandler( s, 0x08, fn_electrictalParams );
 
         errors += setParamVariable( s, 0x09, UI_CHAR, &protocol_enable, sizeof(protocol_enable) );
         setParamHandler( s, 0x09, fn_enable );
-
-//        errors += setParamVariable( s, 0x0A, UI_CHAR, &disablepoweroff, sizeof(disablepoweroff) );
 
         errors += setParamVariable( s, 0x0D, UI_NONE, &PWMData, sizeof(PWMData) );
         setParamHandler( s, 0x0D, fn_PWMData );

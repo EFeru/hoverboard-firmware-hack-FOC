@@ -41,12 +41,10 @@
 //------------------------------------------------------------------------
 // Global variables set externally
 //------------------------------------------------------------------------
-extern volatile adc_buf_t adc_buffer;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
-extern int16_t batVoltage;
 extern uint8_t backwardDrive;
 extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
