@@ -51,7 +51,7 @@ Src/bipropellantProtocol/machine_protocol.c \
 Src/bipropellantProtocol/ascii_protocol.c \
 Src/bipropellantProtocol/cobsr.c \
 Src/bipropellantProtocolASCII.c \
-Src/bipropellantProtocolASCII.c \
+Src/bipropellantProtocolMachine.c \
 Src/BLDC_controller_data.c \
 Src/BLDC_controller.c
 
