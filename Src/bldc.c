@@ -62,7 +62,7 @@ uint8_t buzzerFreq          = 0;
 uint8_t buzzerPattern       = 0;
 static uint32_t buzzerTimer = 0;
 
-uint8_t        enable       = 0;        // initially motors are disabled for SAFETY
+static volatile uint8_t m_motorsEnable = 0; // initially motors are disabled for SAFETY
 static uint8_t enableFin    = 0;
 
 static const uint16_t pwm_res  = 64000000 / 2 / PWM_FREQ; // = 2000
@@ -77,6 +77,17 @@ static int16_t offsetdcr    = 2000;
 
 int16_t        batVoltage       = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
 static int32_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 16;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
+
+
+uint8_t bldc_getMotorsEnable(void)
+{
+  return m_motorsEnable;
+}
+
+void bldc_setMotorsEnable(uint8_t enable)
+{
+  m_motorsEnable = enable;
+}
 
 // =================================
 // DMA interrupt frequency =~ 16 kHz
@@ -115,13 +126,13 @@ void DMA1_Channel1_IRQHandler(void) {
 
   // Disable PWM when current limit is reached (current chopping)
   // This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
-  if(ABS(curL_DC) > curDC_max || timeout > TIMEOUT || enable == 0) {
+  if(ABS(curL_DC) > curDC_max || timeout > TIMEOUT || m_motorsEnable == 0) {
     LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     LEFT_TIM->BDTR |= TIM_BDTR_MOE;
   }
 
-  if(ABS(curR_DC)  > curDC_max || timeout > TIMEOUT || enable == 0) {
+  if(ABS(curR_DC)  > curDC_max || timeout > TIMEOUT || m_motorsEnable == 0) {
     RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
@@ -150,7 +161,7 @@ void DMA1_Channel1_IRQHandler(void) {
   OverrunFlag = true;
 
   /* Make sure to stop BOTH motors in case of an error */
-  enableFin = enable && !rtY_Left.z_errCode && !rtY_Right.z_errCode;
+  enableFin = m_motorsEnable && !rtY_Left.z_errCode && !rtY_Right.z_errCode;
 
   // ========================= LEFT MOTOR ============================
     // Get hall sensors values

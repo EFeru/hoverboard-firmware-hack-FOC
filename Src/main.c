@@ -27,6 +27,7 @@
 #include "config.h"
 #include "util.h"
 #include "comms.h"
+#include "bldc.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 #include "bipropellantProtocolMachine.h"
@@ -75,8 +76,6 @@ extern volatile int pwmr;               // global variable for pwm right. -1000 
 
 extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
-
-extern uint8_t enable;                  // global variable for motor enable
 
 extern volatile uint32_t timeout;       // global variable for timeout
 extern int16_t batVoltage;              // global variable for battery voltage
@@ -227,10 +226,10 @@ int main(void) {
 
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-      if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
+      if (bldc_getMotorsEnable() == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
         shortBeep(6);                     // make 2 beeps indicating the motor enable
         shortBeep(4); HAL_Delay(100);
-        enable = 1;                       // enable motors
+        bldc_setMotorsEnable(1);                       // enable motors
         consoleLog("-- Motors enabled --\r\n");
       }
 
@@ -305,7 +304,7 @@ int main(void) {
         speedR = speedR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
         if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50)) {
           if (distanceErr > 0) {
-            enable = 1;
+            bldc_setMotorsEnable(1);
           }
           if (distanceErr > -300) {
             #ifdef INVERT_R_DIRECTION
@@ -323,11 +322,11 @@ int main(void) {
               if (!HAL_GPIO_ReadPin(LED_PORT, LED_PIN)) {
                 //enable = 1;
               } else {
-                enable = 0;
+                bldc_setMotorsEnable(0);
               }
             }
           } else {
-            enable = 0;
+            bldc_setMotorsEnable(0);
           }
         }
         timeout = 0;
@@ -336,7 +335,7 @@ int main(void) {
       if (timeout > TIMEOUT) {
         pwml = 0;
         pwmr = 0;
-        enable = 0;
+        bldc_setMotorsEnable(0);
         #ifdef SUPPORT_LCD
           LCD_SetLocation(&lcd,  0, 0); LCD_WriteString(&lcd, "Len:");
           LCD_SetLocation(&lcd,  8, 0); LCD_WriteString(&lcd, "m(");
@@ -347,7 +346,7 @@ int main(void) {
       }
 
       if ((distance / 1345.0) - setDistance > 0.5 && (lastDistance / 1345.0) - setDistance > 0.5) { // Error, robot too far away!
-        enable = 0;
+        bldc_setMotorsEnable(0);
         longBeep(5);
         #ifdef SUPPORT_LCD
           LCD_ClearDisplay(&lcd);
@@ -377,7 +376,7 @@ int main(void) {
 
       #ifdef SUPPORT_LCD
         if (transpotter_counter % 100 == 0) {
-          if (LCDerrorFlag == 1 && enable == 0) {
+          if (LCDerrorFlag == 1 && bldc_getMotorsEnable() == 0) {
 
           } else {
             if (nunchuk_connected == 0) {
@@ -471,7 +470,7 @@ int main(void) {
     if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
       poweroff();
     } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {     // disable motors and beep in case of Motor error - fast beep
-      enable        = 0;
+      bldc_setMotorsEnable(0);
       buzzerFreq    = 8;
       buzzerPattern = 1;
     } else if (timeoutFlagADC || timeoutFlagSerial) {           // beep in case of ADC or Serial timeout - fast beep

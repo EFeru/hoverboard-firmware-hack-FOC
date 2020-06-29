@@ -20,7 +20,7 @@
 #include "stm32f1xx_hal.h"
 #include "defines.h"
 #include "config.h"
-
+#include "bldc.h"
 
 #include "bipropellantProtocolMachine.h"
 #include "protocol.h"
@@ -47,9 +47,6 @@
 // extern variables you want to read/write here
 
 // from main.c
-extern uint8_t enable; // global variable for motor enable
-
-
 extern uint8_t buzzerFreq;    // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern; // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t enablescope; // enable scope on values
@@ -69,8 +66,11 @@ int immediate_dir(PROTOCOL_STAT *s, char byte, char *ascii_out) {
             dir = -1;
         case 'W':
         case 'w':
-            if (!enable) { speedB = 0; steerB = 0; }
-            enable = 1;
+            if ( !bldc_getMotorsEnable() )
+            {
+                speedB = 0; steerB = 0;
+            }
+            bldc_setMotorsEnable(1);
             speedB += 10*dir;
             PWMData.pwm[1] = CLAMP(speedB -  steerB, -1000, 1000);
             PWMData.pwm[0] = CLAMP(speedB +  steerB, -1000, 1000);
@@ -82,8 +82,11 @@ int immediate_dir(PROTOCOL_STAT *s, char byte, char *ascii_out) {
             dir = -1;
         case 'D':
         case 'd':
-            if (!enable) { speedB = 0; steerB = 0; }
-            enable = 1;
+            if ( !bldc_getMotorsEnable() )
+            {
+                speedB = 0; steerB = 0;
+            }
+            bldc_setMotorsEnable(1);
             steerB += 10*dir;
             PWMData.pwm[1] = CLAMP(speedB -  steerB, -1000, 1000);
             PWMData.pwm[0] = CLAMP(speedB +  steerB, -1000, 1000);
@@ -101,7 +104,7 @@ int immediate_stop(PROTOCOL_STAT *s, char byte, char *ascii_out) {
     PWMData.pwm[1] = CLAMP(speedB -  steerB, -1000, 1000);
     PWMData.pwm[0] = CLAMP(speedB +  steerB, -1000, 1000);
     SpeedData.wanted_speed_mm_per_sec[0] = SpeedData.wanted_speed_mm_per_sec[1] = speedB;
-    enable = 0;
+    bldc_setMotorsEnable(0);
     sprintf(ascii_out, "Stop set\r\n");
     return 1;
 }
@@ -113,7 +116,7 @@ int immediate_quit(PROTOCOL_STAT *s, char byte, char *ascii_out) {
     PWMData.pwm[1] = CLAMP(speedB -  steerB, -1000, 1000);
     PWMData.pwm[0] = CLAMP(speedB +  steerB, -1000, 1000);
     SpeedData.wanted_speed_mm_per_sec[0] = SpeedData.wanted_speed_mm_per_sec[1] = speedB;
-    enable = 0;
+    bldc_setMotorsEnable(0);
     sprintf(ascii_out, "Immediate commands disabled\r\n");
     return 1;
 }

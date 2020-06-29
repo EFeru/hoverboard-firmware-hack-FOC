@@ -5,7 +5,7 @@
 #include "comms.h"
 #include "util.h"
 #include "stm32f1xx_hal.h"
-
+#include "bldc.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -19,36 +19,32 @@
     PROTOCOL_STAT sUSART3;
 #endif
 
-extern volatile uint32_t input_timeout_counter; // global variable for input timeout
 extern uint32_t timeout;
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Variable & Functions for 0x09 enable
 
-extern uint8_t enable; // global variable for motor enable
 extern int main_ascii_init(PROTOCOL_STAT *s); // from ascii_proto_funcs.c
 
 //////////////////////////////////////////////
 // make values safe before we change enable...
 
-char protocol_enable = 0;
+static char protocol_enable = 0;
 void fn_enable ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCOL_MSG3full *msg ) {
     switch (cmd) {
         case PROTOCOL_CMD_READVAL:
         case PROTOCOL_CMD_SILENTREAD:
-            protocol_enable = enable;
+            protocol_enable = bldc_getMotorsEnable();
             break;
 
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
-            if (!protocol_enable) {
-                // clear speeds to zero
-                SpeedData.wanted_speed_mm_per_sec[0] = 0;
-                SpeedData.wanted_speed_mm_per_sec[1] = 0;
+            if ( bldc_getMotorsEnable() != protocol_enable) {
+                // clear speeds to zero every time it is changed
                 PWMData.pwm[0] = 0;
                 PWMData.pwm[1] = 0;
             }
-            enable = protocol_enable;
+            bldc_setMotorsEnable(protocol_enable);
             break;
     }
     fn_defaultProcessing(s, param, cmd, msg);
@@ -226,7 +222,7 @@ int setup_protocol(PROTOCOL_STAT *s) {
 
 //        errors += setParamVariable( s, 0x08, UI_NONE, (void *)&electrical_measurements, sizeof(ELECTRICAL_PARAMS) );
 
-        errors += setParamVariable( s, 0x09, UI_CHAR, &protocol_enable, sizeof(enable) );
+        errors += setParamVariable( s, 0x09, UI_CHAR, &protocol_enable, sizeof(protocol_enable) );
         setParamHandler( s, 0x09, fn_enable );
 
 //        errors += setParamVariable( s, 0x0A, UI_CHAR, &disablepoweroff, sizeof(disablepoweroff) );

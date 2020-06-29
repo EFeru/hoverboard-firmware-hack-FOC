@@ -27,6 +27,7 @@
 #include "comms.h"
 #include "eeprom.h"
 #include "util.h"
+#include "bldc.h"
 #include "BLDC_controller.h"
 #include "rtwtypes.h"
 #include "bipropellantProtocolMachine.h"
@@ -49,8 +50,6 @@ extern int16_t batVoltage;
 extern uint8_t backwardDrive;
 extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
-
-extern uint8_t enable;                  // global variable for motor enable
 
 extern uint8_t nunchuk_data[6];
 extern volatile uint32_t timeout;       // global variable for timeout
@@ -312,7 +311,7 @@ void Input_Init(void) {
   #endif
 
   #ifdef VARIANT_TRANSPOTTER
-    enable = 1;
+    bldc_setMotorsEnable(1);
 
     HAL_FLASH_Unlock();
     EE_Init();            /* EEPROM Init */
@@ -713,7 +712,7 @@ int addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max) {
 
 void poweroff(void) {
 	buzzerPattern = 0;
-	enable = 0;
+  bldc_setMotorsEnable(0);
 	consoleLog("-- Motors disabled --\r\n");
 	for (int i = 0; i < 8; i++) {
 		buzzerFreq = (uint8_t)i;
@@ -728,7 +727,7 @@ void poweroff(void) {
 void poweroffPressCheck(void) {
 	#if defined(CONTROL_ADC)
     if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
-      enable = 0;
+      bldc_setMotorsEnable(0);
       uint16_t cnt_press = 0;
       while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
         HAL_Delay(10);
@@ -752,7 +751,7 @@ void poweroffPressCheck(void) {
     }
   #elif defined(VARIANT_TRANSPOTTER)
     if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
-      enable = 0;
+      bldc_setMotorsEnable(0);
       while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
       shortBeep(5);
       HAL_Delay(300);
@@ -773,7 +772,7 @@ void poweroffPressCheck(void) {
     }
   #else
     if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
-      enable = 0;                                             // disable motors
+      bldc_setMotorsEnable(0);
       while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {}    // wait until button is released
       poweroff();                                             // release power-latch
     }
@@ -1107,9 +1106,9 @@ void sideboardLeds(uint8_t *leds) {
     // Enable flag: use LED4 (bottom Blue)
     // enable == 1, turn on led
     // enable == 0, blink led
-    if (enable) {
+    if (bldc_getMotorsEnable()) {
       *leds |= LED4_SET;
-    } else if (!enable && (main_loop_counter % 20 == 0)) {
+    } else if (!bldc_getMotorsEnable() && (main_loop_counter % 20 == 0)) {
       *leds ^= LED4_SET;
     }
 
