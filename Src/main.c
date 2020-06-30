@@ -63,6 +63,8 @@ extern int16_t cmd2;                    // normalized input value. -1000 to 1000
 
 #ifdef VARIANT_UARTCAR // ROBO
   int16_t cmd2Goal;	// goal speed for VARIANT_UARTCAR
+  #define INPUTMAX 990  // testing..
+  #define INPUTMIN -990
 #endif
 
 
@@ -298,21 +300,21 @@ int main(void) {
         else if ( (float)(curL_DC+curR_DC)/(-2.0*A2BIT_CONV) < MAX_RECUPERATION * -1)
         {
           cmd2Goal += 5;
-          if (cmd2Goal > 1000)	cmd2Goal = 1000;
+          if (cmd2Goal > INPUTMAX)	cmd2Goal = INPUTMAX;
         }
       #endif
         else if (iSpeed > (iSpeed_Goal + 56))	// 28 = 27.777 = 0.1 km/h
         {
           cmd2Goal -= CLAMP((iSpeed-iSpeed_Goal)/56,  1,3);
           if (  (iSpeed_Goal > 56)  && (cmd2Goal < 2)  ) cmd2Goal = 2;   // don't set backward speed when iSpeed_goal is set forwards
-          else if (cmd2Goal < -1000)	cmd2Goal = -1000;
+          else if (cmd2Goal < INPUTMIN)	cmd2Goal = INPUTMIN;
         }
         else if (iSpeed < (iSpeed_Goal -56))
         {
           //cmd2Goal += 3;
           cmd2Goal += CLAMP((iSpeed_Goal-iSpeed)/56,  1,3);
           if (  (iSpeed_Goal < -56)  && (cmd2Goal > -2)  ) cmd2Goal = -2;   // don't set forward speed when iSpeed_goal is set backwards
-          else if (cmd2Goal > 1000)	cmd2Goal = 1000;
+          else if (cmd2Goal > INPUTMAX)	cmd2Goal = INPUTMAX;
         }
         cmd2 = cmd2Goal;
 
