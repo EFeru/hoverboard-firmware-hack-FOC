@@ -705,14 +705,14 @@ void readCommand(void) {
       // ADC values range: 0-4095, see ADC-calibration in config.h
       #ifdef ADC1_MID_POT
         cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MID_CAL) * INPUT_MAX / (ADC1_MAX_CAL - ADC1_MID_CAL), 0, INPUT_MAX) 
-              -CLAMP((ADC1_MID_CAL - adc_buffer.l_tx2) * INPUT_MAX / (ADC1_MID_CAL - ADC1_MIN_CAL), 0, INPUT_MAX);    // ADC1        
+              +CLAMP((ADC1_MID_CAL - adc_buffer.l_tx2) * INPUT_MIN / (ADC1_MID_CAL - ADC1_MIN_CAL), INPUT_MIN, 0);    // ADC1        
       #else
         cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MIN_CAL) * INPUT_MAX / (ADC1_MAX_CAL - ADC1_MIN_CAL), 0, INPUT_MAX);    // ADC1
       #endif
 
       #ifdef ADC2_MID_POT
         cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MID_CAL) * INPUT_MAX / (ADC2_MAX_CAL - ADC2_MID_CAL), 0, INPUT_MAX)  
-              -CLAMP((ADC2_MID_CAL - adc_buffer.l_rx2) * INPUT_MAX / (ADC2_MID_CAL - ADC2_MIN_CAL), 0, INPUT_MAX);    // ADC2        
+              +CLAMP((ADC2_MID_CAL - adc_buffer.l_rx2) * INPUT_MIN / (ADC2_MID_CAL - ADC2_MIN_CAL), INPUT_MIN, 0);    // ADC2        
       #else
         cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN_CAL) * INPUT_MAX / (ADC2_MAX_CAL - ADC2_MIN_CAL), 0, INPUT_MAX);    // ADC2
       #endif
