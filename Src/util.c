@@ -52,7 +52,7 @@ extern uint8_t buzzerPattern;           // global variable for the buzzer patter
 extern uint8_t enable;                  // global variable for motor enable
 
 extern uint8_t nunchuk_data[6];
-extern volatile uint32_t timeout;       // global variable for timeout
+extern volatile uint32_t timeoutCnt;    // global variable for general timeout counter
 extern volatile uint32_t main_loop_counter;
 
 #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
@@ -746,7 +746,7 @@ void readCommand(void) {
         button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
         button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
       #endif
-      timeout = 0;
+      timeoutCnt = 0;
     #endif
 
     #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
@@ -776,7 +776,7 @@ void readCommand(void) {
         button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
         button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
       #endif
-      timeout = 0;
+      timeoutCnt = 0;
     #endif
 
     #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
@@ -798,7 +798,7 @@ void readCommand(void) {
     #endif
 
     #ifdef VARIANT_HOVERCAR      
-        brakePressed = (uint8_t)(cmd1 > 50);
+      brakePressed = (uint8_t)(cmd1 > 50);
     #endif
 
     #ifdef VARIANT_TRANSPOTTER

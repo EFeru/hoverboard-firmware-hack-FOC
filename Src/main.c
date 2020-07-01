@@ -65,6 +65,7 @@ extern int16_t cmd2;                    // normalized input value. -1000 to 1000
 
 extern int16_t speedAvg;                // Average measured speed
 extern int16_t speedAvgAbs;             // Average measured speed in absolute
+extern volatile uint32_t timeoutCnt;    // Timeout counter for the General timeout (PPM, PWM, Nunchuck)
 extern uint8_t timeoutFlagADC;          // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
 extern uint8_t timeoutFlagSerial;       // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
@@ -76,7 +77,6 @@ extern uint8_t buzzerPattern;           // global variable for the buzzer patter
 
 extern uint8_t enable;                  // global variable for motor enable
 
-extern volatile uint32_t timeout;       // global variable for timeout
 extern int16_t batVoltage;              // global variable for battery voltage
 
 #if defined(SIDEBOARD_SERIAL_USART2)
@@ -236,6 +236,12 @@ int main(void) {
         }
       #endif
 
+      // ####### GENERAL TIMEOUT #######
+      if (timeoutCnt > TIMEOUT) {  // Bring the system to a Safe State
+        cmd1 = 0;
+        cmd2 = 0;
+      }
+
       // ####### LOW-PASS FILTER #######
       rateLimiter16(cmd1, RATE, &steerRateFixdt);
       rateLimiter16(cmd2, RATE, &speedRateFixdt);
@@ -259,7 +265,7 @@ int main(void) {
       mixerFcn(speed << 4, steer << 4, &speedR, &speedL);   // This function implements the equations above
 
       // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
-      if ((speedL > lastSpeedL-100 && speedL < lastSpeedL+100) && (speedR > lastSpeedR-100 && speedR < lastSpeedR+100) && timeout < TIMEOUT) {
+      if ((speedL > lastSpeedL-100 && speedL < lastSpeedL+100) && (speedR > lastSpeedR-100 && speedR < lastSpeedR+100)) {
         #ifdef INVERT_R_DIRECTION
           pwmr = speedR;
         #else
@@ -308,10 +314,10 @@ int main(void) {
             enable = 0;
           }
         }
-        timeout = 0;
+        timeoutCnt = 0;
       }
 
-      if (timeout > TIMEOUT) {
+      if (timeoutCnt > TIMEOUT) {
         pwml = 0;
         pwmr = 0;
         enable = 0;
@@ -345,7 +351,7 @@ int main(void) {
               #ifdef SUPPORT_LCD
                 LCD_SetLocation(&lcd, 0, 0); LCD_WriteString(&lcd, "Nunchuk Control");
               #endif
-              timeout = 0;
+              timeoutCnt = 0;
               HAL_Delay(1000);
               nunchuk_connected = 1;
             }
@@ -452,7 +458,7 @@ int main(void) {
       enable        = 0;
       buzzerFreq    = 8;
       buzzerPattern = 1;
-    } else if (timeoutFlagADC || timeoutFlagSerial) {           // beep in case of ADC or Serial timeout - fast beep      
+    } else if (timeoutFlagADC || timeoutFlagSerial || timeoutCnt > TIMEOUT) { // beep in case of ADC timeout, Serial timeout or General timeout - fast beep      
       buzzerFreq    = 24;
       buzzerPattern = 1;
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {  // beep if mainboard gets hot
@@ -479,7 +485,7 @@ int main(void) {
     if (abs(speedL) > 50 || abs(speedR) > 50) {
       inactivity_timeout_counter = 0;
     } else {
-      inactivity_timeout_counter ++;
+      inactivity_timeout_counter++;
     }
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
       poweroff();
@@ -490,7 +496,7 @@ int main(void) {
     lastSpeedL = speedL;
     lastSpeedR = speedR;
     main_loop_counter++;
-    timeout++;
+    timeoutCnt++;
   }
 }
 
