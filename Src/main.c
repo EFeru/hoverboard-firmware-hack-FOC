@@ -77,8 +77,6 @@ extern volatile int pwmr;               // global variable for pwm right. -1000 
 extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 
-extern uint8_t enable;                  // global variable for motor enable
-
 extern int16_t batVoltage;              // global variable for battery voltage
 
 #if defined(SIDEBOARD_SERIAL_USART2)
@@ -217,7 +215,7 @@ int main(void) {
       protocol_tick( &sUSART3 );
       if(sUSART3.ascii.enable_immediate)
       {
-        timeout = 0;
+        timeoutCnt = 0;
       }
     #endif
     cmd2 = (PWMData.pwm[0] + PWMData.pwm[1]) /2;   // Speed

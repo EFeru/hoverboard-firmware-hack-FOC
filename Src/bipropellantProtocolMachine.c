@@ -20,7 +20,7 @@
     PROTOCOL_STAT sUSART3;
 #endif
 
-extern uint32_t timeout;
+extern uint32_t timeoutCnt;
 
 extern int main_ascii_init(PROTOCOL_STAT *s); // from ascii_proto_funcs.c
 
@@ -94,7 +94,7 @@ void fn_PWMData ( PROTOCOL_STAT *s, PARAMSTAT *param, unsigned char cmd, PROTOCO
         case PROTOCOL_CMD_WRITEVAL:
         case PROTOCOL_CMD_READVALRESPONSE:
             ctrlModReq = 1; // 1 = VOLTAGE mode (default), 2 = SPEED mode, 3 = TORQUE mode.
-            timeout= 0;
+            timeoutCnt = 0;
             break;
     }
 
