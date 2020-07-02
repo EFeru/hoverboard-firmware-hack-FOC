@@ -50,7 +50,7 @@ extern uint8_t buzzerFreq;              // global variable for the buzzer pitch.
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 
 extern uint8_t nunchuk_data[6];
-extern volatile uint32_t timeout;       // global variable for timeout
+extern volatile uint32_t timeoutCnt;    // global variable for general timeout counter
 extern volatile uint32_t main_loop_counter;
 
 #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
@@ -821,15 +821,15 @@ void readCommand(void) {
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
       #ifdef ADC1_MID_POT
-        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MID_CAL) * INPUT_MAX / (ADC1_MAX_CAL - ADC1_MID_CAL), 0, INPUT_MAX)
-              -CLAMP((ADC1_MID_CAL - adc_buffer.l_tx2) * INPUT_MAX / (ADC1_MID_CAL - ADC1_MIN_CAL), 0, INPUT_MAX);    // ADC1
+        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MID_CAL) * INPUT_MAX / (ADC1_MAX_CAL - ADC1_MID_CAL), 0, INPUT_MAX) 
+              +CLAMP((ADC1_MID_CAL - adc_buffer.l_tx2) * INPUT_MIN / (ADC1_MID_CAL - ADC1_MIN_CAL), INPUT_MIN, 0);    // ADC1        
       #else
         cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MIN_CAL) * INPUT_MAX / (ADC1_MAX_CAL - ADC1_MIN_CAL), 0, INPUT_MAX);    // ADC1
       #endif
 
       #ifdef ADC2_MID_POT
-        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MID_CAL) * INPUT_MAX / (ADC2_MAX_CAL - ADC2_MID_CAL), 0, INPUT_MAX)
-              -CLAMP((ADC2_MID_CAL - adc_buffer.l_rx2) * INPUT_MAX / (ADC2_MID_CAL - ADC2_MIN_CAL), 0, INPUT_MAX);    // ADC2
+        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MID_CAL) * INPUT_MAX / (ADC2_MAX_CAL - ADC2_MID_CAL), 0, INPUT_MAX)  
+              +CLAMP((ADC2_MID_CAL - adc_buffer.l_rx2) * INPUT_MIN / (ADC2_MID_CAL - ADC2_MIN_CAL), INPUT_MIN, 0);    // ADC2        
       #else
         cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN_CAL) * INPUT_MAX / (ADC2_MAX_CAL - ADC2_MIN_CAL), 0, INPUT_MAX);    // ADC2
       #endif
@@ -863,7 +863,7 @@ void readCommand(void) {
         button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
         button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
       #endif
-      timeout = 0;
+      timeoutCnt = 0;
     #endif
 
     #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
@@ -893,7 +893,7 @@ void readCommand(void) {
         button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
         button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
       #endif
-      timeout = 0;
+      timeoutCnt = 0;
     #endif
 
     #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
@@ -914,8 +914,8 @@ void readCommand(void) {
       timeoutFlagSerial = timeoutFlagSerial_L || timeoutFlagSerial_R;
     #endif
 
-    #ifdef VARIANT_HOVERCAR
-        brakePressed = (uint8_t)(cmd1 > 50);
+    #ifdef VARIANT_HOVERCAR      
+      brakePressed = (uint8_t)(cmd1 > 50);
     #endif
 
     #ifdef VARIANT_TRANSPOTTER

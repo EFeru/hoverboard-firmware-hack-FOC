@@ -54,7 +54,7 @@ int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
 volatile int pwml = 0;
 volatile int pwmr = 0;
 
-extern volatile uint32_t timeout;
+extern volatile adc_buf_t adc_buffer;
 
 uint8_t buzzerFreq          = 0;
 uint8_t buzzerPattern       = 0;
@@ -124,13 +124,13 @@ void DMA1_Channel1_IRQHandler(void) {
 
   // Disable PWM when current limit is reached (current chopping)
   // This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
-  if(ABS(curL_DC) > curDC_max || timeout > TIMEOUT || m_motorsEnable == 0) {
+  if(ABS(curL_DC) > curDC_max || enable == 0) {
     LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     LEFT_TIM->BDTR |= TIM_BDTR_MOE;
   }
 
-  if(ABS(curR_DC)  > curDC_max || timeout > TIMEOUT || m_motorsEnable == 0) {
+  if(ABS(curR_DC)  > curDC_max || enable == 0) {
     RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
