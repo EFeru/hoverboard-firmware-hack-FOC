@@ -27,8 +27,11 @@
 #include "config.h"
 #include "util.h"
 #include "comms.h"
+#include "bldc.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
+#include "bipropellantProtocolMachine.h"
+#include "bipropellantProtocolStructs.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
@@ -43,7 +46,6 @@ extern TIM_HandleTypeDef htim_left;
 extern TIM_HandleTypeDef htim_right;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
-extern volatile adc_buf_t adc_buffer;
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
   extern LCD_PCF8574_HandleTypeDef lcd;
   extern uint8_t LCDerrorFlag;
@@ -74,8 +76,6 @@ extern volatile int pwmr;               // global variable for pwm right. -1000 
 
 extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
-
-extern uint8_t enable;                  // global variable for motor enable
 
 extern int16_t batVoltage;              // global variable for battery voltage
 
@@ -126,12 +126,12 @@ static uint8_t sideboard_leds_R;
 
 #ifdef VARIANT_TRANSPOTTER
   extern uint8_t  nunchuk_connected;
-  extern float    setDistance;  
+  extern float    setDistance;
 
   static uint8_t  checkRemote = 0;
   static uint16_t distance;
   static float    steering;
-  static int      distanceErr;  
+  static int      distanceErr;
   static int      lastDistance = 0;
   static uint16_t transpotter_counter = 0;
 #endif
@@ -184,7 +184,7 @@ int main(void) {
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);
 
   HAL_ADC_Start(&hadc1);
-  HAL_ADC_Start(&hadc2);  
+  HAL_ADC_Start(&hadc2);
 
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
@@ -203,19 +203,39 @@ int main(void) {
     readCommand();                        // Read Command: cmd1, cmd2
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
+  #if defined(VARIANT_BIPROPELLANT)
+    #if defined(USART2_ENABLE)
+      protocol_tick( &sUSART2 );
+      if(sUSART2.ascii.enable_immediate)
+      {
+        timeout = 0;
+      }
+    #endif
+    #if defined(USART3_ENABLE)
+      protocol_tick( &sUSART3 );
+      if(sUSART3.ascii.enable_immediate)
+      {
+        timeoutCnt = 0;
+      }
+    #endif
+    cmd2 = (PWMData.pwm[0] + PWMData.pwm[1]) /2;   // Speed
+    cmd1 = PWMData.pwm[0] - cmd2;  // Steer
+
+  #endif
+
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-      if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
+      if (bldc_getMotorsEnable() == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
         shortBeep(6);                     // make 2 beeps indicating the motor enable
         shortBeep(4); HAL_Delay(100);
-        enable = 1;                       // enable motors
+        bldc_setMotorsEnable(1);                       // enable motors
         consoleLog("-- Motors enabled --\r\n");
       }
 
-      // ####### VARIANT_HOVERCAR ####### 
+      // ####### VARIANT_HOVERCAR #######
       #ifdef VARIANT_HOVERCAR
         // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
-        uint16_t speedBlend;       
+        uint16_t speedBlend;
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50);     // speedBlend [0,1] is within [10 rpm, 60rpm]
 
         // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
@@ -223,16 +243,16 @@ int main(void) {
           multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBreak);   // Break pedal in this case is "cmd1" variable
         }
 
-        // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving          
+        // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving
         if (cmd1 > 20) {
           cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);
         }
 
-        // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
+        // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
         if (speedAvg > 0) {
           cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
         } else {
-          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);          
+          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);
         }
       #endif
 
@@ -248,12 +268,12 @@ int main(void) {
       filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
-      speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer    
+      speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer
 
       // ####### VARIANT_HOVERCAR #######
-      #ifdef VARIANT_HOVERCAR        
+      #ifdef VARIANT_HOVERCAR
         if (!MultipleTapBreak.b_multipleTap) {  // Check driving direction
-          speed = steer + speed;                // Forward driving          
+          speed = steer + speed;                // Forward driving
         } else {
           speed = steer - speed;                // Reverse driving
         }
@@ -289,7 +309,7 @@ int main(void) {
         speedR = speedR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
         if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50)) {
           if (distanceErr > 0) {
-            enable = 1;
+            bldc_setMotorsEnable(1);
           }
           if (distanceErr > -300) {
             #ifdef INVERT_R_DIRECTION
@@ -307,11 +327,11 @@ int main(void) {
               if (!HAL_GPIO_ReadPin(LED_PORT, LED_PIN)) {
                 //enable = 1;
               } else {
-                enable = 0;
+                bldc_setMotorsEnable(0);
               }
             }
           } else {
-            enable = 0;
+            bldc_setMotorsEnable(0);
           }
         }
         timeoutCnt = 0;
@@ -320,7 +340,7 @@ int main(void) {
       if (timeoutCnt > TIMEOUT) {
         pwml = 0;
         pwmr = 0;
-        enable = 0;
+        bldc_setMotorsEnable(0);
         #ifdef SUPPORT_LCD
           LCD_SetLocation(&lcd,  0, 0); LCD_WriteString(&lcd, "Len:");
           LCD_SetLocation(&lcd,  8, 0); LCD_WriteString(&lcd, "m(");
@@ -331,7 +351,7 @@ int main(void) {
       }
 
       if ((distance / 1345.0) - setDistance > 0.5 && (lastDistance / 1345.0) - setDistance > 0.5) { // Error, robot too far away!
-        enable = 0;
+        bldc_setMotorsEnable(0);
         longBeep(5);
         #ifdef SUPPORT_LCD
           LCD_ClearDisplay(&lcd);
@@ -356,12 +376,12 @@ int main(void) {
               nunchuk_connected = 1;
             }
           }
-        }   
+        }
       #endif
 
       #ifdef SUPPORT_LCD
         if (transpotter_counter % 100 == 0) {
-          if (LCDerrorFlag == 1 && enable == 0) {
+          if (LCDerrorFlag == 1 && bldc_getMotorsEnable() == 0) {
 
           } else {
             if (nunchuk_connected == 0) {
@@ -430,7 +450,7 @@ int main(void) {
         #if defined(FEEDBACK_SERIAL_USART2)
           if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
             Feedback.cmdLed         = (uint16_t)sideboard_leds_L;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas
                                                ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
             HAL_UART_Transmit_DMA(&huart2, (uint8_t *)&Feedback, sizeof(Feedback));
@@ -439,12 +459,12 @@ int main(void) {
         #if defined(FEEDBACK_SERIAL_USART3)
           if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
             Feedback.cmdLed         = (uint16_t)sideboard_leds_R;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas
                                                ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
             HAL_UART_Transmit_DMA(&huart3, (uint8_t *)&Feedback, sizeof(Feedback));
           }
-        #endif            
+        #endif
       }
     #endif
 
@@ -455,7 +475,7 @@ int main(void) {
     if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
       poweroff();
     } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {     // disable motors and beep in case of Motor error - fast beep
-      enable        = 0;
+      bldc_setMotorsEnable(0);
       buzzerFreq    = 8;
       buzzerPattern = 1;
     } else if (timeoutFlagADC || timeoutFlagSerial || timeoutCnt > TIMEOUT) { // beep in case of ADC timeout, Serial timeout or General timeout - fast beep      

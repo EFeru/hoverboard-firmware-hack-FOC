@@ -47,8 +47,7 @@ extern ExtY rtY_Right;                  /* External outputs */
 
 static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
 
-extern uint8_t ctrlModReq;
-static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
+int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
 int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
 int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
 
@@ -61,7 +60,7 @@ uint8_t buzzerFreq          = 0;
 uint8_t buzzerPattern       = 0;
 static uint32_t buzzerTimer = 0;
 
-uint8_t        enable       = 0;        // initially motors are disabled for SAFETY
+static volatile uint8_t m_motorsEnable = 0; // initially motors are disabled for SAFETY
 static uint8_t enableFin    = 0;
 
 static const uint16_t pwm_res  = 64000000 / 2 / PWM_FREQ; // = 2000
@@ -74,8 +73,19 @@ static int16_t offsetrrC    = 2000;
 static int16_t offsetdcl    = 2000;
 static int16_t offsetdcr    = 2000;
 
-int16_t        batVoltage       = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
-static int32_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 16;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
+int16_t batVoltage       = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
+int32_t batVoltageFixdt  = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE << 16;  // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
+
+
+uint8_t bldc_getMotorsEnable(void)
+{
+  return m_motorsEnable;
+}
+
+void bldc_setMotorsEnable(uint8_t enable)
+{
+  m_motorsEnable = enable;
+}
 
 // =================================
 // DMA interrupt frequency =~ 16 kHz
@@ -106,7 +116,7 @@ void DMA1_Channel1_IRQHandler(void) {
   curL_phaA = (int16_t)(offsetrlA - adc_buffer.rlA);
   curL_phaB = (int16_t)(offsetrlB - adc_buffer.rlB);
   curL_DC   = (int16_t)(offsetdcl - adc_buffer.dcl);
-  
+
   // Get Right motor currents
   curR_phaB = (int16_t)(offsetrrB - adc_buffer.rrB);
   curR_phaC = (int16_t)(offsetrrC - adc_buffer.rrC);
@@ -114,13 +124,13 @@ void DMA1_Channel1_IRQHandler(void) {
 
   // Disable PWM when current limit is reached (current chopping)
   // This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
-  if(ABS(curL_DC) > curDC_max || enable == 0) {
+  if(ABS(curL_DC) > curDC_max || m_motorsEnable == 0) {
     LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     LEFT_TIM->BDTR |= TIM_BDTR_MOE;
   }
 
-  if(ABS(curR_DC)  > curDC_max || enable == 0) {
+  if(ABS(curR_DC)  > curDC_max || m_motorsEnable == 0) {
     RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
@@ -149,9 +159,9 @@ void DMA1_Channel1_IRQHandler(void) {
   OverrunFlag = true;
 
   /* Make sure to stop BOTH motors in case of an error */
-  enableFin = enable && !rtY_Left.z_errCode && !rtY_Right.z_errCode;
- 
-  // ========================= LEFT MOTOR ============================ 
+  enableFin = m_motorsEnable && !rtY_Left.z_errCode && !rtY_Right.z_errCode;
+
+  // ========================= LEFT MOTOR ============================
     // Get hall sensors values
     uint8_t hall_ul = !(LEFT_HALL_U_PORT->IDR & LEFT_HALL_U_PIN);
     uint8_t hall_vl = !(LEFT_HALL_V_PORT->IDR & LEFT_HALL_V_PIN);
@@ -159,17 +169,17 @@ void DMA1_Channel1_IRQHandler(void) {
 
     /* Set motor inputs here */
     rtU_Left.b_motEna     = enableFin;
-    rtU_Left.z_ctrlModReq = ctrlModReq;  
+    rtU_Left.z_ctrlModReq = ctrlModReq;
     rtU_Left.r_inpTgt     = pwml;
     rtU_Left.b_hallA      = hall_ul;
     rtU_Left.b_hallB      = hall_vl;
     rtU_Left.b_hallC      = hall_wl;
     rtU_Left.i_phaAB      = curL_phaA;
     rtU_Left.i_phaBC      = curL_phaB;
-    rtU_Left.i_DCLink     = curL_DC;    
-    
+    rtU_Left.i_DCLink     = curL_DC;
+
     /* Step the controller */
-    #ifdef MOTOR_LEFT_ENA    
+    #ifdef MOTOR_LEFT_ENA
     BLDC_controller_step(rtM_Left);
     #endif
 
@@ -186,9 +196,9 @@ void DMA1_Channel1_IRQHandler(void) {
     LEFT_TIM->LEFT_TIM_V    = (uint16_t)CLAMP(vl + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
     LEFT_TIM->LEFT_TIM_W    = (uint16_t)CLAMP(wl + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
   // =================================================================
-  
 
-  // ========================= RIGHT MOTOR ===========================  
+
+  // ========================= RIGHT MOTOR ===========================
     // Get hall sensors values
     uint8_t hall_ur = !(RIGHT_HALL_U_PORT->IDR & RIGHT_HALL_U_PIN);
     uint8_t hall_vr = !(RIGHT_HALL_V_PORT->IDR & RIGHT_HALL_V_PIN);
@@ -226,7 +236,7 @@ void DMA1_Channel1_IRQHandler(void) {
 
   /* Indicate task complete */
   OverrunFlag = false;
- 
+
  // ###############################################################################
 
 }

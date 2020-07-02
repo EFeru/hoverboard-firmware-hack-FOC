@@ -19,6 +19,7 @@
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
   //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
+  //#define VARIANT_BIPROPELLANT// Variant for Bipropellant Protocol
 #endif
 // ########################### END OF VARIANT SELECTION ############################
 
@@ -73,7 +74,7 @@
 #define BAT_BLINK_INTERVAL      80        // battery led blink interval (80 loops * 5ms ~= 400ms)
 #define BAT_LVL5                (390 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Green blink:  no beep
 #define BAT_LVL4                (380 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Yellow:       no beep
-#define BAT_LVL3                (370 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Yellow blink: no beep 
+#define BAT_LVL3                (370 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Yellow blink: no beep
 #define BAT_LVL2                (360 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Red:          gently beep at this voltage level. [V*100/cell]. In this case 3.60 V/cell
 #define BAT_LVL1                (350 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Red blink:    fast beep. Your battery is almost empty. Charge now! [V*100/cell]. In this case 3.50 V/cell
 #define BAT_DEAD                (337 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // All leds off: undervoltage poweroff. (while not driving) [V*100/cell]. In this case 3.37 V/cell
@@ -252,6 +253,21 @@
 #endif
 // ######################## END OF VARIANT_USART SETTINGS #########################
 
+// ############################ VARIANT_BIPROPELLANT SETTINGS ############################
+#ifdef VARIANT_BIPROPELLANT
+//  #define USART2_ENABLE
+  #define USART3_ENABLE
+  #define USART2_BAUD 115200
+  #define USART3_BAUD 115200
+  #undef TIMEOUT
+  #define TIMEOUT                30     // number of wrong / missing input commands before emergency off
+  #undef BEEPS_BACKWARD
+  #define BEEPS_BACKWARD          	0       // 0 or 1
+  #define SERIAL_BUFFER_SIZE      64                      // [bytes] Size of Serial Rx buffer. Make sure it is always larger than the structure size
+  #define USART2_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
+  #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
+#endif
+// ######################## END OF VARIANT_BIPROPELLANT SETTINGS #########################
 
 
 // ################################# VARIANT_NUNCHUK SETTINGS ############################
@@ -318,7 +334,7 @@
   #define PWM_CH1_MAX         1000    // (0 - 1000)
   #define PWM_CH1_MIN        -1000    // (-1000 - 0)
   #define PWM_CH2_MAX         1000    // (0 - 1000)
-  #define PWM_CH2_MIN        -1000    // (-1000 - 0)  
+  #define PWM_CH2_MIN        -1000    // (-1000 - 0)
   #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
   #define STEER_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14. If you do not want any steering, set it to 0.
@@ -333,7 +349,7 @@
 
 // ################################# VARIANT_IBUS SETTINGS ##############################
 #ifdef VARIANT_IBUS
-/* CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL 
+/* CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL
 * Connected to Left sensor board cable. Channel 1: steering, Channel 2: speed.
 */
   #define CONTROL_IBUS                                  // use IBUS as input
@@ -384,10 +400,10 @@
 // Communication:         [DONE]
 // Balancing controller:  [TODO]
 #ifdef VARIANT_HOVERBOARD
-  #define SIDEBOARD_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used! 
+  #define SIDEBOARD_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used!
   #define FEEDBACK_SERIAL_USART2
-  #define SIDEBOARD_SERIAL_USART3       // right sensor board cable, disable if I2C (nunchuk or lcd) is used!        
-  #define FEEDBACK_SERIAL_USART3        
+  #define SIDEBOARD_SERIAL_USART3       // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  #define FEEDBACK_SERIAL_USART3
 #endif
 // ######################## END OF VARIANT_HOVERBOARD SETTINGS #########################
 
@@ -429,6 +445,12 @@
   #define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
   #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2)
+  #define USART2_ENABLE
+#endif
+#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3)
+  #define USART3_ENABLE
+#endif
 // ########################### UART SETIINGS ############################
 
 
@@ -452,7 +474,7 @@
 
 // ############################### VALIDATE SETTINGS ###############################
 #if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_PWM) && \
-    !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+    !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_BIPROPELLANT)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
