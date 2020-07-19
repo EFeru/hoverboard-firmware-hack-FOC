@@ -452,7 +452,7 @@ void adcCalibLim(void) {
     adc_cal_valid = 1;
 
     // Extract MIN, MAX and MID from ADC while the power button is not pressed
-    while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && adc_cal_timeout < 4000) {   // 20 sec timeout
+    while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && adc_cal_timeout++ < 4000) {   // 20 sec timeout
       filtLowPass32(adc_buffer.l_tx2, FILTER, &adc1_fixdt);
       filtLowPass32(adc_buffer.l_rx2, FILTER, &adc2_fixdt);
       ADC1_MID_temp = (uint16_t)CLAMP(adc1_fixdt >> 16, 0, 4095);                   // convert fixed-point to integer
@@ -460,8 +460,7 @@ void adcCalibLim(void) {
       ADC1_MIN_temp = MIN(ADC1_MIN_temp, ADC1_MID_temp);
       ADC1_MAX_temp = MAX(ADC1_MAX_temp, ADC1_MID_temp);      
       ADC2_MIN_temp = MIN(ADC2_MIN_temp, ADC2_MID_temp);
-      ADC2_MAX_temp = MAX(ADC2_MAX_temp, ADC2_MID_temp);      
-      adc_cal_timeout++;
+      ADC2_MAX_temp = MAX(ADC2_MAX_temp, ADC2_MID_temp);
       HAL_Delay(5);
     }
 
@@ -515,10 +514,9 @@ void updateCurSpdLim(void) {
     uint16_t spd_factor;    // fixdt(0,16,16)
 
     // Wait for the power button press
-    while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && cur_spd_timeout < 2000) {  // 10 sec timeout
+    while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && cur_spd_timeout++ < 2000) {  // 10 sec timeout
       filtLowPass32(adc_buffer.l_tx2, FILTER, &adc1_fixdt);
       filtLowPass32(adc_buffer.l_rx2, FILTER, &adc2_fixdt);
-      cur_spd_timeout++;
       HAL_Delay(5);      
     }
 
@@ -587,6 +585,65 @@ int addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max) {
 #endif
 }
 
+ /*
+ * Standstill Hold Function
+ * This function will switch to SPEED mode at standstill to provide an anti-roll functionality.
+ * Only available and makes sense for VOLTAGE or TORQUE mode.
+ * 
+ * Input: pointer *speedCmd
+ * Output: modified Control Mode Request
+ */
+void standstillHold(int16_t *speedCmd) {
+  #if defined(STANDSTILL_HOLD_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ != SPD_MODE)
+    if (*speedCmd > -20 && *speedCmd < 20) {                          // If speedCmd (Throttle) is small
+      if (ctrlModReqRaw != SPD_MODE && speedAvgAbs < 3) {             // and If measured speed is small (meaning we are at standstill)
+        ctrlModReqRaw = SPD_MODE;                                     // Switch to Speed mode
+      }
+      if (ctrlModReqRaw == SPD_MODE) {                                // If we are in Speed mode
+        *speedCmd = 0;                                                // Request standstill (0 rpm)
+      }
+    } else if (ctrlModReqRaw != CTRL_MOD_REQ && (*speedCmd < -50 || *speedCmd > 50)) { // Else if speedCmd (Throttle) becomes significant
+      ctrlModReqRaw = CTRL_MOD_REQ;                                   // Follow the Mode request
+    }
+  #endif
+}
+
+ /*
+ * Electric Brake Function
+ * In case of TORQUE mode, this function replaces the motor "freewheel" with a constant braking when the input torque request is 0.
+ * This is useful when a small amount of motor braking is desired instead of "freewheel".
+ * 
+ * Input: speedBlend = fixdt(0,16,15), reverseDir = {0, 1}
+ * Output: cmd2 (Throtle) with brake component included
+ */
+void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
+  #if defined(ELECTRIC_BRAKE_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ == TRQ_MODE)
+    int16_t brakeVal;
+
+    // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving) 
+    if (speedAvg > 0) {
+      brakeVal = (int16_t)((-ELECTRIC_BRAKE_MAX * speedBlend) >> 15);
+    } else {
+      brakeVal = (int16_t)(( ELECTRIC_BRAKE_MAX * speedBlend) >> 15);          
+    }
+
+    // Check if direction is reversed
+    if (reverseDir) {
+      brakeVal = -brakeVal;
+    }
+
+    // Calculate the new cmd2 with brake component included
+    if (cmd2 >= 0 && cmd2 < ELECTRIC_BRAKE_THRES) {
+      cmd2 = MAX(brakeVal, ((ELECTRIC_BRAKE_THRES - cmd2) * brakeVal) / ELECTRIC_BRAKE_THRES);
+    } else if (cmd2 >= -ELECTRIC_BRAKE_THRES && cmd2 < 0) {
+      cmd2 = MIN(brakeVal, ((ELECTRIC_BRAKE_THRES + cmd2) * brakeVal) / ELECTRIC_BRAKE_THRES);
+    } else if (cmd2 >= ELECTRIC_BRAKE_THRES) {
+      cmd2 = MAX(brakeVal, ((cmd2 - ELECTRIC_BRAKE_THRES) * INPUT_MAX) / (INPUT_MAX - ELECTRIC_BRAKE_THRES));
+    } else {  // when (cmd2 < -ELECTRIC_BRAKE_THRES)
+      cmd2 = MIN(brakeVal, ((cmd2 + ELECTRIC_BRAKE_THRES) * INPUT_MIN) / (INPUT_MIN + ELECTRIC_BRAKE_THRES));
+    }
+  #endif
+}
 
 
 /* =========================== Poweroff Functions =========================== */
@@ -731,15 +788,7 @@ void readCommand(void) {
             timeoutFlagADC    = 1;                      // Timeout detected
             timeoutCntADC     = ADC_PROTECT_TIMEOUT;    // Limit timout counter value
           }
-        }
-
-        if (timeoutFlagADC) {                           // In case of timeout bring the system to a Safe State
-          ctrlModReq  = 0;                              // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
-          cmd1        = 0;
-          cmd2        = 0;
-        } else {
-          ctrlModReq  = ctrlModReqRaw;                  // Follow the Mode request
-        }        
+        }   
       #endif
 
       #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
@@ -763,14 +812,6 @@ void readCommand(void) {
         cmd2 = command.speed;
        }
       #endif
-
-      if (timeoutFlagSerial) {                          // In case of timeout bring the system to a Safe State
-        ctrlModReq  = 0;                                // OPEN_MODE request. This will bring the motor power to 0 in a controlled way
-        cmd1        = 0;
-        cmd2        = 0;
-      } else {
-        ctrlModReq  = ctrlModReqRaw;                    // Follow the Mode request
-      }
 
       #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
         button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
@@ -811,6 +852,14 @@ void readCommand(void) {
         cmd2 = adc_buffer.l_rx2;
       #endif
     #endif
+
+    if (timeoutFlagADC || timeoutFlagSerial || timeoutCnt > TIMEOUT) {  // In case of timeout bring the system to a Safe State
+      ctrlModReq  = OPEN_MODE;                                          // Request OPEN_MODE. This will bring the motor power to 0 in a controlled way
+      cmd1        = 0;
+      cmd2        = 0;
+    } else {
+      ctrlModReq  = ctrlModReqRaw;                                      // Follow the Mode request
+    }
 
 }
 
@@ -1142,23 +1191,23 @@ void sideboardSensors(uint8_t sensors) {
       if (sensor1_index > 4) { sensor1_index = 0; }
       switch (sensor1_index) {
         case 0:     // FOC VOLTAGE
-          rtP_Left.z_ctrlTypSel  = 2;
-          rtP_Right.z_ctrlTypSel = 2;
-          ctrlModReqRaw          = 1;
+          rtP_Left.z_ctrlTypSel  = FOC_CTRL;
+          rtP_Right.z_ctrlTypSel = FOC_CTRL;
+          ctrlModReqRaw          = VLT_MODE;
           break;
         case 1:     // FOC SPEED
-          ctrlModReqRaw          = 2;
+          ctrlModReqRaw          = SPD_MODE;
           break;
         case 2:     // FOC TORQUE
-          ctrlModReqRaw          = 3;
+          ctrlModReqRaw          = TRQ_MODE;
           break;
         case 3:     // SINUSOIDAL
-          rtP_Left.z_ctrlTypSel  = 1;
-          rtP_Right.z_ctrlTypSel = 1;
+          rtP_Left.z_ctrlTypSel  = SIN_CTRL;
+          rtP_Right.z_ctrlTypSel = SIN_CTRL;
           break;
         case 4:     // COMMUTATION
-          rtP_Left.z_ctrlTypSel  = 0;
-          rtP_Right.z_ctrlTypSel = 0;
+          rtP_Left.z_ctrlTypSel  = COM_CTRL;
+          rtP_Right.z_ctrlTypSel = COM_CTRL;
           break;    
       }
       shortBeepMany(sensor1_index + 1);

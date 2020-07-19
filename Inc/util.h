@@ -70,6 +70,8 @@ void adcCalibLim(void);
 void updateCurSpdLim(void);
 void saveConfig(void);
 int  addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max);
+void standstillHold(int16_t *speedCmd);
+void electricBrake(uint16_t speedBlend, uint8_t reverseDir);
 
 // Poweroff Functions
 void poweroff(void);

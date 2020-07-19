@@ -46,10 +46,24 @@ In this firmware 3 control types are available:
 - Commutation
 - SIN (Sinusoidal)
 - FOC (Field Oriented Control) with the following 3 control modes:
-  - **VOLTAGE MODE**: in this mode the controller applies a constant Voltage to the motors
-  - **SPEED MODE**: in this mode a closed-loop controller realizes the input speed target by rejecting any of the disturbance (resistive load) applied to the motor
-  - **TORQUE MODE**: in this mode the input torque target is realized. This mode enables motor "freewheeling" when the torque target is `0`. Recommended for most applications with a sitting human driver. If motor braking is desired instead of "freewheel" when torque target is `0`, then a torque target below `0` should be set when `speedAvgAbs > 0`.
- 
+  - **VOLTAGE MODE**: in this mode the controller applies a constant Voltage to the motors. Recommended for robotics applications or applications where a fast motor response is required.
+  - **SPEED MODE**: in this mode a closed-loop controller realizes the input speed target by rejecting any of the disturbance (resistive load) applied to the motor. Recommended for robotics applications or constant speed applications.
+  - **TORQUE MODE**: in this mode the input torque target is realized. This mode enables motor "freewheeling" when the torque target is `0`. Recommended for most applications with a sitting human driver.
+
+#### Comparison between different control methods
+
+|Control method| Complexity | Efficiency | Smoothness | Field Weakening | Freewheeling | Standstill hold |
+|--|--|--|--|--|--|--|
+|Commutation| - | - | ++ | n.a. | n.a. | + |
+|Sinusoidal| + | ++ | ++ | +++ | n.a. | + |
+|FOC VOLTAGE| ++ | +++ | ++ | ++ | n.a. | +<sup>(2)</sup> |
+|FOC SPEED| +++ | +++ | + | ++ | n.a. | +++ |
+|FOC TORQUE| +++ | +++ | +++ | ++ | +++<sup>(1)</sup> | n.a<sup>(2)</sup> |
+
+<sup>(1)</sup> By enabling `ELECTRIC_BRAKE_ENABLE` in `config.h`, the freewheeling amount can be adjusted using the `ELECTRIC_BRAKE_MAX` parameter.
+
+<sup>(2)</sup> The standstill hold functionality can be forced by enabling `STANDSTILL_HOLD_ENABLE` in `config.h`. 
+
 ![Schematic representation of the available control methods](/01_Matlab/02_Figures/control_methods.png)
  
 In all FOC control modes, the controller features maximum motor speed and maximum motor current protection. This brings great advantages to fulfil the needs of many robotic applications while maintaining safe operation.  

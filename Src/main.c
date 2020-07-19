@@ -146,7 +146,7 @@ static int16_t    speed;                // local variable for speed. -1000 to 10
 #endif
 
 static uint32_t    inactivity_timeout_counter;
-static MultipleTap MultipleTapBreak;    // define multiple tap functionality for the Break pedal
+static MultipleTap MultipleTapBrake;    // define multiple tap functionality for the Brake pedal
 
 
 int main(void) {
@@ -213,34 +213,32 @@ int main(void) {
       }
 
       // ####### VARIANT_HOVERCAR ####### 
-      #ifdef VARIANT_HOVERCAR
-        // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
-        uint16_t speedBlend;       
-        speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50);     // speedBlend [0,1] is within [10 rpm, 60rpm]
+      #if defined(VARIANT_HOVERCAR) || defined(ELECTRIC_BRAKE_ENABLE)        
+        uint16_t speedBlend;                                        // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
+        speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50); // speedBlend [0,1] is within [10 rpm, 60rpm]
+      #endif
 
-        // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
-        if (speedAvgAbs < 60) {
-          multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBreak);   // Break pedal in this case is "cmd1" variable
+      #ifdef VARIANT_HOVERCAR        
+        if (speedAvgAbs < 60) {                                     // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
+          multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBrake);   // Brake pedal in this case is "cmd1" variable
         }
-
-        // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving          
-        if (cmd1 > 20) {
+        
+        if (cmd1 > 30) {                                            // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving
           cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);
         }
+      #endif
 
-        // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
-        if (speedAvg > 0) {
+      #ifdef ELECTRIC_BRAKE_ENABLE        
+        electricBrake(speedBlend, MultipleTapBrake.b_multipleTap);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
+      #endif
+
+      #ifdef VARIANT_HOVERCAR        
+        if (speedAvg > 0) {                                         // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
           cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
         } else {
           cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);          
         }
       #endif
-
-      // ####### GENERAL TIMEOUT #######
-      if (timeoutCnt > TIMEOUT) {  // Bring the system to a Safe State
-        cmd1 = 0;
-        cmd2 = 0;
-      }
 
       // ####### LOW-PASS FILTER #######
       rateLimiter16(cmd1, RATE, &steerRateFixdt);
@@ -248,14 +246,18 @@ int main(void) {
       filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
-      speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer    
+      speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer
+
+      #ifdef STANDSTILL_HOLD_ENABLE
+        standstillHold(&speed);                 // Apply Standstill Hold functionality. Only available and makes sense for VOLTAGE or TORQUE Mode
+      #endif
 
       // ####### VARIANT_HOVERCAR #######
       #ifdef VARIANT_HOVERCAR        
-        if (!MultipleTapBreak.b_multipleTap) {  // Check driving direction
-          speed = steer + speed;                // Forward driving          
+        if (!MultipleTapBrake.b_multipleTap) {  // Check driving direction
+          speed = steer + speed;                // Forward driving: in this case steer = Brake, speed = Throttle
         } else {
-          speed = steer - speed;                // Reverse driving
+          speed = steer - speed;                // Reverse driving: in this case steer = Brake, speed = Throttle
         }
       #endif
 
@@ -470,7 +472,7 @@ int main(void) {
     } else if (BAT_LVL2_ENABLE && batVoltage < BAT_LVL2) {      // low bat 2: slow beep
       buzzerFreq    = 5;
       buzzerPattern = 42;
-    } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBreak.b_multipleTap)) {  // backward beep
+    } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) {  // backward beep
       buzzerFreq    = 5;
       buzzerPattern = 1;
       backwardDrive = 1;
