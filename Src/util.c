@@ -737,8 +737,8 @@ void readCommand(void) {
     #endif
 
     #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
-      cmd1 = CLAMP(addDeadBand((ppm_captured_value[0] - 500) * 2, PPM_DEADBAND, PPM_CH1_MIN, PPM_CH1_MAX), INPUT_MIN, INPUT_MAX);
-      cmd2 = CLAMP(addDeadBand((ppm_captured_value[1] - 500) * 2, PPM_DEADBAND, PPM_CH2_MIN, PPM_CH2_MAX), INPUT_MIN, INPUT_MAX);
+      cmd1 = addDeadBand((ppm_captured_value[0] - 500) * 2, PPM_DEADBAND, PPM_CH1_MIN, PPM_CH1_MAX, INPUT_MIN, INPUT_MAX);
+      cmd2 = addDeadBand((ppm_captured_value[1] - 500) * 2, PPM_DEADBAND, PPM_CH2_MIN, PPM_CH2_MAX, INPUT_MIN, INPUT_MAX);
 			#ifdef SUPPORT_BUTTONS
 				button1 = ppm_captured_value[5] > 500;
 				button2 = 0;
