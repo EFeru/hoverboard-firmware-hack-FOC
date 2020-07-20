@@ -213,7 +213,7 @@ int main(void) {
       }
 
       // ####### VARIANT_HOVERCAR ####### 
-      #if defined(VARIANT_HOVERCAR) || defined(ELECTRIC_BRAKE_ENABLE)        
+      #if defined(VARIANT_HOVERCAR) || defined(VARIANT_SKATEBOARD) || defined(ELECTRIC_BRAKE_ENABLE)
         uint16_t speedBlend;                                        // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50); // speedBlend [0,1] is within [10 rpm, 60rpm]
       #endif
@@ -237,6 +237,12 @@ int main(void) {
           cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
         } else {
           cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);          
+        }
+      #endif
+
+      #ifdef VARIANT_SKATEBOARD
+        if (cmd2 < 0) {                                             // When Throttle pedal is negative, it acts as brake. This condition is to make sure it goes to 0 as we reach standstill (to avoid Reverse driving) 
+          cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);
         }
       #endif
 
