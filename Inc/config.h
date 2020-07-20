@@ -324,11 +324,6 @@
 */
   #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
   // #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
-  #ifdef CONTROL_PWM_RIGHT
-    #define DEBUG_SERIAL_USART2       // left sensor cable debug
-  #else
-    #define DEBUG_SERIAL_USART3       // right sensor cable debug
-  #endif
   #define PWM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define PWM_CH1_MAX         1000    // (0 - 1000)
@@ -342,8 +337,13 @@
   // #define INVERT_L_DIRECTION
   // #define SUPPORT_BUTTONS_LEFT        // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT       // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
+  #ifdef CONTROL_PWM_RIGHT
+    #define DEBUG_SERIAL_USART2       // left sensor cable debug
+  #else
+    #define DEBUG_SERIAL_USART3       // right sensor cable debug
+  #endif
 #endif
-// ############################# END OF VARIANT_PPM SETTINGS ############################
+// ############################# END OF VARIANT_PWM SETTINGS ############################
 
 
 
@@ -433,7 +433,7 @@
 // ############################# END OF VARIANT_TRANSPOTTER SETTINGS ########################
 
 
-// ################################# VARIANT_PWM SETTINGS ##############################
+// ################################# VARIANT_SKATEBOARD SETTINGS ##############################
 #ifdef VARIANT_SKATEBOARD
 /* ###### CONTROL VIA RC REMOTE ######
  * right sensor board cable. Connect PB10 to channel 1 and PB11 to channel 2 on receiver.
@@ -441,20 +441,15 @@
 */
   #undef  CTRL_MOD_REQ
   #define CTRL_MOD_REQ        TRQ_MODE  // SKATEBOARD works best in TORQUE Mode
-  #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
-  // #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
-  #ifdef CONTROL_PWM_RIGHT
-    #define DEBUG_SERIAL_USART2       // left sensor cable debug
-  #else
-    #define DEBUG_SERIAL_USART3       // right sensor cable debug
-  #endif
+  // #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
+  #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
   #define PWM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define PWM_CH1_MAX         1000    // (0 - 1000)
   #define PWM_CH1_MIN        -1000    // (-1000 - 0)
   #define PWM_CH2_MAX         700     // (0 - 1000)
   #define PWM_CH2_MIN        -800     // (-1000 - 0)
-  #define PWM_CH2_OUT_MIN    -150     // (-1000 - 0) Change this value to adjust the braking amount
+  #define PWM_CH2_OUT_MIN    -400     // (-1000 - 0) Change this value to adjust the braking amount
   #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
   #define STEER_COEFFICIENT   0       // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14. If you do not want any steering, set it to 0.
@@ -463,8 +458,13 @@
   // #define SUPPORT_BUTTONS_LEFT        // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT       // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
   // #define STANDSTILL_HOLD_ENABLE      // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
+  #ifdef CONTROL_PWM_RIGHT
+    #define DEBUG_SERIAL_USART2       // left sensor cable debug
+  #else
+    #define DEBUG_SERIAL_USART3       // right sensor cable debug
+  #endif
 #endif
-// ############################# END OF VARIANT_PPM SETTINGS ############################
+// ############################# END OF VARIANT_SKATEBOARD SETTINGS ############################
 
 
 

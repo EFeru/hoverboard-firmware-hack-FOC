@@ -236,13 +236,17 @@ int main(void) {
         if (speedAvg > 0) {                                         // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
           cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
         } else {
-          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);          
+          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);
         }
       #endif
 
       #ifdef VARIANT_SKATEBOARD
-        if (cmd2 < 0) {                                             // When Throttle pedal is negative, it acts as brake. This condition is to make sure it goes to 0 as we reach standstill (to avoid Reverse driving) 
-          cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);
+        if (cmd2 < 0) {                                           // When Throttle is negative, it acts as brake. This condition is to make sure it goes to 0 as we reach standstill (to avoid Reverse driving) 
+          if (speedAvg > 0) {                                     // Make sure the braking is opposite to the direction of motion
+            cmd2 = (int16_t)(( cmd2 * speedBlend) >> 15);
+          } else {
+            cmd2 = (int16_t)((-cmd2 * speedBlend) >> 15);
+          }
         }
       #endif
 
