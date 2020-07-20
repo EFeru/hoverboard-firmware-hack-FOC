@@ -405,8 +405,8 @@ int main(void) {
         setScopeChannel(1, ppm_captured_value[1]);              // 2: CH2
         #endif
         #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-        setScopeChannel(0, pwm_captured_ch1_value);             // 1: CH1
-        setScopeChannel(1, pwm_captured_ch2_value);             // 2: CH2
+        setScopeChannel(0, (pwm_captured_ch1_value - 500) * 2); // 1: CH1
+        setScopeChannel(1, (pwm_captured_ch2_value - 500) * 2); // 2: CH2
         #endif
         setScopeChannel(2, (int16_t)speedR);                    // 3: output command: [-1000, 1000]
         setScopeChannel(3, (int16_t)speedL);                    // 4: output command: [-1000, 1000]

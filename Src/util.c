@@ -567,17 +567,17 @@ void saveConfig() {
 
  /*
  * Add Dead-band to a signal
- * This function realizes a dead-band around 0 and scales the input within a min and a max
+ * This function realizes a dead-band around 0 and scales the input between [out_min, out_max]
  */
-int addDeadBand(int16_t u, int16_t deadBand, int16_t min, int16_t max) {
+int addDeadBand(int16_t u, int16_t deadBand, int16_t in_min, int16_t in_max, int16_t out_min, int16_t out_max) {
 #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT) || defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
   int outVal = 0;
   if(u > -deadBand && u < deadBand) {
     outVal = 0;
   } else if(u > 0) {
-    outVal = (INPUT_MAX * CLAMP(u - deadBand, 0, max - deadBand)) / (max - deadBand);
+    outVal = (out_max * CLAMP(u - deadBand, 0, in_max - deadBand)) / (in_max - deadBand);
   } else {
-    outVal = (INPUT_MIN * CLAMP(u + deadBand, min + deadBand, 0)) / (min + deadBand);
+    outVal = (out_min * CLAMP(u + deadBand, in_min + deadBand, 0)) / (in_min + deadBand);
   }
   return outVal;
 #else
@@ -750,8 +750,8 @@ void readCommand(void) {
     #endif
 
     #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-      cmd1 = CLAMP(addDeadBand((pwm_captured_ch1_value - 500) * 2, PWM_DEADBAND, PWM_CH1_MIN, PWM_CH1_MAX), INPUT_MIN, INPUT_MAX);
-      cmd2 = CLAMP(addDeadBand((pwm_captured_ch2_value - 500) * 2, PWM_DEADBAND, PWM_CH2_MIN, PWM_CH2_MAX), INPUT_MIN, INPUT_MAX);
+      cmd1 = addDeadBand((pwm_captured_ch1_value - 500) * 2, PWM_DEADBAND, PWM_CH1_MIN, PWM_CH1_MAX, INPUT_MIN, INPUT_MAX);
+      cmd2 = addDeadBand((pwm_captured_ch2_value - 500) * 2, PWM_DEADBAND, PWM_CH2_MIN, PWM_CH2_MAX, INPUT_MIN, INPUT_MAX);
       #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
         button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
         button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
@@ -1252,7 +1252,7 @@ void sideboardSensors(uint8_t sensors) {
   * filtLowPass16(u, 52429, &y);
   * yint = (int16_t)(y >> 16); // the integer output is the fixed-point ouput shifted by 16 bits
   */
- void filtLowPass32(int32_t u, uint16_t coef, int32_t *y) {
+void filtLowPass32(int32_t u, uint16_t coef, int32_t *y) {
   int64_t tmp;  
   tmp = ((int64_t)((u << 4) - (*y >> 12)) * coef) >> 4;
   tmp = CLAMP(tmp, -2147483648LL, 2147483647LL);  // Overflow protection: 2147483647LL = 2^31 - 1
