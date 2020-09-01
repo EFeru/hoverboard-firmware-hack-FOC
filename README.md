@@ -8,9 +8,13 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
  - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
  
- #### For the hoverboard sideboard firmware see the following repositories:
+#### For the hoverboard sideboard firmware, see the following repositories:
  - [hoverboard-sideboard-hack-GD](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-GD)
  - [hoverboard-sideboard-hack-STM](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-STM)
+ 
+#### For the FOC controller design, see the following repository:
+ - [bldc-motor-control-FOC](https://github.com/EmanuelFeru/bldc-motor-control-FOC)
+ 
  
 ---
 ## Hardware
@@ -27,21 +31,6 @@ For the reverse-engineered schematics of the mainboard, see [20150722_hoverboard
 ---
 ## FOC Firmware
  
-### Architecture
-
-The firmware architecture includes:
-- **Estimations**: estimates the rotor position, angle and motor speed based on Hall sensors signal
-- **Diagnostics**: implements error detection such as unconnected Hall sensor, motor blocked, MOSFET defective
-- **Control Manager**: manages the transitions between control modes (Voltage, Speed, Torque)
-- **FOC Algorithm**: implements the FOC strategy
-- **Control Type Manager**: Manages the transition between Commutation, Sinusoidal, and FOC control type
-
-![Firmware architecture](/docs/pictures/FW_architecture.png)
-
-The FOC algorithm architecture is illustrated in the figure below:
-
-![FOC algorithm](/docs/pictures/FOC_algorithm.png)
-
 In this firmware 3 control types are available:
 - Commutation
 - SIN (Sinusoidal)
@@ -49,7 +38,7 @@ In this firmware 3 control types are available:
   - **VOLTAGE MODE**: in this mode the controller applies a constant Voltage to the motors. Recommended for robotics applications or applications where a fast motor response is required.
   - **SPEED MODE**: in this mode a closed-loop controller realizes the input speed target by rejecting any of the disturbance (resistive load) applied to the motor. Recommended for robotics applications or constant speed applications.
   - **TORQUE MODE**: in this mode the input torque target is realized. This mode enables motor "freewheeling" when the torque target is `0`. Recommended for most applications with a sitting human driver.
-
+  
 #### Comparison between different control methods
 
 |Control method| Complexity | Efficiency | Smoothness | Field Weakening | Freewheeling | Standstill hold |
@@ -64,13 +53,8 @@ In this firmware 3 control types are available:
 
 <sup>(2)</sup> The standstill hold functionality can be forced by enabling `STANDSTILL_HOLD_ENABLE` in `config.h`. 
 
-![Schematic representation of the available control methods](/01_Matlab/02_Figures/control_methods.png)
- 
-In all FOC control modes, the controller features maximum motor speed and maximum motor current protection. This brings great advantages to fulfil the needs of many robotic applications while maintaining safe operation.  
 
-The C code for the controller was auto-code generated using [Matlab/Simulink](https://nl.mathworks.com/solutions/embedded-code-generation.html) from a model which I developed from scratch specifically for hoverboard control. For more details regarding the working principle of the controller please consult the [Matlab/Simulink model](/01_Matlab).
-
-A [webview](/01_Matlab/BLDC_controller_ert_rtw/html/webview) was created, so Matlab/Simulink installation is not needed, unless you want to regenerate the code. The webview is an html page that can be opened with browsers like: Microsoft Internet Explorer or Microsoft Edge.
+In all FOC control modes, the controller features maximum motor speed and maximum motor current protection. This brings great advantages to fulfil the needs of many robotic applications while maintaining safe operation.
 
 
 ### Field Weakening / Phase Advance
@@ -117,7 +101,7 @@ The error codes above are reported for each motor in the variables **rtY_Left.z_
 
 This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
 - **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
-- **VARIANT_USART**: In this variant the motors are controlled via serial protocol (e.g. on USART3 right sensor cable, the short wired cable). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/02_Arduino/hoverserial) as an example sketch.
+- **VARIANT_USART**: In this variant the motors are controlled via serial protocol (e.g. on USART3 right sensor cable, the short wired cable). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/Arduino/hoverserial) as an example sketch.
 - **VARIANT_NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
 - **VARIANT_PPM**: This is when you want to use an RC remote control with PPM Sum signal.
 - **VARIANT_PWM**: This is when you want to use an RC remote control with PWM signal.
