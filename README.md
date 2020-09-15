@@ -1,3 +1,8 @@
+# VARIANT_UARTCAR added 
+Variant for car with serial control, compatible to my Niklas fork.
+speed is 10x km/h, so 60 will be 6 kmh. Check WHEEL_SIZE_INCHES in the config.h
+VARIANT_UARTCAR has it's own control loop in main.c which allows for different left/right wheel speeds in a curve.
+
 # hoverboard-firmware-hack-FOC
 [![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
