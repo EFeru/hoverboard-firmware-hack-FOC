@@ -1,6 +1,6 @@
 //#define DEBUG_HOVER_RX
 
-#define HOVER_SERIAL_BAUD   9600       // [-] Baud rate for HoverSerial (used to communicate with the hoverboard)
+#define HOVER_SERIAL_BAUD   38400       // must match USART3_BAUD in config.h of hoverboard firmware !!!
 
 #include <SoftwareSerial.h>
 //SoftwareSerial HoverSerial(2,3);        // RX, TX
