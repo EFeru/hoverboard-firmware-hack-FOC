@@ -272,7 +272,7 @@ int main(void) {
 
       #ifdef VARIANT_UARTCAR
 
-        Feedback.iTemp	= (uint16_t)cmd2;
+        Feedback.iTemp	= (uint16_t)cmd2;   // cmd2 gets overwritten
         
         float fmms = WHEEL_SIZE_INCHES * 1.32994089;  // mm/s = (WHEEL_SIZE_INCHES * 25.4 * 3.142) * (rpm / 60)
         long iSpeed;
