@@ -341,7 +341,8 @@
                                         // speed is 10*km/h so 60 would be 6.0 km/h
   #define FILTER              20000     // ignore DEFAULT_FILTER for new closed loop  [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
                                         
-  #define WHEEL_SIZE_INCHES 6.5                      
+  //#define WHEEL_SIZE_INCHES 6.5
+  #define WHEEL_SIZE_INCHES 10.33
 
   //#define CONTROL_SERIAL_USART2         // long cable USART2 only 3.3V !!!
   //#define FEEDBACK_SERIAL_USART2        // long cable USART2 only 3.3V !!!
@@ -350,8 +351,8 @@
 
   #define SPEED_COEFFICIENT   16384     //  1.0f
   #define STEER_COEFFICIENT   0         //  0.0f
-  // #define INVERT_R_DIRECTION           // Invert rotation of right motor
-  // #define INVERT_L_DIRECTION           // Invert rotation of left motor
+  #define INVERT_R_DIRECTION           // Invert rotation of right motor
+  #define INVERT_L_DIRECTION           // Invert rotation of left motor
 
 
   #define MAX_RECUPERATION 3.0  //increase gas when more then 3.0 amps go back into the battery
