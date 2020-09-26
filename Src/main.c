@@ -298,13 +298,13 @@ int main(void) {
         long iSpeed_Goal = (cmd2 * 1000) / 36;  // 10*kmh -> mm/s
         if (	(abs(iSpeed_Goal) < 56)	&& (abs(cmd2Goal) < 50)	)	// iSpeed_Goal = 56 = 0.2 km/h
             speed = cmd2Goal = 0;
-      #ifdef MAX_RECUPERATION
-        else if ( (float)(curL_DC+curR_DC)/(-2.0*A2BIT_CONV) < MAX_RECUPERATION * -1)
-        {
-          cmd2Goal += 5;
-          if (cmd2Goal > INPUTMAX)	cmd2Goal = INPUTMAX;
-        }
-      #endif
+        #ifdef MAX_RECUPERATION
+          else if ( (float)(curL_DC+curR_DC)/(-2.0*A2BIT_CONV) < MAX_RECUPERATION * -1)
+          {
+            cmd2Goal += 5;
+            if (cmd2Goal > INPUTMAX)	cmd2Goal = INPUTMAX;
+          }
+        #endif
         else if (iSpeed > (iSpeed_Goal + 56))	// 28 = 27.777 = 0.1 km/h
         {
           cmd2Goal -= CLAMP((iSpeed-iSpeed_Goal)/56,  1,3);
@@ -318,20 +318,21 @@ int main(void) {
           if (  (iSpeed_Goal < -56)  && (cmd2Goal > -2)  ) cmd2Goal = -2;   // don't set forward speed when iSpeed_goal is set backwards
           else if (cmd2Goal > INPUTMAX)	cmd2Goal = INPUTMAX;
         }
-        cmd2 = cmd2Goal;
+        //cmd2 = cmd2Goal;
+        rateLimiter16(cmd2Goal, RATE, &speedRateFixdt);
 
         Feedback.iHallSkippedL	= (uint16_t) iSpeed;
         Feedback.iHallSkippedR	= (uint16_t) iSpeed_Goal;
         Feedback.iVolt	= (uint16_t)cmd2Goal;
         Feedback.iAmpL = (int16_t)-curL_DC;
         Feedback.iAmpR = (int16_t)-curR_DC;
-
+      #else
+      rateLimiter16(cmd2, RATE, &speedRateFixdt);
       #endif
 
 
       // ####### LOW-PASS FILTER #######
       rateLimiter16(cmd1, RATE, &steerRateFixdt);
-      rateLimiter16(cmd2, RATE, &speedRateFixdt);
       filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
