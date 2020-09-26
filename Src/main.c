@@ -321,7 +321,7 @@ int main(void) {
         cmd2 = cmd2Goal;
 
         Feedback.iHallSkippedL	= (uint16_t) iSpeed;
-        Feedback.iHallSkippedL	= (uint16_t) iSpeed_Goal;
+        Feedback.iHallSkippedR	= (uint16_t) iSpeed_Goal;
         Feedback.iVolt	= (uint16_t)cmd2Goal;
         Feedback.iAmpL = (int16_t)-curL_DC;
         Feedback.iAmpR = (int16_t)-curR_DC;
