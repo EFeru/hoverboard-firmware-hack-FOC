@@ -773,7 +773,7 @@ void readCommand(void) {
               {
                 cmd1 = pCmd->steer;
                 cmd2 = pCmd->speed;
-                timeoutCntSerial = 0;
+                timeoutFlagSerial = timeoutCntSerial = 0;
                 command.crc++;                   // invalidate crc for timeout detection in the next cycle
               }
               break;
@@ -787,8 +787,10 @@ void readCommand(void) {
 
         #else // SERIAL_ROBO
 
-          if (command.start == SERIAL_START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
-            if (timeoutFlagSerial) {                      // Check for previous timeout flag  
+          if (command.start == SERIAL_START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) 
+          {
+            if (timeoutFlagSerial) 
+            {                      // Check for previous timeout flag  
               if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
                 timeoutFlagSerial = 0;                    // Timeout flag cleared           
             } else {
