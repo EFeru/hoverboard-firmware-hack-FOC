@@ -773,7 +773,8 @@ void readCommand(void) {
               {
                 cmd1 = pCmd->steer;
                 cmd2 = pCmd->speed;
-                timeoutFlagSerial = timeoutCntSerial = 0;
+                timeoutCntSerial = 0;
+                //timeoutFlagSerial = 0;
                 //command.crc++;                   // invalidate crc for timeout detection in the next cycle
               }
               break;
