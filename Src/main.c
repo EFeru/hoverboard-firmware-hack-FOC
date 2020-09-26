@@ -63,8 +63,8 @@ extern int16_t cmd2;                    // normalized input value. -1000 to 1000
 
 #ifdef VARIANT_UARTCAR // ROBO
   int16_t cmd2Goal;	// goal speed for VARIANT_UARTCAR
-  #define INPUTMAX 990  // testing..
-  #define INPUTMIN -990
+  #define INPUTMAX 999  // testing..
+  #define INPUTMIN -999
 #endif
 
 
