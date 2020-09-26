@@ -271,6 +271,8 @@ int main(void) {
       #endif
 
       #ifdef VARIANT_UARTCAR
+
+        Feedback.iTemp	= (uint16_t)cmd2;
         
         float fmms = WHEEL_SIZE_INCHES * 1.32994089;  // mm/s = (WHEEL_SIZE_INCHES * 25.4 * 3.142) * (rpm / 60)
         long iSpeed;
@@ -320,7 +322,6 @@ int main(void) {
 
         Feedback.iHallSkippedL	= (uint16_t) iSpeed;
         Feedback.iHallSkippedL	= (uint16_t) iSpeed_Goal;
-        Feedback.iTemp	= (uint16_t)cmd2;
         Feedback.iVolt	= (uint16_t)cmd2Goal;
         Feedback.iAmpL = (int16_t)-curL_DC;
         Feedback.iAmpR = (int16_t)-curR_DC;
