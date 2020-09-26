@@ -774,6 +774,8 @@ void readCommand(void) {
                 cmd1 = pCmd->steer;
                 cmd2 = pCmd->speed;
                 timeoutCntSerial = 0;
+                timeoutFlagSerial = 0;    // Timeout flag cleared                           
+                command->crc++;           // invalidate command
               }
               break;
             }
