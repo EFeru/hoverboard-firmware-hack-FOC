@@ -788,10 +788,8 @@ void readCommand(void) {
 
         #else // SERIAL_ROBO
 
-          if (command.start == SERIAL_START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) 
-          {
-            if (timeoutFlagSerial) 
-            {                      // Check for previous timeout flag  
+          if (command.start == SERIAL_START_FRAME && command.checksum == (uint16_t)(command.start ^ command.steer ^ command.speed)) {
+            if (timeoutFlagSerial) {                      // Check for previous timeout flag  
               if (timeoutCntSerial-- <= 0)                // Timeout de-qualification
                 timeoutFlagSerial = 0;                    // Timeout flag cleared           
             } else {
