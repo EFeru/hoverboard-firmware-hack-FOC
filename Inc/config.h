@@ -152,8 +152,8 @@
 #define FIELD_WEAK_ENA  0               // [-] Field Weakening / Phase Advance enable flag: 0 = Disabled (default), 1 = Enabled
 #define FIELD_WEAK_MAX  5               // [A] Maximum Field Weakening D axis current (only for FOC). Higher current results in higher maximum speed. Up to 10A has been tested using 10" wheels.
 #define PHASE_ADV_MAX   25              // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
-#define FIELD_WEAK_HI   1500            // [-] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
-#define FIELD_WEAK_LO   1000            // [-] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
+#define FIELD_WEAK_HI   1000            // (1000, 1500] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
+#define FIELD_WEAK_LO   750             // ( 500, 1000] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
 
 // Extra functionality
 // #define STANDSTILL_HOLD_ENABLE          // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
@@ -181,6 +181,21 @@
 #define DEFAULT_SPEED_COEFFICIENT   16384 // Default for SPEED_COEFFICIENT 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
 #define DEFAULT_STEER_COEFFICIENT   8192  // Defualt for STEER_COEFFICIENT 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0.
 // ######################### END OF DEFAULT SETTINGS ##########################
+
+
+
+// ############################## CRUISE CONTROL SETTINGS ############################
+/* Cruise Control info:
+ * enable CRUISE_CONTROL_SUPPORT and (SUPPORT_BUTTONS_LEFT or SUPPORT_BUTTONS_RIGHT depending on which cable is the button installed)
+ * can be activated/deactivated by pressing button1 (Blue cable) to GND
+ * when activated, it maintains the current speed by switching to SPD_MODE. Acceleration is still possible via the input request, but when released it resumes to previous set speed.
+ * when deactivated, it returns to previous control MODE and follows the input request.
+*/
+// #define CRUISE_CONTROL_SUPPORT
+// #define SUPPORT_BUTTONS_LEFT              // Use button1 (Blue Left cable)  to activate/deactivate Cruise Control
+// #define SUPPORT_BUTTONS_RIGHT             // Use button1 (Blue Right cable) to activate/deactivate Cruise Control
+
+// ######################### END OF CRUISE CONTROL SETTINGS ##########################
 
 
 
@@ -378,12 +393,12 @@
   #define ADC1_MAX            2500      // max ADC1-value while poti at maximum-position (0 - 4095)
   #define ADC2_MIN            500       // min ADC2-value while poti at minimum-position (0 - 4095)
   #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
-  #define SPEED_COEFFICIENT   16384     //  1.0f
-  #define STEER_COEFFICIENT   0         //  0.0f
+  #define SPEED_COEFFICIENT   16384     // 1.0f
+  #define STEER_COEFFICIENT   0         // 0.0f
   // #define INVERT_R_DIRECTION            // Invert rotation of right motor
   // #define INVERT_L_DIRECTION            // Invert rotation of left motor
-  #define SIDEBOARD_SERIAL_USART3
-  #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  #define SIDEBOARD_SERIAL_USART3       // Tx -> Rx of right sensor board: for LED battery indication. Comment-out if sideboard is not used!
+  #define FEEDBACK_SERIAL_USART3        // Rx <- Tx of right sensor board: to use photosensors as buttons. Comment-out if sideboard is not used!
   // #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 
   // Extra functionality

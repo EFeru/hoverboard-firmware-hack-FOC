@@ -64,11 +64,6 @@ extern volatile uint16_t pwm_captured_ch1_value;
 extern volatile uint16_t pwm_captured_ch2_value;
 #endif
 
-#ifdef BUTTONS_RIGHT
-extern volatile uint8_t btn1;  // Blue
-extern volatile uint8_t btn2;  // Green
-#endif
-
 
 //------------------------------------------------------------------------
 // Global variables set here in util.c
@@ -199,7 +194,8 @@ static uint8_t  sensor2_index;          // holds the press index number for sens
 #endif
 
 #if defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
-static uint8_t button1, button2;
+static uint8_t button1;                 // Blue
+static uint8_t button2;                 // Green
 #endif
 
 #ifdef VARIANT_HOVERCAR
@@ -211,9 +207,10 @@ static uint8_t brakePressed;
 
 void BLDC_Init(void) {
   /* Set BLDC controller parameters */ 
-  rtP_Left.b_selPhaABCurrMeas   = 1;            // Left motor measured current phases {Green, Blue} = {iA, iB} -> do NOT change
+  rtP_Left.b_angleMeasEna       = 0;            // Motor angle input: 0 = estimated angle, 1 = measured angle (e.g. if encoder is available)
+  rtP_Left.z_selPhaCurMeasABC   = 0;            // Left motor measured current phases {Green, Blue} = {iA, iB} -> do NOT change
   rtP_Left.z_ctrlTypSel         = CTRL_TYP_SEL;
-  rtP_Left.b_diagEna            = DIAG_ENA; 
+  rtP_Left.b_diagEna            = DIAG_ENA;
   rtP_Left.i_max                = (I_MOT_MAX * A2BIT_CONV) << 4;        // fixdt(1,16,4)
   rtP_Left.n_max                = N_MOT_MAX << 4;                       // fixdt(1,16,4)
   rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA; 
@@ -223,7 +220,7 @@ void BLDC_Init(void) {
   rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
 
   rtP_Right                     = rtP_Left;     // Copy the Left motor parameters to the Right motor parameters
-  rtP_Right.b_selPhaABCurrMeas  = 0;            // Right motor measured current phases {Blue, Yellow} = {iB, iC} -> do NOT change
+  rtP_Right.z_selPhaCurMeasABC  = 1;            // Right motor measured current phases {Blue, Yellow} = {iB, iC} -> do NOT change
 
   /* Pack LEFT motor data into RTM */
   rtM_Left->defaultParam        = &rtP_Left;
@@ -466,8 +463,8 @@ void adcCalibLim(void) {
 
     // ADC calibration checks 
     #ifdef ADC_PROTECT_ENA
-    if ((ADC1_MIN_temp + 150 - ADC_PROTECT_THRESH) > 0 && (ADC1_MAX_temp - 150 + ADC_PROTECT_THRESH) < 4095 && 
-        (ADC2_MIN_temp + 150 - ADC_PROTECT_THRESH) > 0 && (ADC2_MAX_temp - 150 + ADC_PROTECT_THRESH) < 4095) {
+    if ((ADC1_MIN_temp + 100 - ADC_PROTECT_THRESH) > 0 && (ADC1_MAX_temp - 100 + ADC_PROTECT_THRESH) < 4095 && 
+        (ADC2_MIN_temp + 100 - ADC_PROTECT_THRESH) > 0 && (ADC2_MAX_temp - 100 + ADC_PROTECT_THRESH) < 4095) {
       adc_cal_valid = 1;
     } else {
       adc_cal_valid = 0;
@@ -477,12 +474,12 @@ void adcCalibLim(void) {
 
     // Add final ADC margin to have exact 0 and MAX at the minimum and maximum ADC value
     if (adc_cal_valid && (ADC1_MAX_temp - ADC1_MIN_temp) > 500 && (ADC2_MAX_temp - ADC2_MIN_temp) > 500) {
-      ADC1_MIN_CAL = ADC1_MIN_temp + 150;
+      ADC1_MIN_CAL = ADC1_MIN_temp + 100;
       ADC1_MID_CAL = ADC1_MID_temp;
-      ADC1_MAX_CAL = ADC1_MAX_temp - 150;    
-      ADC2_MIN_CAL = ADC2_MIN_temp + 150;
+      ADC1_MAX_CAL = ADC1_MAX_temp - 100;    
+      ADC2_MIN_CAL = ADC2_MIN_temp + 100;
       ADC2_MID_CAL = ADC2_MID_temp;
-      ADC2_MAX_CAL = ADC2_MAX_temp - 150;      
+      ADC2_MAX_CAL = ADC2_MAX_temp - 100;      
       consoleLog("OK\n");
     } else {
       adc_cal_valid = 0;
@@ -865,6 +862,19 @@ void readCommand(void) {
       ctrlModReq  = ctrlModReqRaw;                                      // Follow the Mode request
     }
 
+    #if defined(CRUISE_CONTROL_SUPPORT) && (defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT))
+      if (button1 && ~rtP_Left.b_cruiseCtrlEna) {                       // Cruise control activated
+        rtP_Left.n_cruiseMotTgt   = rtY_Left.n_mot;
+        rtP_Right.n_cruiseMotTgt  = rtY_Right.n_mot;
+        rtP_Left.b_cruiseCtrlEna  = 1;
+        rtP_Right.b_cruiseCtrlEna = 1;
+        shortBeep(2);
+      } else if (button1 && rtP_Left.b_cruiseCtrlEna) {                 // Cruise control deactivated
+        rtP_Left.b_cruiseCtrlEna  = 0;
+        rtP_Right.b_cruiseCtrlEna = 0;
+        shortBeep(6);
+      }
+    #endif    
 }
 
 
