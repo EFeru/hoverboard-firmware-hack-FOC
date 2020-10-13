@@ -388,9 +388,15 @@ void shortBeep(uint8_t freq) {
     buzzerFreq = 0;
 }
 
-void shortBeepMany(uint8_t cnt) {
-    for(uint8_t i = 0; i < cnt; i++) {
-      shortBeep(i + 5);
+void shortBeepMany(uint8_t cnt, int8_t dir) {
+    if (dir >= 0) {   // increasing tone
+      for(uint8_t i = cnt; i > 0; i--) {
+        shortBeep(i + 2);
+      }
+    } else {          // decreasing tone
+      for(uint8_t i = 0; i < cnt; i++) {
+        shortBeep(i + 2);
+      }
     }
 }
 
@@ -868,11 +874,11 @@ void readCommand(void) {
         rtP_Right.n_cruiseMotTgt  = rtY_Right.n_mot;
         rtP_Left.b_cruiseCtrlEna  = 1;
         rtP_Right.b_cruiseCtrlEna = 1;
-        shortBeep(2);
+        shortBeepMany(2, 1);                                            // 200 ms beep delay. Acts as a debounce also.
       } else if (button1 && rtP_Left.b_cruiseCtrlEna) {                 // Cruise control deactivated
         rtP_Left.b_cruiseCtrlEna  = 0;
         rtP_Right.b_cruiseCtrlEna = 0;
-        shortBeep(6);
+        shortBeepMany(2, -1);
       }
     #endif    
 }
@@ -1224,7 +1230,7 @@ void sideboardSensors(uint8_t sensors) {
           rtP_Right.z_ctrlTypSel = COM_CTRL;
           break;    
       }
-      shortBeepMany(sensor1_index + 1);
+      shortBeepMany(sensor1_index + 1, 1);
     }
 
     // Field Weakening: use Sensor2 as push button
@@ -1243,7 +1249,7 @@ void sideboardSensors(uint8_t sensors) {
           Input_Lim_Init();
           break; 
       }
-      shortBeepMany(sensor2_index + 1);            
+      shortBeepMany(sensor2_index + 1, 1);            
     }
   #endif
 }
