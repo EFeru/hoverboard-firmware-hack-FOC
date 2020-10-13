@@ -863,7 +863,7 @@ void readCommand(void) {
     }
 
     #if defined(CRUISE_CONTROL_SUPPORT) && (defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT))
-      if (button1 && ~rtP_Left.b_cruiseCtrlEna) {                       // Cruise control activated
+      if (button1 && !rtP_Left.b_cruiseCtrlEna) {                       // Cruise control activated
         rtP_Left.n_cruiseMotTgt   = rtY_Left.n_mot;
         rtP_Right.n_cruiseMotTgt  = rtY_Right.n_mot;
         rtP_Left.b_cruiseCtrlEna  = 1;
