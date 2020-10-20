@@ -224,7 +224,8 @@ int main(void) {
         }
         
         if (cmd1 > 30) {                                            // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving
-          cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);
+          cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);          
+          cruiseControl((uint8_t)rtP_Left.b_cruiseCtrlEna);         // Cruise control deactivated by Brake pedal if it was active
         }
       #endif
 

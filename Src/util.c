@@ -186,13 +186,6 @@ static uint32_t command_len = sizeof(command);
   #endif
 #endif
 
-#if !defined(VARIANT_HOVERBOARD) && (defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3))
-static uint8_t  sensor1_prev;           // holds the previous sensor1 state
-static uint8_t  sensor2_prev;           // holds the previous sensor2 state
-static uint8_t  sensor1_index;          // holds the press index number for sensor1, when used as a button
-static uint8_t  sensor2_index;          // holds the press index number for sensor2, when used as a button
-#endif
-
 #if defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
 static uint8_t button1;                 // Blue
 static uint8_t button2;                 // Green
@@ -390,12 +383,12 @@ void shortBeep(uint8_t freq) {
 
 void shortBeepMany(uint8_t cnt, int8_t dir) {
     if (dir >= 0) {   // increasing tone
-      for(uint8_t i = cnt; i > 0; i--) {
-        shortBeep(i + 2);
+      for(uint8_t i = 2*cnt; i >= 2; i=i-2) {
+        shortBeep(i + 3);
       }
     } else {          // decreasing tone
-      for(uint8_t i = 0; i < cnt; i++) {
-        shortBeep(i + 2);
+      for(uint8_t i = 2; i <= 2*cnt; i=i+2) {
+        shortBeep(i + 3);
       }
     }
 }
@@ -648,6 +641,30 @@ void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
   #endif
 }
 
+ /*
+ * Cruise Control Function
+ * This function activates/deactivates cruise control.
+ * 
+ * Input: button (as a pulse)
+ * Output: none
+ */
+void cruiseControl(uint8_t button) {
+  #ifdef CRUISE_CONTROL_SUPPORT
+    if (button && !rtP_Left.b_cruiseCtrlEna) {                       // Cruise control activated
+      rtP_Left.n_cruiseMotTgt   = rtY_Left.n_mot;
+      rtP_Right.n_cruiseMotTgt  = rtY_Right.n_mot;
+      rtP_Left.b_cruiseCtrlEna  = 1;
+      rtP_Right.b_cruiseCtrlEna = 1;
+      shortBeepMany(2, 1);                                           // 200 ms beep delay. Acts as a debounce also.
+    } else if (button && rtP_Left.b_cruiseCtrlEna) {                 // Cruise control deactivated
+      rtP_Left.b_cruiseCtrlEna  = 0;
+      rtP_Right.b_cruiseCtrlEna = 0;
+      shortBeepMany(2, -1);
+    }
+  #endif
+}
+
+
 
 /* =========================== Poweroff Functions =========================== */
 
@@ -869,17 +886,7 @@ void readCommand(void) {
     }
 
     #if defined(CRUISE_CONTROL_SUPPORT) && (defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT))
-      if (button1 && !rtP_Left.b_cruiseCtrlEna) {                       // Cruise control activated
-        rtP_Left.n_cruiseMotTgt   = rtY_Left.n_mot;
-        rtP_Right.n_cruiseMotTgt  = rtY_Right.n_mot;
-        rtP_Left.b_cruiseCtrlEna  = 1;
-        rtP_Right.b_cruiseCtrlEna = 1;
-        shortBeepMany(2, 1);                                            // 200 ms beep delay. Acts as a debounce also.
-      } else if (button1 && rtP_Left.b_cruiseCtrlEna) {                 // Cruise control deactivated
-        rtP_Left.b_cruiseCtrlEna  = 0;
-        rtP_Right.b_cruiseCtrlEna = 0;
-        shortBeepMany(2, -1);
-      }
+      cruiseControl(button1);                                           // Cruise control activation/deactivation
     #endif    
 }
 
@@ -1199,6 +1206,7 @@ void sideboardLeds(uint8_t *leds) {
  */
 void sideboardSensors(uint8_t sensors) {
   #if !defined(VARIANT_HOVERBOARD) && (defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3))
+    static uint8_t  sensor1_prev, sensor2_prev;
     uint8_t sensor1_rising_edge, sensor2_rising_edge;
     sensor1_rising_edge  = (sensors & SENSOR1_SET) && !sensor1_prev;
     sensor2_rising_edge  = (sensors & SENSOR2_SET) && !sensor2_prev;
@@ -1206,6 +1214,7 @@ void sideboardSensors(uint8_t sensors) {
     sensor2_prev         =  sensors & SENSOR2_SET;
 
     // Control MODE and Control Type Handling: use Sensor1 as push button
+    static uint8_t  sensor1_index;          // holds the press index number for sensor1, when used as a button
     if (sensor1_rising_edge) {
       sensor1_index++;
       if (sensor1_index > 4) { sensor1_index = 0; }
@@ -1234,23 +1243,30 @@ void sideboardSensors(uint8_t sensors) {
     }
 
     // Field Weakening: use Sensor2 as push button
-    if (sensor2_rising_edge) {
-      sensor2_index++;
-      if (sensor2_index > 1) { sensor2_index = 0; }
-      switch (sensor2_index) {
-        case 0:     // FW Disabled
-          rtP_Left.b_fieldWeakEna  = 0; 
-          rtP_Right.b_fieldWeakEna = 0;
-          Input_Lim_Init();
-          break;
-        case 1:     // FW Enabled
-          rtP_Left.b_fieldWeakEna  = 1; 
-          rtP_Right.b_fieldWeakEna = 1;
-          Input_Lim_Init();
-          break; 
+    #ifdef CRUISE_CONTROL_SUPPORT
+      if (sensor2_rising_edge) {
+        cruiseControl(sensor2_rising_edge);
       }
-      shortBeepMany(sensor2_index + 1, 1);            
-    }
+    #else
+      static uint8_t  sensor2_index;          // holds the press index number for sensor2, when used as a button
+      if (sensor2_rising_edge) {
+        sensor2_index++;
+        if (sensor2_index > 1) { sensor2_index = 0; }
+        switch (sensor2_index) {
+          case 0:     // FW Disabled
+            rtP_Left.b_fieldWeakEna  = 0; 
+            rtP_Right.b_fieldWeakEna = 0;
+            Input_Lim_Init();
+            break;
+          case 1:     // FW Enabled
+            rtP_Left.b_fieldWeakEna  = 1; 
+            rtP_Right.b_fieldWeakEna = 1;
+            Input_Lim_Init();
+            break; 
+        }
+        shortBeepMany(sensor2_index + 1, 1);            
+      }
+    #endif  // CRUISE_CONTROL_SUPPORT
   #endif
 }
 
