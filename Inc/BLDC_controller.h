@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1284
+ * Model version                  : 1.1296
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Sun Oct 11 21:38:56 2020
+ * C/C++ source code generated on : Tue Oct 20 17:29:57 2020
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -30,167 +30,174 @@
 /* Forward declaration for rtModel */
 typedef struct tag_RTM RT_MODEL;
 
-/* Block signals and states (auto storage) for system '<S12>/Counter' */
+/* Block signals and states (auto storage) for system '<S13>/Counter' */
 typedef struct {
-  int16_T UnitDelay_DSTATE;            /* '<S17>/UnitDelay' */
+  int16_T UnitDelay_DSTATE;            /* '<S18>/UnitDelay' */
 } DW_Counter;
 
-/* Block signals and states (auto storage) for system '<S57>/PI_clamp_fixdt' */
+/* Block signals and states (auto storage) for system '<S50>/Low_Pass_Filter' */
 typedef struct {
-  int32_T ResettableDelay_DSTATE;      /* '<S71>/Resettable Delay' */
-  uint8_T icLoad;                      /* '<S71>/Resettable Delay' */
-  boolean_T UnitDelay1_DSTATE;         /* '<S68>/UnitDelay1' */
-} DW_PI_clamp_fixdt;
-
-/* Block signals and states (auto storage) for system '<S55>/PI_clamp_fixdt' */
-typedef struct {
-  int32_T ResettableDelay_DSTATE;      /* '<S61>/Resettable Delay' */
-  uint8_T icLoad;                      /* '<S61>/Resettable Delay' */
-  boolean_T UnitDelay1_DSTATE;         /* '<S59>/UnitDelay1' */
-} DW_PI_clamp_fixdt_i;
-
-/* Block signals and states (auto storage) for system '<S56>/PI_clamp_fixdt' */
-typedef struct {
-  int16_T ResettableDelay_DSTATE;      /* '<S66>/Resettable Delay' */
-  uint8_T icLoad;                      /* '<S66>/Resettable Delay' */
-  boolean_T UnitDelay1_DSTATE;         /* '<S63>/UnitDelay1' */
-} DW_PI_clamp_fixdt_e;
-
-/* Block signals and states (auto storage) for system '<S43>/Low_Pass_Filter' */
-typedef struct {
-  int32_T UnitDelay1_DSTATE[2];        /* '<S53>/UnitDelay1' */
+  int32_T UnitDelay1_DSTATE[2];        /* '<S56>/UnitDelay1' */
 } DW_Low_Pass_Filter;
 
-/* Block signals and states (auto storage) for system '<S76>/I_backCalc_fixdt' */
+/* Block signals and states (auto storage) for system '<S25>/Counter' */
 typedef struct {
-  int32_T UnitDelay_DSTATE;            /* '<S81>/UnitDelay' */
-  int32_T UnitDelay_DSTATE_h;          /* '<S83>/UnitDelay' */
-} DW_I_backCalc_fixdt;
+  uint16_T UnitDelay_DSTATE;           /* '<S30>/UnitDelay' */
+} DW_Counter_b;
 
-/* Block signals and states (auto storage) for system '<S23>/Counter' */
+/* Block signals and states (auto storage) for system '<S21>/either_edge' */
 typedef struct {
-  uint16_T UnitDelay_DSTATE;           /* '<S28>/UnitDelay' */
-} DW_Counter_l;
-
-/* Block signals and states (auto storage) for system '<S19>/either_edge' */
-typedef struct {
-  boolean_T UnitDelay_DSTATE;          /* '<S24>/UnitDelay' */
+  boolean_T UnitDelay_DSTATE;          /* '<S26>/UnitDelay' */
 } DW_either_edge;
 
-/* Block signals and states (auto storage) for system '<S3>/Debounce_Filter' */
+/* Block signals and states (auto storage) for system '<S20>/Debounce_Filter' */
 typedef struct {
-  DW_either_edge either_edge_k;        /* '<S19>/either_edge' */
-  DW_Counter_l Counter_h;              /* '<S22>/Counter' */
-  DW_Counter_l Counter_i0;             /* '<S23>/Counter' */
-  boolean_T UnitDelay_DSTATE;          /* '<S19>/UnitDelay' */
+  DW_either_edge either_edge_p;        /* '<S21>/either_edge' */
+  DW_Counter_b Counter_e;              /* '<S24>/Counter' */
+  DW_Counter_b Counter_n1;             /* '<S25>/Counter' */
+  boolean_T UnitDelay_DSTATE;          /* '<S21>/UnitDelay' */
 } DW_Debounce_Filter;
+
+/* Block signals and states (auto storage) for system '<S83>/I_backCalc_fixdt' */
+typedef struct {
+  int32_T UnitDelay_DSTATE;            /* '<S88>/UnitDelay' */
+  int32_T UnitDelay_DSTATE_m;          /* '<S90>/UnitDelay' */
+} DW_I_backCalc_fixdt;
+
+/* Block signals and states (auto storage) for system '<S63>/PI_clamp_fixdt' */
+typedef struct {
+  int32_T ResettableDelay_DSTATE;      /* '<S77>/Resettable Delay' */
+  uint8_T icLoad;                      /* '<S77>/Resettable Delay' */
+  boolean_T UnitDelay1_DSTATE;         /* '<S74>/UnitDelay1' */
+} DW_PI_clamp_fixdt;
+
+/* Block signals and states (auto storage) for system '<S61>/PI_clamp_fixdt' */
+typedef struct {
+  int32_T ResettableDelay_DSTATE;      /* '<S67>/Resettable Delay' */
+  uint8_T icLoad;                      /* '<S67>/Resettable Delay' */
+  boolean_T UnitDelay1_DSTATE;         /* '<S65>/UnitDelay1' */
+} DW_PI_clamp_fixdt_m;
+
+/* Block signals and states (auto storage) for system '<S62>/PI_clamp_fixdt' */
+typedef struct {
+  int16_T ResettableDelay_DSTATE;      /* '<S72>/Resettable Delay' */
+  uint8_T icLoad;                      /* '<S72>/Resettable Delay' */
+  boolean_T UnitDelay1_DSTATE;         /* '<S69>/UnitDelay1' */
+} DW_PI_clamp_fixdt_g;
 
 /* Block signals and states (auto storage) for system '<Root>' */
 typedef struct {
-  DW_either_edge either_edge_a;        /* '<S3>/either_edge' */
-  DW_Debounce_Filter Debounce_Filter_f;/* '<S3>/Debounce_Filter' */
-  DW_I_backCalc_fixdt I_backCalc_fixdt_g;/* '<S75>/I_backCalc_fixdt' */
-  DW_I_backCalc_fixdt I_backCalc_fixdt1;/* '<S76>/I_backCalc_fixdt1' */
-  DW_I_backCalc_fixdt I_backCalc_fixdt_i;/* '<S76>/I_backCalc_fixdt' */
-  DW_Low_Pass_Filter Low_Pass_Filter_m;/* '<S43>/Low_Pass_Filter' */
-  DW_PI_clamp_fixdt_e PI_clamp_fixdt_at;/* '<S56>/PI_clamp_fixdt' */
-  DW_PI_clamp_fixdt_i PI_clamp_fixdt_oc;/* '<S55>/PI_clamp_fixdt' */
-  DW_PI_clamp_fixdt PI_clamp_fixdt_k;  /* '<S57>/PI_clamp_fixdt' */
-  DW_Counter Counter_e;                /* '<S12>/Counter' */
-  int32_T Divide1;                     /* '<S74>/Divide1' */
-  int32_T UnitDelay_DSTATE;            /* '<S38>/UnitDelay' */
-  int16_T Gain4[3];                    /* '<S45>/Gain4' */
-  int16_T DataTypeConversion[2];       /* '<S53>/Data Type Conversion' */
-  int16_T z_counterRawPrev;            /* '<S16>/z_counterRawPrev' */
-  int16_T Merge1;                      /* '<S31>/Merge1' */
-  int16_T Divide3;                     /* '<S5>/Divide3' */
-  int16_T Vd_max1;                     /* '<S47>/Vd_max1' */
-  int16_T Gain3;                       /* '<S47>/Gain3' */
-  int16_T Vq_max_M1;                   /* '<S47>/Vq_max_M1' */
-  int16_T Gain5;                       /* '<S47>/Gain5' */
-  int16_T i_max;                       /* '<S47>/i_max' */
-  int16_T Divide1_a;                   /* '<S47>/Divide1' */
-  int16_T Gain1;                       /* '<S47>/Gain1' */
-  int16_T Gain4_c;                     /* '<S47>/Gain4' */
-  int16_T Switch2;                     /* '<S80>/Switch2' */
-  int16_T Switch2_l;                   /* '<S86>/Switch2' */
-  int16_T Switch2_c;                   /* '<S84>/Switch2' */
-  int16_T Merge;                       /* '<S44>/Merge' */
-  int16_T Switch1;                     /* '<S72>/Switch1' */
-  int16_T Divide11;                    /* '<S16>/Divide11' */
-  int16_T UnitDelay3_DSTATE;           /* '<S12>/UnitDelay3' */
-  int16_T UnitDelay4_DSTATE;           /* '<S16>/UnitDelay4' */
-  int16_T UnitDelay2_DSTATE;           /* '<S16>/UnitDelay2' */
-  int16_T UnitDelay3_DSTATE_o;         /* '<S16>/UnitDelay3' */
-  int16_T UnitDelay5_DSTATE;           /* '<S16>/UnitDelay5' */
-  int16_T UnitDelay4_DSTATE_e;         /* '<S12>/UnitDelay4' */
-  int16_T UnitDelay4_DSTATE_eu;        /* '<S7>/UnitDelay4' */
-  int16_T UnitDelay4_DSTATE_h;         /* '<S6>/UnitDelay4' */
-  int8_T Switch2_e;                    /* '<S11>/Switch2' */
-  int8_T UnitDelay2_DSTATE_b;          /* '<S11>/UnitDelay2' */
-  int8_T If4_ActiveSubsystem;          /* '<S1>/If4' */
-  int8_T If1_ActiveSubsystem;          /* '<S1>/If1' */
-  int8_T If2_ActiveSubsystem;          /* '<S31>/If2' */
-  int8_T If2_ActiveSubsystem_a;        /* '<S6>/If2' */
-  int8_T If1_ActiveSubsystem_e;        /* '<S6>/If1' */
-  int8_T SwitchCase_ActiveSubsystem;   /* '<S44>/Switch Case' */
-  uint8_T z_ctrlMod;                   /* '<S4>/F03_02_Control_Mode_Manager' */
-  uint8_T UnitDelay3_DSTATE_fy;        /* '<S9>/UnitDelay3' */
-  uint8_T UnitDelay1_DSTATE;           /* '<S9>/UnitDelay1' */
-  uint8_T UnitDelay2_DSTATE_f;         /* '<S9>/UnitDelay2' */
-  uint8_T is_active_c1_BLDC_controller;/* '<S4>/F03_02_Control_Mode_Manager' */
-  uint8_T is_c1_BLDC_controller;       /* '<S4>/F03_02_Control_Mode_Manager' */
-  uint8_T is_ACTIVE;                   /* '<S4>/F03_02_Control_Mode_Manager' */
-  boolean_T Merge_n;                   /* '<S19>/Merge' */
-  boolean_T dz_cntTrnsDet;             /* '<S16>/dz_cntTrnsDet' */
-  boolean_T UnitDelay2_DSTATE_g;       /* '<S8>/UnitDelay2' */
-  boolean_T UnitDelay5_DSTATE_l;       /* '<S8>/UnitDelay5' */
-  boolean_T UnitDelay6_DSTATE;         /* '<S8>/UnitDelay6' */
-  boolean_T UnitDelay_DSTATE_b;        /* '<S37>/UnitDelay' */
-  boolean_T UnitDelay1_DSTATE_n;       /* '<S16>/UnitDelay1' */
-  boolean_T n_commDeacv_Mode;          /* '<S12>/n_commDeacv' */
-  boolean_T dz_cntTrnsDet_Mode;        /* '<S16>/dz_cntTrnsDet' */
+  DW_PI_clamp_fixdt_g PI_clamp_fixdt_kh;/* '<S62>/PI_clamp_fixdt' */
+  DW_PI_clamp_fixdt_m PI_clamp_fixdt_l4;/* '<S61>/PI_clamp_fixdt' */
+  DW_PI_clamp_fixdt PI_clamp_fixdt_i;  /* '<S63>/PI_clamp_fixdt' */
+  DW_I_backCalc_fixdt I_backCalc_fixdt_j;/* '<S82>/I_backCalc_fixdt' */
+  DW_I_backCalc_fixdt I_backCalc_fixdt1;/* '<S83>/I_backCalc_fixdt1' */
+  DW_I_backCalc_fixdt I_backCalc_fixdt_i;/* '<S83>/I_backCalc_fixdt' */
+  DW_either_edge either_edge_i;        /* '<S20>/either_edge' */
+  DW_Debounce_Filter Debounce_Filter_k;/* '<S20>/Debounce_Filter' */
+  DW_Low_Pass_Filter Low_Pass_Filter_m;/* '<S50>/Low_Pass_Filter' */
+  DW_Counter Counter_e;                /* '<S13>/Counter' */
+  int32_T Divide1;                     /* '<S81>/Divide1' */
+  int32_T UnitDelay_DSTATE;            /* '<S40>/UnitDelay' */
+  int16_T Gain4_e[3];                  /* '<S57>/Gain4' */
+  int16_T DataTypeConversion[2];       /* '<S56>/Data Type Conversion' */
+  int16_T z_counterRawPrev;            /* '<S17>/z_counterRawPrev' */
+  int16_T Merge;                       /* '<S59>/Merge' */
+  int16_T Switch1;                     /* '<S78>/Switch1' */
+  int16_T Vd_max1;                     /* '<S80>/Vd_max1' */
+  int16_T Gain3;                       /* '<S80>/Gain3' */
+  int16_T Vq_max_M1;                   /* '<S80>/Vq_max_M1' */
+  int16_T Gain5;                       /* '<S80>/Gain5' */
+  int16_T i_max;                       /* '<S80>/i_max' */
+  int16_T Divide1_n;                   /* '<S80>/Divide1' */
+  int16_T Gain1;                       /* '<S80>/Gain1' */
+  int16_T Gain4;                       /* '<S80>/Gain4' */
+  int16_T Switch2_i;                   /* '<S87>/Switch2' */
+  int16_T Switch2_o;                   /* '<S93>/Switch2' */
+  int16_T Switch2_a;                   /* '<S91>/Switch2' */
+  int16_T Divide3;                     /* '<S42>/Divide3' */
+  int16_T Merge1;                      /* '<S33>/Merge1' */
+  int16_T Abs1;                        /* '<S5>/Abs1' */
+  int16_T Abs5_h;                      /* '<S50>/Abs5' */
+  int16_T Divide11;                    /* '<S17>/Divide11' */
+  int16_T r_sin_M1;                    /* '<S52>/r_sin_M1' */
+  int16_T r_cos_M1;                    /* '<S52>/r_cos_M1' */
+  int16_T UnitDelay3_DSTATE;           /* '<S13>/UnitDelay3' */
+  int16_T UnitDelay4_DSTATE;           /* '<S17>/UnitDelay4' */
+  int16_T UnitDelay2_DSTATE;           /* '<S17>/UnitDelay2' */
+  int16_T UnitDelay3_DSTATE_o;         /* '<S17>/UnitDelay3' */
+  int16_T UnitDelay5_DSTATE;           /* '<S17>/UnitDelay5' */
+  int16_T UnitDelay4_DSTATE_e;         /* '<S13>/UnitDelay4' */
+  int16_T UnitDelay4_DSTATE_eu;        /* '<S8>/UnitDelay4' */
+  int8_T Switch2_e;                    /* '<S12>/Switch2' */
+  int8_T UnitDelay2_DSTATE_b;          /* '<S12>/UnitDelay2' */
+  int8_T If1_ActiveSubsystem;          /* '<S7>/If1' */
+  int8_T If2_ActiveSubsystem;          /* '<S7>/If2' */
+  int8_T If1_ActiveSubsystem_j;        /* '<S47>/If1' */
+  int8_T SwitchCase_ActiveSubsystem;   /* '<S59>/Switch Case' */
+  int8_T If1_ActiveSubsystem_a;        /* '<S59>/If1' */
+  int8_T If1_ActiveSubsystem_o;        /* '<S48>/If1' */
+  int8_T SwitchCase_ActiveSubsystem_d; /* '<S80>/Switch Case' */
+  int8_T If2_ActiveSubsystem_f;        /* '<S33>/If2' */
+  int8_T If2_ActiveSubsystem_a;        /* '<S45>/If2' */
+  uint8_T z_ctrlMod;                   /* '<S5>/F03_02_Control_Mode_Manager' */
+  uint8_T UnitDelay3_DSTATE_fy;        /* '<S10>/UnitDelay3' */
+  uint8_T UnitDelay1_DSTATE;           /* '<S10>/UnitDelay1' */
+  uint8_T UnitDelay2_DSTATE_f;         /* '<S10>/UnitDelay2' */
+  uint8_T UnitDelay_DSTATE_e;          /* '<S20>/UnitDelay' */
+  uint8_T is_active_c1_BLDC_controller;/* '<S5>/F03_02_Control_Mode_Manager' */
+  uint8_T is_c1_BLDC_controller;       /* '<S5>/F03_02_Control_Mode_Manager' */
+  uint8_T is_ACTIVE;                   /* '<S5>/F03_02_Control_Mode_Manager' */
+  boolean_T Merge_p;                   /* '<S21>/Merge' */
+  boolean_T dz_cntTrnsDet;             /* '<S17>/dz_cntTrnsDet' */
+  boolean_T UnitDelay2_DSTATE_c;       /* '<S2>/UnitDelay2' */
+  boolean_T UnitDelay5_DSTATE_m;       /* '<S2>/UnitDelay5' */
+  boolean_T UnitDelay6_DSTATE;         /* '<S2>/UnitDelay6' */
+  boolean_T UnitDelay_DSTATE_b;        /* '<S39>/UnitDelay' */
+  boolean_T UnitDelay1_DSTATE_n;       /* '<S17>/UnitDelay1' */
+  boolean_T n_commDeacv_Mode;          /* '<S13>/n_commDeacv' */
+  boolean_T dz_cntTrnsDet_Mode;        /* '<S17>/dz_cntTrnsDet' */
 } DW;
 
 /* Constant parameters (auto storage) */
 typedef struct {
-  /* Computed Parameter: r_sin3PhaA_M1_Table
-   * Referenced by: '<S89>/r_sin3PhaA_M1'
-   */
-  int16_T r_sin3PhaA_M1_Table[181];
-
-  /* Computed Parameter: r_sin3PhaB_M1_Table
-   * Referenced by: '<S89>/r_sin3PhaB_M1'
-   */
-  int16_T r_sin3PhaB_M1_Table[181];
-
-  /* Computed Parameter: r_sin3PhaC_M1_Table
-   * Referenced by: '<S89>/r_sin3PhaC_M1'
-   */
-  int16_T r_sin3PhaC_M1_Table[181];
-
   /* Computed Parameter: r_sin_M1_Table
-   * Referenced by: '<S49>/r_sin_M1'
+   * Referenced by: '<S52>/r_sin_M1'
    */
   int16_T r_sin_M1_Table[181];
 
   /* Computed Parameter: r_cos_M1_Table
-   * Referenced by: '<S49>/r_cos_M1'
+   * Referenced by: '<S52>/r_cos_M1'
    */
   int16_T r_cos_M1_Table[181];
 
+  /* Computed Parameter: r_sin3PhaA_M1_Table
+   * Referenced by: '<S96>/r_sin3PhaA_M1'
+   */
+  int16_T r_sin3PhaA_M1_Table[181];
+
+  /* Computed Parameter: r_sin3PhaB_M1_Table
+   * Referenced by: '<S96>/r_sin3PhaB_M1'
+   */
+  int16_T r_sin3PhaB_M1_Table[181];
+
+  /* Computed Parameter: r_sin3PhaC_M1_Table
+   * Referenced by: '<S96>/r_sin3PhaC_M1'
+   */
+  int16_T r_sin3PhaC_M1_Table[181];
+
   /* Computed Parameter: iq_maxSca_M1_Table
-   * Referenced by: '<S47>/iq_maxSca_M1'
+   * Referenced by: '<S80>/iq_maxSca_M1'
    */
   uint16_T iq_maxSca_M1_Table[50];
 
   /* Computed Parameter: z_commutMap_M1_table
-   * Referenced by: '<S87>/z_commutMap_M1'
+   * Referenced by: '<S94>/z_commutMap_M1'
    */
   int8_T z_commutMap_M1_table[18];
 
   /* Computed Parameter: vec_hallToPos_Value
-   * Referenced by: '<S10>/vec_hallToPos'
+   * Referenced by: '<S11>/vec_hallToPos'
    */
   int8_T vec_hallToPos_Value[8];
 } ConstP;
@@ -224,145 +231,145 @@ typedef struct {
 /* Parameters (auto storage) */
 struct P_ {
   int32_T dV_openRate;                 /* Variable: dV_openRate
-                                        * Referenced by: '<S35>/dV_openRate'
+                                        * Referenced by: '<S37>/dV_openRate'
                                         */
   int16_T dz_cntTrnsDetHi;             /* Variable: dz_cntTrnsDetHi
-                                        * Referenced by: '<S16>/dz_cntTrnsDet'
+                                        * Referenced by: '<S17>/dz_cntTrnsDet'
                                         */
   int16_T dz_cntTrnsDetLo;             /* Variable: dz_cntTrnsDetLo
-                                        * Referenced by: '<S16>/dz_cntTrnsDet'
+                                        * Referenced by: '<S17>/dz_cntTrnsDet'
                                         */
   int16_T n_cruiseMotTgt;              /* Variable: n_cruiseMotTgt
-                                        * Referenced by: '<S55>/n_cruiseMotTgt'
+                                        * Referenced by: '<S61>/n_cruiseMotTgt'
                                         */
   int16_T z_maxCntRst;                 /* Variable: z_maxCntRst
                                         * Referenced by:
-                                        *   '<S12>/Counter'
-                                        *   '<S12>/z_maxCntRst'
-                                        *   '<S12>/z_maxCntRst2'
-                                        *   '<S12>/UnitDelay3'
-                                        *   '<S16>/z_counter'
+                                        *   '<S13>/Counter'
+                                        *   '<S13>/z_maxCntRst'
+                                        *   '<S13>/z_maxCntRst2'
+                                        *   '<S13>/UnitDelay3'
+                                        *   '<S17>/z_counter'
                                         */
   uint16_T cf_speedCoef;               /* Variable: cf_speedCoef
-                                        * Referenced by: '<S16>/cf_speedCoef'
+                                        * Referenced by: '<S17>/cf_speedCoef'
                                         */
   uint16_T t_errDequal;                /* Variable: t_errDequal
-                                        * Referenced by: '<S3>/t_errDequal'
+                                        * Referenced by: '<S20>/t_errDequal'
                                         */
   uint16_T t_errQual;                  /* Variable: t_errQual
-                                        * Referenced by: '<S3>/t_errQual'
+                                        * Referenced by: '<S20>/t_errQual'
                                         */
   int16_T Vd_max;                      /* Variable: Vd_max
                                         * Referenced by:
-                                        *   '<S47>/Vd_max1'
-                                        *   '<S34>/Vd_max'
+                                        *   '<S36>/Vd_max'
+                                        *   '<S80>/Vd_max1'
                                         */
   int16_T Vq_max_M1[46];               /* Variable: Vq_max_M1
-                                        * Referenced by: '<S47>/Vq_max_M1'
+                                        * Referenced by: '<S80>/Vq_max_M1'
                                         */
   int16_T Vq_max_XA[46];               /* Variable: Vq_max_XA
-                                        * Referenced by: '<S47>/Vq_max_XA'
+                                        * Referenced by: '<S80>/Vq_max_XA'
                                         */
   int16_T a_phaAdvMax;                 /* Variable: a_phaAdvMax
-                                        * Referenced by: '<S5>/a_phaAdvMax'
+                                        * Referenced by: '<S42>/a_phaAdvMax'
                                         */
   int16_T i_max;                       /* Variable: i_max
                                         * Referenced by:
-                                        *   '<S47>/i_max'
-                                        *   '<S34>/i_max'
+                                        *   '<S36>/i_max'
+                                        *   '<S80>/i_max'
                                         */
   int16_T id_fieldWeakMax;             /* Variable: id_fieldWeakMax
-                                        * Referenced by: '<S5>/id_fieldWeakMax'
+                                        * Referenced by: '<S42>/id_fieldWeakMax'
                                         */
   int16_T n_commAcvLo;                 /* Variable: n_commAcvLo
-                                        * Referenced by: '<S12>/n_commDeacv'
+                                        * Referenced by: '<S13>/n_commDeacv'
                                         */
   int16_T n_commDeacvHi;               /* Variable: n_commDeacvHi
-                                        * Referenced by: '<S12>/n_commDeacv'
+                                        * Referenced by: '<S13>/n_commDeacv'
                                         */
   int16_T n_fieldWeakAuthHi;           /* Variable: n_fieldWeakAuthHi
-                                        * Referenced by: '<S5>/n_fieldWeakAuthHi'
+                                        * Referenced by: '<S42>/n_fieldWeakAuthHi'
                                         */
   int16_T n_fieldWeakAuthLo;           /* Variable: n_fieldWeakAuthLo
-                                        * Referenced by: '<S5>/n_fieldWeakAuthLo'
+                                        * Referenced by: '<S42>/n_fieldWeakAuthLo'
                                         */
   int16_T n_max;                       /* Variable: n_max
                                         * Referenced by:
-                                        *   '<S47>/n_max1'
-                                        *   '<S34>/n_max'
+                                        *   '<S36>/n_max'
+                                        *   '<S80>/n_max1'
                                         */
   int16_T n_stdStillDet;               /* Variable: n_stdStillDet
-                                        * Referenced by: '<S12>/n_stdStillDet'
+                                        * Referenced by: '<S13>/n_stdStillDet'
                                         */
   int16_T r_errInpTgtThres;            /* Variable: r_errInpTgtThres
-                                        * Referenced by: '<S3>/r_errInpTgtThres'
+                                        * Referenced by: '<S20>/r_errInpTgtThres'
                                         */
   int16_T r_fieldWeakHi;               /* Variable: r_fieldWeakHi
-                                        * Referenced by: '<S5>/r_fieldWeakHi'
+                                        * Referenced by: '<S42>/r_fieldWeakHi'
                                         */
   int16_T r_fieldWeakLo;               /* Variable: r_fieldWeakLo
-                                        * Referenced by: '<S5>/r_fieldWeakLo'
+                                        * Referenced by: '<S42>/r_fieldWeakLo'
                                         */
   uint16_T cf_KbLimProt;               /* Variable: cf_KbLimProt
                                         * Referenced by:
-                                        *   '<S75>/cf_KbLimProt'
-                                        *   '<S76>/cf_KbLimProt'
+                                        *   '<S82>/cf_KbLimProt'
+                                        *   '<S83>/cf_KbLimProt'
                                         */
   uint16_T cf_idKp;                    /* Variable: cf_idKp
-                                        * Referenced by: '<S57>/cf_idKp1'
+                                        * Referenced by: '<S63>/cf_idKp1'
                                         */
   uint16_T cf_iqKp;                    /* Variable: cf_iqKp
-                                        * Referenced by: '<S56>/cf_iqKp'
+                                        * Referenced by: '<S62>/cf_iqKp'
                                         */
   uint16_T cf_nKp;                     /* Variable: cf_nKp
-                                        * Referenced by: '<S55>/cf_nKp'
+                                        * Referenced by: '<S61>/cf_nKp'
                                         */
   uint16_T cf_currFilt;                /* Variable: cf_currFilt
-                                        * Referenced by: '<S43>/cf_currFilt'
+                                        * Referenced by: '<S50>/cf_currFilt'
                                         */
   uint16_T cf_idKi;                    /* Variable: cf_idKi
-                                        * Referenced by: '<S57>/cf_idKi1'
+                                        * Referenced by: '<S63>/cf_idKi1'
                                         */
   uint16_T cf_iqKi;                    /* Variable: cf_iqKi
-                                        * Referenced by: '<S56>/cf_iqKi'
+                                        * Referenced by: '<S62>/cf_iqKi'
                                         */
   uint16_T cf_iqKiLimProt;             /* Variable: cf_iqKiLimProt
                                         * Referenced by:
-                                        *   '<S74>/cf_iqKiLimProt'
-                                        *   '<S76>/cf_iqKiLimProt'
+                                        *   '<S81>/cf_iqKiLimProt'
+                                        *   '<S83>/cf_iqKiLimProt'
                                         */
   uint16_T cf_nKi;                     /* Variable: cf_nKi
-                                        * Referenced by: '<S55>/cf_nKi'
+                                        * Referenced by: '<S61>/cf_nKi'
                                         */
   uint16_T cf_nKiLimProt;              /* Variable: cf_nKiLimProt
                                         * Referenced by:
-                                        *   '<S75>/cf_nKiLimProt'
-                                        *   '<S76>/cf_nKiLimProt'
+                                        *   '<S82>/cf_nKiLimProt'
+                                        *   '<S83>/cf_nKiLimProt'
                                         */
   uint8_T n_polePairs;                 /* Variable: n_polePairs
-                                        * Referenced by: '<S14>/n_polePairs'
+                                        * Referenced by: '<S15>/n_polePairs'
                                         */
   uint8_T z_ctrlTypSel;                /* Variable: z_ctrlTypSel
                                         * Referenced by: '<S1>/z_ctrlTypSel'
                                         */
   uint8_T z_selPhaCurMeasABC;          /* Variable: z_selPhaCurMeasABC
-                                        * Referenced by: '<S42>/z_selPhaCurMeasABC'
+                                        * Referenced by: '<S49>/z_selPhaCurMeasABC'
                                         */
   boolean_T b_angleMeasEna;            /* Variable: b_angleMeasEna
                                         * Referenced by:
-                                        *   '<S2>/b_angleMeasEna'
-                                        *   '<S12>/b_angleMeasEna'
+                                        *   '<S3>/b_angleMeasEna'
+                                        *   '<S13>/b_angleMeasEna'
                                         */
   boolean_T b_cruiseCtrlEna;           /* Variable: b_cruiseCtrlEna
                                         * Referenced by: '<S1>/b_cruiseCtrlEna'
                                         */
   boolean_T b_diagEna;                 /* Variable: b_diagEna
-                                        * Referenced by: '<S1>/b_diagEna'
+                                        * Referenced by: '<S4>/b_diagEna'
                                         */
   boolean_T b_fieldWeakEna;            /* Variable: b_fieldWeakEna
                                         * Referenced by:
-                                        *   '<S1>/b_fieldWeakEna'
-                                        *   '<S90>/b_fieldWeakEna'
+                                        *   '<S6>/b_fieldWeakEna'
+                                        *   '<S97>/b_fieldWeakEna'
                                         */
 };
 
@@ -387,33 +394,34 @@ extern void BLDC_controller_step(RT_MODEL *const rtM);
 /*-
  * These blocks were eliminated from the model due to optimizations:
  *
- * Block '<S12>/Scope2' : Unused code path elimination
- * Block '<S13>/Scope' : Unused code path elimination
- * Block '<S39>/Data Type Duplicate' : Unused code path elimination
- * Block '<S39>/Data Type Propagation' : Unused code path elimination
- * Block '<S40>/Data Type Duplicate' : Unused code path elimination
- * Block '<S40>/Data Type Propagation' : Unused code path elimination
+ * Block '<S13>/Scope2' : Unused code path elimination
+ * Block '<S14>/Scope' : Unused code path elimination
  * Block '<S41>/Data Type Duplicate' : Unused code path elimination
  * Block '<S41>/Data Type Propagation' : Unused code path elimination
- * Block '<S64>/Data Type Duplicate' : Unused code path elimination
- * Block '<S64>/Data Type Propagation' : Unused code path elimination
- * Block '<S69>/Data Type Duplicate' : Unused code path elimination
- * Block '<S69>/Data Type Propagation' : Unused code path elimination
- * Block '<S73>/Data Type Duplicate' : Unused code path elimination
- * Block '<S73>/Data Type Propagation' : Unused code path elimination
- * Block '<S77>/Data Type Duplicate' : Unused code path elimination
- * Block '<S77>/Data Type Propagation' : Unused code path elimination
- * Block '<S80>/Data Type Duplicate' : Unused code path elimination
- * Block '<S80>/Data Type Propagation' : Unused code path elimination
+ * Block '<S43>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S43>/Data Type Propagation' : Unused code path elimination
+ * Block '<S44>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S44>/Data Type Propagation' : Unused code path elimination
+ * Block '<S70>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S70>/Data Type Propagation' : Unused code path elimination
+ * Block '<S75>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S75>/Data Type Propagation' : Unused code path elimination
+ * Block '<S79>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S79>/Data Type Propagation' : Unused code path elimination
  * Block '<S84>/Data Type Duplicate' : Unused code path elimination
  * Block '<S84>/Data Type Propagation' : Unused code path elimination
- * Block '<S86>/Data Type Duplicate' : Unused code path elimination
- * Block '<S86>/Data Type Propagation' : Unused code path elimination
- * Block '<S6>/Scope12' : Unused code path elimination
- * Block '<S6>/Scope8' : Unused code path elimination
- * Block '<S90>/Scope' : Unused code path elimination
- * Block '<S66>/Data Type Conversion1' : Eliminate redundant data type conversion
- * Block '<S8>/Data Type Conversion' : Eliminate redundant data type conversion
+ * Block '<S87>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S87>/Data Type Propagation' : Unused code path elimination
+ * Block '<S91>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S91>/Data Type Propagation' : Unused code path elimination
+ * Block '<S93>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S93>/Data Type Propagation' : Unused code path elimination
+ * Block '<S7>/Scope12' : Unused code path elimination
+ * Block '<S7>/Scope8' : Unused code path elimination
+ * Block '<S7>/toNegative' : Unused code path elimination
+ * Block '<S97>/Scope' : Unused code path elimination
+ * Block '<S2>/Data Type Conversion' : Eliminate redundant data type conversion
+ * Block '<S72>/Data Type Conversion1' : Eliminate redundant data type conversion
  */
 
 /*-
@@ -435,96 +443,103 @@ extern void BLDC_controller_step(RT_MODEL *const rtM);
  *
  * '<Root>' : 'BLDCmotor_FOC_R2017b_fixdt'
  * '<S1>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller'
- * '<S2>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations'
- * '<S3>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics'
- * '<S4>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager'
- * '<S5>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Weakening'
- * '<S6>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control'
- * '<S7>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management'
- * '<S8>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/Task_Scheduler'
- * '<S9>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_01_Edge_Detector'
- * '<S10>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_02_Position_Calculation'
- * '<S11>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_03_Direction_Detection'
- * '<S12>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_04_Speed_Estimation'
- * '<S13>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_05_Electrical_Angle_Estimation'
- * '<S14>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_06_Electrical_Angle_Measurement'
- * '<S15>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_04_Speed_Estimation/Counter'
- * '<S16>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_04_Speed_Estimation/Raw_Motor_Speed_Estimation'
- * '<S17>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_04_Speed_Estimation/Counter/rst_Delay'
- * '<S18>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_06_Electrical_Angle_Measurement/Modulo_fixdt'
- * '<S19>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter'
- * '<S20>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/either_edge'
- * '<S21>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter/Default'
- * '<S22>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter/Dequalification'
- * '<S23>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter/Qualification'
- * '<S24>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter/either_edge'
- * '<S25>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter/Dequalification/Counter'
- * '<S26>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter/Dequalification/Counter/rst_Delay'
- * '<S27>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter/Qualification/Counter'
- * '<S28>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Debounce_Filter/Qualification/Counter/rst_Delay'
- * '<S29>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_01_Mode_Transition_Calculation'
- * '<S30>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_02_Control_Mode_Manager'
- * '<S31>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis'
- * '<S32>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Default_Control_Type'
- * '<S33>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Default_Mode'
- * '<S34>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/FOC_Control_Type'
- * '<S35>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode'
- * '<S36>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode/Rate_Limiter'
- * '<S37>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode/rising_edge_init'
- * '<S38>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode/Rate_Limiter/Delay_Init1'
- * '<S39>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode/Rate_Limiter/Saturation Dynamic'
- * '<S40>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Weakening/Saturation Dynamic'
- * '<S41>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Weakening/Saturation Dynamic1'
- * '<S42>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Transform'
- * '<S43>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Current_Filtering'
- * '<S44>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC'
- * '<S45>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Inv_Clarke_Transform'
- * '<S46>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Inv_Park_Transform'
- * '<S47>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations'
- * '<S48>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Park_Transform'
- * '<S49>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Sine_Cosine_Approximation'
- * '<S50>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Transform/Clarke_PhasesAB'
- * '<S51>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Transform/Clarke_PhasesAC'
- * '<S52>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Transform/Clarke_PhasesBC'
- * '<S53>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Current_Filtering/Low_Pass_Filter'
- * '<S54>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Open_Mode'
- * '<S55>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Speed_Mode'
- * '<S56>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Torque_Mode'
- * '<S57>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Vd_Calculation'
- * '<S58>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Voltage_Mode'
- * '<S59>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Speed_Mode/PI_clamp_fixdt'
- * '<S60>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Speed_Mode/PI_clamp_fixdt/Clamping_circuit'
- * '<S61>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Speed_Mode/PI_clamp_fixdt/Integrator'
- * '<S62>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Speed_Mode/PI_clamp_fixdt/Saturation_hit'
- * '<S63>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Torque_Mode/PI_clamp_fixdt'
- * '<S64>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Torque_Mode/Saturation Dynamic1'
- * '<S65>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Torque_Mode/PI_clamp_fixdt/Clamping_circuit'
- * '<S66>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Torque_Mode/PI_clamp_fixdt/Integrator'
- * '<S67>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Torque_Mode/PI_clamp_fixdt/Saturation_hit'
- * '<S68>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Vd_Calculation/PI_clamp_fixdt'
- * '<S69>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Vd_Calculation/Saturation Dynamic'
- * '<S70>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Vd_Calculation/PI_clamp_fixdt/Clamping_circuit'
- * '<S71>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Vd_Calculation/PI_clamp_fixdt/Integrator'
- * '<S72>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Vd_Calculation/PI_clamp_fixdt/Saturation_hit'
- * '<S73>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/Voltage_Mode/Saturation Dynamic1'
- * '<S74>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Speed_Mode_Protection'
- * '<S75>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Torque_Mode_Protection'
- * '<S76>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Voltage_Mode_Protection'
- * '<S77>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Speed_Mode_Protection/Saturation Dynamic'
- * '<S78>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Torque_Mode_Protection/I_backCalc_fixdt'
- * '<S79>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Torque_Mode_Protection/I_backCalc_fixdt/Integrator'
- * '<S80>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Torque_Mode_Protection/I_backCalc_fixdt/Saturation Dynamic1'
- * '<S81>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Voltage_Mode_Protection/I_backCalc_fixdt'
- * '<S82>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Voltage_Mode_Protection/I_backCalc_fixdt1'
- * '<S83>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Voltage_Mode_Protection/I_backCalc_fixdt/Integrator'
- * '<S84>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Voltage_Mode_Protection/I_backCalc_fixdt/Saturation Dynamic1'
- * '<S85>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Voltage_Mode_Protection/I_backCalc_fixdt1/Integrator'
- * '<S86>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Voltage_Mode_Protection/I_backCalc_fixdt1/Saturation Dynamic1'
- * '<S87>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/COM_Method'
- * '<S88>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/FOC_Method'
- * '<S89>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/SIN_Method'
- * '<S90>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/SIN_Method/Final_Phase_Advance_Calculation'
- * '<S91>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/SIN_Method/Final_Phase_Advance_Calculation/Modulo_fixdt'
+ * '<S2>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/Call_Scheduler'
+ * '<S3>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations'
+ * '<S4>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics'
+ * '<S5>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager'
+ * '<S6>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Weakening'
+ * '<S7>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control'
+ * '<S8>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management'
+ * '<S9>'   : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/Task_Scheduler'
+ * '<S10>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_01_Edge_Detector'
+ * '<S11>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_02_Position_Calculation'
+ * '<S12>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_03_Direction_Detection'
+ * '<S13>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_04_Speed_Estimation'
+ * '<S14>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_05_Electrical_Angle_Estimation'
+ * '<S15>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_06_Electrical_Angle_Measurement'
+ * '<S16>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_04_Speed_Estimation/Counter'
+ * '<S17>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_04_Speed_Estimation/Raw_Motor_Speed_Estimation'
+ * '<S18>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_04_Speed_Estimation/Counter/rst_Delay'
+ * '<S19>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F01_Estimations/F01_06_Electrical_Angle_Measurement/Modulo_fixdt'
+ * '<S20>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled'
+ * '<S21>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter'
+ * '<S22>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/either_edge'
+ * '<S23>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter/Default'
+ * '<S24>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter/Dequalification'
+ * '<S25>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter/Qualification'
+ * '<S26>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter/either_edge'
+ * '<S27>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter/Dequalification/Counter'
+ * '<S28>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter/Dequalification/Counter/rst_Delay'
+ * '<S29>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter/Qualification/Counter'
+ * '<S30>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F02_Diagnostics/Diagnostics_Enabled/Debounce_Filter/Qualification/Counter/rst_Delay'
+ * '<S31>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_01_Mode_Transition_Calculation'
+ * '<S32>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_02_Control_Mode_Manager'
+ * '<S33>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis'
+ * '<S34>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Default_Control_Type'
+ * '<S35>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Default_Mode'
+ * '<S36>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/FOC_Control_Type'
+ * '<S37>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode'
+ * '<S38>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode/Rate_Limiter'
+ * '<S39>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode/rising_edge_init'
+ * '<S40>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode/Rate_Limiter/Delay_Init1'
+ * '<S41>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F03_Control_Mode_Manager/F03_03_Input_Target_Synthesis/Open_Mode/Rate_Limiter/Saturation Dynamic'
+ * '<S42>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Weakening/Field_Weakening_Enabled'
+ * '<S43>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Weakening/Field_Weakening_Enabled/Saturation Dynamic'
+ * '<S44>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F04_Field_Weakening/Field_Weakening_Enabled/Saturation Dynamic1'
+ * '<S45>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward'
+ * '<S46>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Inverse'
+ * '<S47>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC'
+ * '<S48>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations'
+ * '<S49>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward/Clarke_Transform'
+ * '<S50>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward/Current_Filtering'
+ * '<S51>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward/Park_Transform'
+ * '<S52>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward/Sine_Cosine_Approximation'
+ * '<S53>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward/Clarke_Transform/Clarke_PhasesAB'
+ * '<S54>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward/Clarke_Transform/Clarke_PhasesAC'
+ * '<S55>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward/Clarke_Transform/Clarke_PhasesBC'
+ * '<S56>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Forward/Current_Filtering/Low_Pass_Filter'
+ * '<S57>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Inverse/Inv_Clarke_Transform'
+ * '<S58>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Clarke_Park_Transform_Inverse/Inv_Park_Transform'
+ * '<S59>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled'
+ * '<S60>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Open_Mode'
+ * '<S61>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Speed_Mode'
+ * '<S62>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Torque_Mode'
+ * '<S63>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Vd_Calculation'
+ * '<S64>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Voltage_Mode'
+ * '<S65>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Speed_Mode/PI_clamp_fixdt'
+ * '<S66>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Speed_Mode/PI_clamp_fixdt/Clamping_circuit'
+ * '<S67>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Speed_Mode/PI_clamp_fixdt/Integrator'
+ * '<S68>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Speed_Mode/PI_clamp_fixdt/Saturation_hit'
+ * '<S69>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Torque_Mode/PI_clamp_fixdt'
+ * '<S70>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Torque_Mode/Saturation Dynamic1'
+ * '<S71>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Torque_Mode/PI_clamp_fixdt/Clamping_circuit'
+ * '<S72>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Torque_Mode/PI_clamp_fixdt/Integrator'
+ * '<S73>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Torque_Mode/PI_clamp_fixdt/Saturation_hit'
+ * '<S74>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Vd_Calculation/PI_clamp_fixdt'
+ * '<S75>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Vd_Calculation/Saturation Dynamic'
+ * '<S76>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Vd_Calculation/PI_clamp_fixdt/Clamping_circuit'
+ * '<S77>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Vd_Calculation/PI_clamp_fixdt/Integrator'
+ * '<S78>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Vd_Calculation/PI_clamp_fixdt/Saturation_hit'
+ * '<S79>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/FOC/FOC_Enabled/Voltage_Mode/Saturation Dynamic1'
+ * '<S80>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled'
+ * '<S81>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Speed_Mode_Protection'
+ * '<S82>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Torque_Mode_Protection'
+ * '<S83>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Voltage_Mode_Protection'
+ * '<S84>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Speed_Mode_Protection/Saturation Dynamic'
+ * '<S85>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Torque_Mode_Protection/I_backCalc_fixdt'
+ * '<S86>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Torque_Mode_Protection/I_backCalc_fixdt/Integrator'
+ * '<S87>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Torque_Mode_Protection/I_backCalc_fixdt/Saturation Dynamic1'
+ * '<S88>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Voltage_Mode_Protection/I_backCalc_fixdt'
+ * '<S89>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Voltage_Mode_Protection/I_backCalc_fixdt1'
+ * '<S90>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Voltage_Mode_Protection/I_backCalc_fixdt/Integrator'
+ * '<S91>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Voltage_Mode_Protection/I_backCalc_fixdt/Saturation Dynamic1'
+ * '<S92>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Voltage_Mode_Protection/I_backCalc_fixdt1/Integrator'
+ * '<S93>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F05_Field_Oriented_Control/Motor_Limitations/Motor_Limitations_Enabled/Voltage_Mode_Protection/I_backCalc_fixdt1/Saturation Dynamic1'
+ * '<S94>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/COM_Method'
+ * '<S95>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/FOC_Method'
+ * '<S96>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/SIN_Method'
+ * '<S97>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/SIN_Method/Final_Phase_Advance_Calculation'
+ * '<S98>'  : 'BLDCmotor_FOC_R2017b_fixdt/BLDC_controller/F06_Control_Type_Management/SIN_Method/Final_Phase_Advance_Calculation/Modulo_fixdt'
  */
 #endif                                 /* RTW_HEADER_BLDC_controller_h_ */
 
