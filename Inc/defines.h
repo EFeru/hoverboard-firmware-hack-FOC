@@ -181,6 +181,8 @@
 #define MIN3(a, b, c) MIN(a, MIN(b, c))
 #define MAX3(a, b, c) MAX(a, MAX(b, c))
 #define ARRAY_LEN(x) (uint32_t)(sizeof(x) / sizeof(*(x)))
+#define MAP(x, in_min, in_max, out_min, out_max) ((((x - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min )
+
 
 typedef struct {
   uint16_t dcr; 
