@@ -569,9 +569,9 @@ int addDeadBand(int16_t u, int16_t deadBand, int16_t in_min, int16_t in_mid, int
   if(u > in_mid - deadBand && u < in_mid + deadBand) {
     return 0;
   } else if(u > 0) {
-    return MAP(u, in_mid + deadband, in_max, 0, out_max);
+    return MAP(u, in_mid + deadBand, in_max, 0, out_max);
   } else {
-    return MAP(u, in_mid - deadband, in_min, out_min, 0);
+    return MAP(u, in_mid - deadBand, in_min, out_min, 0);
   }	
 }
 
