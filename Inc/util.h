@@ -69,7 +69,7 @@ void calcAvgSpeed(void);
 void adcCalibLim(void);
 void updateCurSpdLim(void);
 void saveConfig(void);
-int  addDeadBand(int16_t u, int16_t deadBand, int16_t in_min, int16_t in_max, int16_t out_min, int16_t out_max);
+int  addDeadBand(int16_t u, int16_t deadBand, int16_t in_min, int16_t in_mid, int16_t in_max, int16_t out_min, int16_t out_max);
 void standstillHold(int16_t *speedCmd);
 void electricBrake(uint16_t speedBlend, uint8_t reverseDir);
 void cruiseControl(uint8_t button);
