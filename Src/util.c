@@ -88,6 +88,8 @@ ExtY     rtY_Right;                     /* External outputs */
 
 int16_t  cmd1;                          // normalized input value. -1000 to 1000
 int16_t  cmd2;                          // normalized input value. -1000 to 1000
+int16_t  cmd1_in;                       // normalized input value. -1000 to 1000
+int16_t  cmd2_in;                       // normalized input value. -1000 to 1000
 
 int16_t  speedAvg;                      // average measured speed
 int16_t  speedAvgAbs;                   // average measured speed in absolute
@@ -125,24 +127,24 @@ uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300};     // Dummy virtual address to av
 static int16_t INPUT_MAX;             // [-] Input target maximum limitation
 static int16_t INPUT_MIN;             // [-] Input target minimum limitation
 
-#ifdef CONTROL_ADC
-  static uint8_t  cur_spd_valid = 0;
-  static uint8_t  adc_cal_valid = 0;
-  static uint16_t ADC1_MIN_CAL = ADC1_MIN;
-  static uint16_t ADC1_MAX_CAL = ADC1_MAX;
-  static uint16_t ADC2_MIN_CAL = ADC2_MIN;
-  static uint16_t ADC2_MAX_CAL = ADC2_MAX;
-  #ifdef ADC1_MID_POT
-  static uint16_t ADC1_MID_CAL = ADC1_MID;
-  #else
-  static uint16_t ADC1_MID_CAL = 0;
-  #endif
-  #ifdef ADC1_MID_POT
-  static uint16_t ADC2_MID_CAL = ADC2_MID;
-  #else
-  static uint16_t ADC2_MID_CAL = 0;
-  #endif
+
+static uint8_t  cur_spd_valid = 0;
+static uint8_t  adc_cal_valid = 0;
+static uint16_t INPUT1_MIN_CAL = INPUT1_MIN;
+static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
+static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
+static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
+#ifdef INPUT1_MID_POT
+static uint16_t INPUT1_MID_CAL = INPUT1_MID;
+#else
+static uint16_t INPUT1_MID_CAL = 0;
 #endif
+#ifdef INPUT1_MID_POT
+static uint16_t INPUT2_MID_CAL = INPUT2_MID;
+#else
+static uint16_t INPUT2_MID_CAL = 0;
+#endif
+
 
 #if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
 static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
@@ -278,12 +280,12 @@ void Input_Init(void) {
     EE_Init();            /* EEPROM Init */    
     EE_ReadVariable(VirtAddVarTab[0], &writeCheck);
     if (writeCheck == FLASH_WRITE_KEY) {
-      EE_ReadVariable(VirtAddVarTab[1], &ADC1_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[2], &ADC1_MAX_CAL);
-      EE_ReadVariable(VirtAddVarTab[3], &ADC1_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[4], &ADC2_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[5], &ADC2_MAX_CAL);
-      EE_ReadVariable(VirtAddVarTab[6], &ADC2_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[1], &INPUT1_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[2], &INPUT1_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[3], &INPUT1_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[4], &INPUT2_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[5], &INPUT2_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[6], &INPUT2_MID_CAL);
       EE_ReadVariable(VirtAddVarTab[7], &i_max);
       EE_ReadVariable(VirtAddVarTab[8], &n_max);
       rtP_Left.i_max  = i_max;
@@ -427,65 +429,63 @@ void calcAvgSpeed(void) {
  * - release potentiometers to the resting postion
  * - press the power button to confirm or wait for the 20 sec timeout
  */
-void adcCalibLim(void) {
+void inputCalibLim(void) {
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
   }
-  #ifdef CONTROL_ADC
-    consoleLog("ADC calibration started... ");
+  
+  consoleLog("Input calibration started... ");
     
-    // Inititalization: MIN = a high values, MAX = a low value,
-    int32_t adc1_fixdt = adc_buffer.l_tx2 << 16;
-    int32_t adc2_fixdt = adc_buffer.l_rx2 << 16;
-    uint16_t adc_cal_timeout = 0;
-    uint16_t ADC1_MIN_temp   = 4095;
-    uint16_t ADC1_MID_temp   = 0;
-    uint16_t ADC1_MAX_temp   = 0;
-    uint16_t ADC2_MIN_temp   = 4095;
-    uint16_t ADC2_MID_temp   = 0;
-    uint16_t ADC2_MAX_temp   = 0;
+  // Inititalization: MIN = a high values, MAX = a low value,
+  int32_t input1_fixdt = adc_buffer.l_tx2 << 16;
+  int32_t input2_fixdt = adc_buffer.l_rx2 << 16;
+  uint16_t input_cal_timeout = 0;
+  uint16_t INPUT1_MIN_temp   = 4095;
+  uint16_t INPUT1_MID_temp   = 0;
+  uint16_t INPUT1_MAX_temp   = 0;
+  uint16_t INPUT2_MIN_temp   = 4095;
+  uint16_t INPUT2_MID_temp   = 0;
+  uint16_t INPUT2_MAX_temp   = 0;
     
-    adc_cal_valid = 1;
+  input_cal_valid = 1;
 
-    // Extract MIN, MAX and MID from ADC while the power button is not pressed
-    while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && adc_cal_timeout++ < 4000) {   // 20 sec timeout
-      filtLowPass32(adc_buffer.l_tx2, FILTER, &adc1_fixdt);
-      filtLowPass32(adc_buffer.l_rx2, FILTER, &adc2_fixdt);
-      ADC1_MID_temp = (uint16_t)CLAMP(adc1_fixdt >> 16, 0, 4095);                   // convert fixed-point to integer
-      ADC2_MID_temp = (uint16_t)CLAMP(adc2_fixdt >> 16, 0, 4095);
-      ADC1_MIN_temp = MIN(ADC1_MIN_temp, ADC1_MID_temp);
-      ADC1_MAX_temp = MAX(ADC1_MAX_temp, ADC1_MID_temp);      
-      ADC2_MIN_temp = MIN(ADC2_MIN_temp, ADC2_MID_temp);
-      ADC2_MAX_temp = MAX(ADC2_MAX_temp, ADC2_MID_temp);
-      HAL_Delay(5);
-    }
+  // Extract MIN, MAX and MID from ADC while the power button is not pressed
+  while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && input_cal_timeout++ < 4000) {   // 20 sec timeout
+    filtLowPass32(cmd1_in, FILTER, &input1_fixdt);
+    filtLowPass32(cmd2_in, FILTER, &input2_fixdt);
+    INPUT1_MID_temp = (uint16_t)CLAMP(input1_fixdt >> 16, 0, 4095);                   // convert fixed-point to integer
+    INPUT2_MID_temp = (uint16_t)CLAMP(input2_fixdt >> 16, 0, 4095);
+    INPUT1_MIN_temp = MIN(INPUT1_MIN_temp, INPUT1_MID_temp);
+    INPUT1_MAX_temp = MAX(INPUT1_MAX_temp, INPUT1_MID_temp);      
+    INPUT2_MIN_temp = MIN(INPUT2_MIN_temp, INPUT2_MID_temp);
+    INPUT2_MAX_temp = MAX(INPUT2_MAX_temp, INPUT2_MID_temp);
+    HAL_Delay(5);
+  }
 
-    // ADC calibration checks 
-    #ifdef ADC_PROTECT_ENA
-    if ((ADC1_MIN_temp + 100 - ADC_PROTECT_THRESH) > 0 && (ADC1_MAX_temp - 100 + ADC_PROTECT_THRESH) < 4095 && 
-        (ADC2_MIN_temp + 100 - ADC_PROTECT_THRESH) > 0 && (ADC2_MAX_temp - 100 + ADC_PROTECT_THRESH) < 4095) {
-      adc_cal_valid = 1;
-    } else {
-      adc_cal_valid = 0;
-      consoleLog("FAIL (ADC out-of-range protection not possible)\n");
-    }
-    #endif
-
-    // Add final ADC margin to have exact 0 and MAX at the minimum and maximum ADC value
-    if (adc_cal_valid && (ADC1_MAX_temp - ADC1_MIN_temp) > 500 && (ADC2_MAX_temp - ADC2_MIN_temp) > 500) {
-      ADC1_MIN_CAL = ADC1_MIN_temp + 100;
-      ADC1_MID_CAL = ADC1_MID_temp;
-      ADC1_MAX_CAL = ADC1_MAX_temp - 100;    
-      ADC2_MIN_CAL = ADC2_MIN_temp + 100;
-      ADC2_MID_CAL = ADC2_MID_temp;
-      ADC2_MAX_CAL = ADC2_MAX_temp - 100;      
-      consoleLog("OK\n");
-    } else {
-      adc_cal_valid = 0;
-      consoleLog("FAIL (Pots travel too short)\n");
-    }
-
+  // ADC calibration checks 
+  #ifdef ADC_PROTECT_ENA
+  if ((INPUT1_MIN_temp + 100 - ADC_PROTECT_THRESH) > 0 && (INPUT1_MAX_temp - 100 + ADC_PROTECT_THRESH) < 4095 && 
+      (INPUT2_MIN_temp + 100 - ADC_PROTECT_THRESH) > 0 && (INPUT2_MAX_temp - 100 + ADC_PROTECT_THRESH) < 4095) {
+      input_cal_valid = 1;
+  } else {
+    input_cal_valid = 0;
+    consoleLog("FAIL (ADC out-of-range protection not possible)\n");
+  }
   #endif
+
+  // Add final ADC margin to have exact 0 and MAX at the minimum and maximum ADC value
+  if (input_cal_valid && (INPUT1_MAX_temp - INPUT1_MIN_temp) > 500 && (INPUT2_MAX_temp - INPUT2_MIN_temp) > 500) {
+    INPUT1_MIN_CAL = INPUT1_MIN_temp + 100;
+    INPUT1_MID_CAL = INPUT1_MID_temp;
+    INPUT1_MAX_CAL = INPUT1_MAX_temp - 100;    
+    INPUT2_MIN_CAL = INPUT2_MIN_temp + 100;
+    INPUT2_MID_CAL = INPUT2_MID_temp;
+    INPUT2_MAX_CAL = INPUT2_MAX_temp - 100;      
+    consoleLog("OK\n");
+  } else {
+    input_cal_valid = 0;
+    consoleLog("FAIL (Pots travel too short)\n");
+  }
 }
 
 
@@ -548,12 +548,12 @@ void saveConfig() {
     if (adc_cal_valid || cur_spd_valid) {
       HAL_FLASH_Unlock();
       EE_WriteVariable(VirtAddVarTab[0], FLASH_WRITE_KEY);
-      EE_WriteVariable(VirtAddVarTab[1], ADC1_MIN_CAL);
-      EE_WriteVariable(VirtAddVarTab[2], ADC1_MAX_CAL);
-      EE_WriteVariable(VirtAddVarTab[3], ADC1_MID_CAL);
-      EE_WriteVariable(VirtAddVarTab[4], ADC2_MIN_CAL);
-      EE_WriteVariable(VirtAddVarTab[5], ADC2_MAX_CAL);
-      EE_WriteVariable(VirtAddVarTab[6], ADC2_MID_CAL);
+      EE_WriteVariable(VirtAddVarTab[1], INPUT1_MIN_CAL);
+      EE_WriteVariable(VirtAddVarTab[2], INPUT1_MAX_CAL);
+      EE_WriteVariable(VirtAddVarTab[3], INPUT1_MID_CAL);
+      EE_WriteVariable(VirtAddVarTab[4], INPUT2_MIN_CAL);
+      EE_WriteVariable(VirtAddVarTab[5], INPUT2_MAX_CAL);
+      EE_WriteVariable(VirtAddVarTab[6], INPUT2_MID_CAL);
       EE_WriteVariable(VirtAddVarTab[7], rtP_Left.i_max);
       EE_WriteVariable(VirtAddVarTab[8], rtP_Left.n_max);
       HAL_FLASH_Lock();
@@ -731,21 +731,16 @@ void poweroffPressCheck(void) {
   #endif
 }
 
-
-
-/* =========================== Read Command Function =========================== */
-
-void readCommand(void) {
-
-    #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
+void readInput(void) {
+   #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
       if (nunchuk_connected != 0) {
         Nunchuk_Read();
 	cmd1_in = (nunchuk_data[0] - 127) * 8; // X axis 0-255
 	cmd2_in = (nunchuk_data[1] - 128) * 8; // Y axis 0-255
         			
 	#ifdef SUPPORT_BUTTONS
-		button1 = (uint8_t)nunchuk_data[5] & 1;
-		button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
+	  button1 = (uint8_t)nunchuk_data[5] & 1;
+	  button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
 	#endif
       }
     #endif
@@ -756,28 +751,44 @@ void readCommand(void) {
       #ifdef SUPPORT_BUTTONS
 	button1 = ppm_captured_value[5] > 500;
 	button2 = 0;
-      #elif defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
-        button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
-        button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
       #endif
-      // float scale = ppm_captured_value[2] / 1000.0f;     // not used for now, uncomment if needed
     #endif
 
     #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
       cmd1_in = (pwm_captured_ch1_value - 500) * 2;
       cmd2_in = (pwm_captured_ch2_value - 500) * 2;
-     
-      #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
-        button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
-        button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
-      #endif
     #endif
 
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
 	cmd1_in = adc_buffer.l_tx2;
 	cmd2_in = adc_buffer.l_rx2;
+    #endif
 
+    #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
+        // Handle received data validity, timeout and fix out-of-sync if necessary
+      #ifdef CONTROL_IBUS    
+        for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
+          ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
+        }
+        cmd1_in = (ibus_captured_value[0] - 500) * 2;
+        cmd2_in = (ibus_captured_value[1] - 500) * 2; 
+      #else
+       if (IN_RANGE(command.steer, INPUT_MIN, INPUT_MAX) && IN_RANGE(command.speed, INPUT_MIN, INPUT_MAX)) {
+        cmd1_in = command.steer;
+        cmd2_in = command.speed;
+       }
+      #endif
+      timeoutCnt = 0;
+    #endif	
+	
+}
+
+/* =========================== Read Command Function =========================== */
+
+void readCommand(void) {
+    readInput();
+    #ifdef CONTROL_ADC
       #ifdef ADC_PROTECT_ENA
         if (adc_buffer.l_tx2 >= (ADC1_MIN_CAL - ADC_PROTECT_THRESH) && adc_buffer.l_tx2 <= (ADC1_MAX_CAL + ADC_PROTECT_THRESH) && 
             adc_buffer.l_rx2 >= (ADC2_MIN_CAL - ADC_PROTECT_THRESH) && adc_buffer.l_rx2 <= (ADC2_MAX_CAL + ADC_PROTECT_THRESH)) {
@@ -795,32 +806,6 @@ void readCommand(void) {
         }   
       #endif
 
-      #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
-        button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
-        button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
-      #endif
-      timeoutCnt = 0;
-    #endif
-
-    #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-        // Handle received data validity, timeout and fix out-of-sync if necessary
-      #ifdef CONTROL_IBUS    
-        for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
-          ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
-        }
-        cmd1_in = (ibus_captured_value[0] - 500) * 2;
-        cmd2_in = (ibus_captured_value[1] - 500) * 2; 
-      #else
-       if (IN_RANGE(command.steer, INPUT_MIN, INPUT_MAX) && IN_RANGE(command.speed, INPUT_MIN, INPUT_MAX)) {
-        cmd1 = command.steer;
-        cmd2 = command.speed;
-       }
-      #endif
-
-      #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
-        button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
-        button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
-      #endif
       timeoutCnt = 0;
     #endif
 
@@ -841,28 +826,31 @@ void readCommand(void) {
     #if defined(SIDEBOARD_SERIAL_USART2) && defined(SIDEBOARD_SERIAL_USART3)
       timeoutFlagSerial = timeoutFlagSerial_L || timeoutFlagSerial_R;
     #endif
+
+    #ifdef INPUT1_MID_POT
+      cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN, INPUT1_MID, INPUT1_MAX, INPUT_MIN, INPUT_MAX);
+    #else
+      cmd1 = MAP( cmd1_in , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ); // ADC1
+    #endif
 	
-    cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN, INPUT1_MID, INPUT1_MAX, INPUT_MIN, INPUT_MAX);
     #if !defined(VARIANT_SKATEBOARD)
-       cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_MIN, INPUT_MAX);
+      #ifdef INPUT2_MID_POT
+        cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_MIN, INPUT_MAX);
+      #else
+	cmd2 = MAP( cmd2_in , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ); // ADC2
+      #endif
     #else      
        cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_OUT_MIN, INPUT_MAX);
     #endif
-	
-    #ifdef ADC1_MID_POT
-	    
-      #else
-	cmd1 = MAP( adc_buffer.l_tx2 , ADC1_MIN_CAL, ADC1_MAX_CAL, 0, INPUT_MAX ); // ADC1
-      #endif
-
-      #ifdef ADC2_MID_POT
-	      
-      #else
-	cmd2 = MAP( adc_buffer.l_rx2 , ADC2_MIN_CAL, ADC2_MAX_CAL, 0, INPUT_MAX ); // ADC2
-      #endif
+      
 
     #ifdef VARIANT_HOVERCAR      
       brakePressed = (uint8_t)(cmd1 > 50);
+    #endif
+	
+    #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
+      button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
+      button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
     #endif
 
     #ifdef VARIANT_TRANSPOTTER
