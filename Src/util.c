@@ -781,12 +781,14 @@ void readCommand(void) {
       #ifdef ADC1_MID_POT
 	cmd1 = addDeadBand(adc_buffer.l_tx2, ADC_DEADBAND, ADC1_MIN_CAL, ADC1_MID_CAL, ADC1_MAX_CAL, INPUT_MIN, INPUT_MAX);     
       #else
+	// cmd1 = MAP( adc_buffer.l_tx2 , ADC1_MIN_CAL, ADC1_MAX_CAL, 0, INPUT_MAX ); // ADC1
         cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MIN_CAL) * INPUT_MAX / (ADC1_MAX_CAL - ADC1_MIN_CAL), 0, INPUT_MAX);    // ADC1
       #endif
 
       #ifdef ADC2_MID_POT
 	cmd2 = addDeadBand(adc_buffer.l_rx2, ADC_DEADBAND, ADC2_MIN_CAL, ADC2_MID_CAL, ADC2_MAX_CAL, INPUT_MIN, INPUT_MAX);      
       #else
+	// cmd2 = MAP( adc_buffer.l_rx2 , ADC2_MIN_CAL, ADC2_MAX_CAL, 0, INPUT_MAX ); // ADC2
         cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN_CAL) * INPUT_MAX / (ADC2_MAX_CAL - ADC2_MIN_CAL), 0, INPUT_MAX);    // ADC2
       #endif
 
