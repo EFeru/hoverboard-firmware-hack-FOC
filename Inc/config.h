@@ -254,15 +254,16 @@
   // #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
   #define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
   #define ADC_PROTECT_THRESH  300       // ADC Protection threshold below/above the MIN/MAX ADC values
-  #define ADC_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  // #define ADC1_MID_POT                  // ADC1 middle resting poti: comment-out if NOT a middle resting poti
-  #define ADC1_MIN            0         // min ADC1-value while poti at minimum-position (0 - 4095)
-  #define ADC1_MID            2048      // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
-  #define ADC1_MAX            4095      // max ADC1-value while poti at maximum-position (0 - 4095)
-  // #define ADC2_MID_POT                  // ADC2 middle resting poti: comment-out if NOT a middle resting poti
-  #define ADC2_MIN            0         // min ADC2-value while poti at minimum-position (0 - 4095)
-  #define ADC2_MID            2048      // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
-  #define ADC2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
+  #define INPUT1_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  // #define INPUT1_MID_POT                  // ADC1 middle resting poti: comment-out if NOT a middle resting poti
+  #define INPUT1_MIN            0         // min ADC1-value while poti at minimum-position (0 - 4095)
+  #define INPUT1_MID            2048      // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
+  #define INPUT1_MAX            4095      // max ADC1-value while poti at maximum-position (0 - 4095)
+  // #define INPUT2_MID_POT                  // ADC2 middle resting poti: comment-out if NOT a middle resting poti
+  #define INPUT2_MIN            0         // min ADC2-value while poti at minimum-position (0 - 4095)
+  #define INPUT2_MID            2048      // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
+  #define INPUT2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
   // #define SUPPORT_BUTTONS_LEFT          // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT         // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
@@ -273,12 +274,23 @@
 // ############################ VARIANT_USART SETTINGS ############################
 #ifdef VARIANT_USART
   // #define SIDEBOARD_SERIAL_USART2
-  // #define CONTROL_SERIAL_USART2         // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-  // #define FEEDBACK_SERIAL_USART2        // left sensor board cable, disable if ADC or PPM is used!
+  // #define CONTROL_SERIAL_USART2   // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  // #define FEEDBACK_SERIAL_USART2  // left sensor board cable, disable if ADC or PPM is used!
 
   // #define SIDEBOARD_SERIAL_USART3
-  #define CONTROL_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  #define CONTROL_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+  #define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  #define INPUT1_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  // Min / Max values of each channel (use DEBUG to determine these values)
+  #define INPUT1_MID_POT
+  #define INPUT1_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_MID         0
+  #define INPUT1_MAX         1000    // (0 - 1000)
+  #define INPUT2_MID_POT
+  #define INPUT2_MIN        -1000    // (-1000 - 0)
+  #define INPUT2_MID         0
+  #define INPUT2_MAX         1000    // (0 - 1000)
   // #define SUPPORT_BUTTONS_LEFT          // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT         // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
@@ -295,6 +307,17 @@
    * Recommendation: Nunchuk Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
   */
   #define CONTROL_NUNCHUK           // use nunchuk as input. disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
+  #define INPUT1_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  // Min / Max values of each channel (use DEBUG to determine these values)
+  #define INPUT1_MID_POT
+  #define INPUT1_MIN        -1024    // (-1000 - 0)
+  #define INPUT1_MID         0
+  #define INPUT1_MAX         1024    // (0 - 1000)
+  #define INPUT2_MID_POT
+  #define INPUT2_MIN        -1024    // (-1000 - 0)
+  #define INPUT2_MID         0
+  #define INPUT2_MAX         1024    // (0 - 1000)
   // # maybe good for ARMCHAIR #
   #define FILTER             3276    //  0.05f
   #define SPEED_COEFFICIENT  8192    //  0.5f
@@ -318,13 +341,18 @@
   #else
     #define DEBUG_SERIAL_USART3       // right sensor cable debug
   #endif
-  #define PPM_NUM_CHANNELS    6       // total number of PPM channels to receive, even if they are not used.
-  #define PPM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define PPM_NUM_CHANNELS   6       // total number of PPM channels to receive, even if they are not used.
+  #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define PPM_CH1_MAX         1000    // (0 - 1000)
-  #define PPM_CH1_MIN        -1000    // (-1000 - 0)
-  #define PPM_CH2_MAX         1000    // (0 - 1000)
-  #define PPM_CH2_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_MID_POT
+  #define INPUT1_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_MID         0
+  #define INPUT1_MAX         1000    // (0 - 1000)
+  #define INPUT2_MID_POT
+  #define INPUT2_MIN        -1000    // (-1000 - 0)
+  #define INPUT2_MID         0
+  #define INPUT2_MAX         1000    // (0 - 1000)
   // #define SUPPORT_BUTTONS             // Define for PPM buttons support
   // #define SUPPORT_BUTTONS_LEFT        // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT       // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
@@ -340,12 +368,17 @@
 */
   #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
   // #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
-  #define PWM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define PWM_CH1_MAX         1000    // (0 - 1000)
-  #define PWM_CH1_MIN        -1000    // (-1000 - 0)
-  #define PWM_CH2_MAX         1000    // (0 - 1000)
-  #define PWM_CH2_MIN        -1000    // (-1000 - 0)  
+  #define INPUT1_MID_POT
+  #define INPUT1_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_MID         0
+  #define INPUT1_MAX         1000    // (0 - 1000)
+  #define INPUT2_MID_POT
+  #define INPUT2_MIN        -1000    // (-1000 - 0)
+  #define INPUT2_MID         0
+  #define INPUT2_MAX         1000    // (0 - 1000)
   #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
   #define STEER_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14. If you do not want any steering, set it to 0.
@@ -373,6 +406,18 @@
   #define IBUS_LENGTH         0x20
   #define IBUS_COMMAND        0x40
 
+  #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  // Min / Max values of each channel (use DEBUG to determine these values)
+  #define INPUT1_MID_POT
+  #define INPUT1_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_MID         0
+  #define INPUT1_MAX         1000    // (0 - 1000)  
+  #define INPUT2_MID_POT
+  #define INPUT2_MIN        -1000    // (-1000 - 0)
+  #define INPUT2_MID         0
+  #define INPUT2_MAX         1000    // (0 - 1000)
+
   #undef  USART2_BAUD
   #define USART2_BAUD         115200
   #define CONTROL_SERIAL_USART2                         // left sensor board cable, disable if ADC or PPM is used!
@@ -390,10 +435,10 @@
   #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
   #define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
   #define ADC_PROTECT_THRESH  300       // ADC Protection threshold below/above the MIN/MAX ADC values
-  #define ADC1_MIN            1000      // min ADC1-value while poti at minimum-position (0 - 4095)
-  #define ADC1_MAX            2500      // max ADC1-value while poti at maximum-position (0 - 4095)
-  #define ADC2_MIN            500       // min ADC2-value while poti at minimum-position (0 - 4095)
-  #define ADC2_MAX            2200      // max ADC2-value while poti at maximum-position (0 - 4095)
+  #define INPUT1_MIN          1000      // min ADC1-value while poti at minimum-position (0 - 4095)
+  #define INPUT1_MAX          2500      // max ADC1-value while poti at maximum-position (0 - 4095)
+  #define INPUT2_MIN          500       // min ADC2-value while poti at minimum-position (0 - 4095)
+  #define INPUT2_MAX          2200      // max ADC2-value while poti at maximum-position (0 - 4095)
   #define SPEED_COEFFICIENT   16384     // 1.0f
   #define STEER_COEFFICIENT   0         // 0.0f
   // #define INVERT_R_DIRECTION            // Invert rotation of right motor
@@ -460,13 +505,18 @@
   #define CTRL_MOD_REQ        TRQ_MODE  // SKATEBOARD works best in TORQUE Mode
   // #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
   #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
-  #define PWM_DEADBAND        100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define PWM_CH1_MAX         1000    // (0 - 1000)
-  #define PWM_CH1_MIN        -1000    // (-1000 - 0)
-  #define PWM_CH2_MAX         700     // (0 - 1000)
-  #define PWM_CH2_MIN        -800     // (-1000 - 0)
-  #define PWM_CH2_OUT_MIN    -400     // (-1000 - 0) Change this value to adjust the braking amount
+  #define INPUT1_MID_POT
+  #define INPUT1_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_MID         0
+  #define INPUT1_MAX         1000    // (0 - 1000)
+  #define INPUT2_MID_POT
+  #define INPUT2_MIN        -800    // (-1000 - 0)
+  #define INPUT2_MID         0
+  #define INPUT2_MAX         700    // (0 - 1000)
+  #define INPUT2_OUT_MIN    -400     // (-1000 - 0) Change this value to adjust the braking amount
   #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
   #define STEER_COEFFICIENT   0       // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14. If you do not want any steering, set it to 0.
