@@ -429,7 +429,7 @@ void calcAvgSpeed(void) {
  * - release potentiometers to the resting postion
  * - press the power button to confirm or wait for the 20 sec timeout
  */
-void inputCalibLim(void) {
+void adcCalibLim(void) {
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
   }
@@ -451,6 +451,7 @@ void inputCalibLim(void) {
 
   // Extract MIN, MAX and MID from ADC while the power button is not pressed
   while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && input_cal_timeout++ < 4000) {   // 20 sec timeout
+    readInput();
     filtLowPass32(cmd1_in, FILTER, &input1_fixdt);
     filtLowPass32(cmd2_in, FILTER, &input2_fixdt);
     INPUT1_MID_temp = (uint16_t)CLAMP(input1_fixdt >> 16, 0, 4095);                   // convert fixed-point to integer
@@ -500,36 +501,35 @@ void updateCurSpdLim(void) {
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
   }
-  #ifdef CONTROL_ADC
-    consoleLog("Torque and Speed limits update started... ");
+  
+  consoleLog("Torque and Speed limits update started... ");
 
-    int32_t adc1_fixdt = adc_buffer.l_tx2 << 16;
-    int32_t adc2_fixdt = adc_buffer.l_rx2 << 16;
-    uint16_t cur_spd_timeout = 0;
-    uint16_t cur_factor;    // fixdt(0,16,16)
-    uint16_t spd_factor;    // fixdt(0,16,16)
+  int32_t input1_fixdt = cmd1_in << 16;
+  int32_t input2_fixdt = cmd2_in << 16;
+  uint16_t cur_spd_timeout = 0;
+  uint16_t cur_factor;    // fixdt(0,16,16)
+  uint16_t spd_factor;    // fixdt(0,16,16)
 
-    // Wait for the power button press
-    while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && cur_spd_timeout++ < 2000) {  // 10 sec timeout
-      filtLowPass32(adc_buffer.l_tx2, FILTER, &adc1_fixdt);
-      filtLowPass32(adc_buffer.l_rx2, FILTER, &adc2_fixdt);
-      HAL_Delay(5);      
-    }
+  // Wait for the power button press
+  while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && cur_spd_timeout++ < 2000) {  // 10 sec timeout
+    readInput();
+    filtLowPass32(cmd1_in, FILTER, &input1_fixdt);
+    filtLowPass32(cmd2_in, FILTER, &input2_fixdt);
+    HAL_Delay(5);      
+  }
 
-    // Calculate scaling factors
-    cur_factor      = CLAMP((adc1_fixdt - (ADC1_MIN_CAL << 16)) / (ADC1_MAX_CAL - ADC1_MIN_CAL), 6553, 65535);    // ADC1, MIN_cur(10%) = 1.5 A 
-    spd_factor      = CLAMP((adc2_fixdt - (ADC2_MIN_CAL << 16)) / (ADC2_MAX_CAL - ADC2_MIN_CAL), 3276, 65535);    // ADC2, MIN_spd(5%)  = 50 rpm
+  // Calculate scaling factors
+  cur_factor      = CLAMP((input1_fixdt - (INPUT1_MIN_CAL << 16)) / (INPUT1_MAX_CAL - INPUT1_MIN_CAL), 6553, 65535);    // ADC1, MIN_cur(10%) = 1.5 A 
+  spd_factor      = CLAMP((input2_fixdt - (INPUT2_MIN_CAL << 16)) / (INPUT2_MAX_CAL - INPUT2_MIN_CAL), 3276, 65535);    // ADC2, MIN_spd(5%)  = 50 rpm
+  // Update maximum limits
+  rtP_Left.i_max  = (int16_t)((I_MOT_MAX * A2BIT_CONV * cur_factor) >> 12);    // fixdt(0,16,16) to fixdt(1,16,4)
+  rtP_Left.n_max  = (int16_t)((N_MOT_MAX * spd_factor) >> 12);                 // fixdt(0,16,16) to fixdt(1,16,4)
+  rtP_Right.i_max = rtP_Left.i_max;
+  rtP_Right.n_max = rtP_Left.n_max;
 
-    // Update maximum limits
-    rtP_Left.i_max  = (int16_t)((I_MOT_MAX * A2BIT_CONV * cur_factor) >> 12);    // fixdt(0,16,16) to fixdt(1,16,4)
-    rtP_Left.n_max  = (int16_t)((N_MOT_MAX * spd_factor) >> 12);                 // fixdt(0,16,16) to fixdt(1,16,4)
-    rtP_Right.i_max = rtP_Left.i_max;
-    rtP_Right.n_max = rtP_Left.n_max;
+  cur_spd_valid   = 1;
+  consoleLog("OK\n");
 
-    cur_spd_valid   = 1;
-    consoleLog("OK\n");
-
-  #endif
 }
 
  /*
