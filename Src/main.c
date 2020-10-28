@@ -407,18 +407,8 @@ int main(void) {
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
-        #ifdef CONTROL_ADC
-        setScopeChannel(0, (int16_t)adc_buffer.l_tx2);          // 1: ADC1
-        setScopeChannel(1, (int16_t)adc_buffer.l_rx2);          // 2: ADC2
-        #endif
-        #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
-        setScopeChannel(0, ppm_captured_value[0]);              // 1: CH1
-        setScopeChannel(1, ppm_captured_value[1]);              // 2: CH2
-        #endif
-        #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-        setScopeChannel(0, (pwm_captured_ch1_value - 500) * 2); // 1: CH1
-        setScopeChannel(1, (pwm_captured_ch2_value - 500) * 2); // 2: CH2
-        #endif
+        setScopeChannel(0, (int16_t)cmd1_in);                   // 1: ADC1
+        setScopeChannel(1, (int16_t)cmd2_in);                   // 2: ADC2
         setScopeChannel(2, (int16_t)speedR);                    // 3: output command: [-1000, 1000]
         setScopeChannel(3, (int16_t)speedL);                    // 4: output command: [-1000, 1000]
         setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
