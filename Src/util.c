@@ -128,23 +128,24 @@ static int16_t INPUT_MAX;             // [-] Input target maximum limitation
 static int16_t INPUT_MIN;             // [-] Input target minimum limitation
 
 
-static uint8_t  cur_spd_valid = 0;
-static uint8_t  adc_cal_valid = 0;
-static uint16_t INPUT1_MIN_CAL = INPUT1_MIN;
-static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
-static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
-static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
-#ifdef INPUT1_MID_POT
-static uint16_t INPUT1_MID_CAL = INPUT1_MID;
-#else
-static uint16_t INPUT1_MID_CAL = 0;
+#if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+  static uint8_t  cur_spd_valid = 0;
+  static uint8_t  input_cal_valid = 0;
+  static uint16_t INPUT1_MIN_CAL = INPUT1_MIN;
+  static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
+  static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
+  static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
+  #ifdef INPUT1_MID_POT
+  static uint16_t INPUT1_MID_CAL = INPUT1_MID;
+  #else
+  static uint16_t INPUT1_MID_CAL = 0;
+  #endif
+  #ifdef INPUT1_MID_POT
+  static uint16_t INPUT2_MID_CAL = INPUT2_MID;
+  #else
+  static uint16_t INPUT2_MID_CAL = 0;
+  #endif
 #endif
-#ifdef INPUT1_MID_POT
-static uint16_t INPUT2_MID_CAL = INPUT2_MID;
-#else
-static uint16_t INPUT2_MID_CAL = 0;
-#endif
-
 
 #if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
 static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
@@ -433,6 +434,8 @@ void adcCalibLim(void) {
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
   }
+
+  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   
   consoleLog("Input calibration started... ");
     
@@ -487,6 +490,7 @@ void adcCalibLim(void) {
     input_cal_valid = 0;
     consoleLog("FAIL (Pots travel too short)\n");
   }
+  #endif
 }
 
 
@@ -501,6 +505,8 @@ void updateCurSpdLim(void) {
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
   }
+
+  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   
   consoleLog("Torque and Speed limits update started... ");
 
@@ -529,7 +535,7 @@ void updateCurSpdLim(void) {
 
   cur_spd_valid   = 1;
   consoleLog("OK\n");
-
+  #endif
 }
 
  /*
@@ -545,7 +551,7 @@ void saveConfig() {
     }
   #endif
   #ifdef CONTROL_ADC
-    if (adc_cal_valid || cur_spd_valid) {
+    if (input_cal_valid || cur_spd_valid) {
       HAL_FLASH_Unlock();
       EE_WriteVariable(VirtAddVarTab[0], FLASH_WRITE_KEY);
       EE_WriteVariable(VirtAddVarTab[1], INPUT1_MIN_CAL);
@@ -749,8 +755,8 @@ void readInput(void) {
       cmd1_in = (ppm_captured_value[0] - 500) * 2;
       cmd2_in = (ppm_captured_value[1] - 500) * 2;
       #ifdef SUPPORT_BUTTONS
-	button1 = ppm_captured_value[5] > 500;
-	button2 = 0;
+	      button1 = ppm_captured_value[5] > 500;
+	      button2 = 0;
       #endif
     #endif
 
@@ -761,8 +767,8 @@ void readInput(void) {
 
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
-	cmd1_in = adc_buffer.l_tx2;
-	cmd2_in = adc_buffer.l_rx2;
+	    cmd1_in = adc_buffer.l_tx2;
+	    cmd2_in = adc_buffer.l_rx2;
     #endif
 
     #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
@@ -827,20 +833,22 @@ void readCommand(void) {
       timeoutFlagSerial = timeoutFlagSerial_L || timeoutFlagSerial_R;
     #endif
 
-    #ifdef INPUT1_MID_POT
-      cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN, INPUT1_MID, INPUT1_MAX, INPUT_MIN, INPUT_MAX);
-    #else
-      cmd1 = MAP( cmd1_in , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ); // ADC1
-    #endif
-	
-    #if !defined(VARIANT_SKATEBOARD)
-      #ifdef INPUT2_MID_POT
-        cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_MIN, INPUT_MAX);
+    #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+      #ifdef INPUT1_MID_POT
+        cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN, INPUT1_MID, INPUT1_MAX, INPUT_MIN, INPUT_MAX);
       #else
-	cmd2 = MAP( cmd2_in , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ); // ADC2
+        cmd1 = MAP( cmd1_in , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ); // ADC1
       #endif
-    #else      
-       cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_OUT_MIN, INPUT_MAX);
+    
+      #if !defined(VARIANT_SKATEBOARD)
+        #ifdef INPUT2_MID_POT
+          cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_MIN, INPUT_MAX);
+        #else
+          cmd2 = MAP( cmd2_in , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ); // ADC2
+        #endif
+      #else      
+        cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT2_OUT_MIN, INPUT_MAX);
+      #endif
     #endif
       
 

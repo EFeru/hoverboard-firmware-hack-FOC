@@ -62,6 +62,8 @@ extern ExtY rtY_Right;                  /* External outputs */
 
 extern int16_t cmd1;                    // normalized input value. -1000 to 1000
 extern int16_t cmd2;                    // normalized input value. -1000 to 1000
+extern int16_t cmd1_in;                    // normalized input value. -1000 to 1000
+extern int16_t cmd2_in;                    // normalized input value. -1000 to 1000
 
 extern int16_t speedAvg;                // Average measured speed
 extern int16_t speedAvgAbs;             // Average measured speed in absolute
