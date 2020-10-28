@@ -740,36 +740,33 @@ void readCommand(void) {
     #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
       if (nunchuk_connected != 0) {
         Nunchuk_Read();
-        cmd1 = CLAMP((nunchuk_data[0] - 127) * 8, INPUT_MIN, INPUT_MAX); // x - axis. Nunchuk joystick readings range 30 - 230
-        cmd2 = CLAMP((nunchuk_data[1] - 128) * 8, INPUT_MIN, INPUT_MAX); // y - axis
-				
-				#ifdef SUPPORT_BUTTONS
-					button1 = (uint8_t)nunchuk_data[5] & 1;
-					button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
-				#endif
+	cmd1_in = (nunchuk_data[0] - 127) * 8; // X axis 0-255
+	cmd2_in = (nunchuk_data[1] - 128) * 8; // Y axis 0-255
+        			
+	#ifdef SUPPORT_BUTTONS
+		button1 = (uint8_t)nunchuk_data[5] & 1;
+		button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
+	#endif
       }
     #endif
 
     #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
-      cmd1 = addDeadBand((ppm_captured_value[0] - 500) * 2, PPM_DEADBAND, PPM_CH1_MIN, 0, PPM_CH1_MAX, INPUT_MIN, INPUT_MAX);
-      cmd2 = addDeadBand((ppm_captured_value[1] - 500) * 2, PPM_DEADBAND, PPM_CH2_MIN, 0, PPM_CH2_MAX, INPUT_MIN, INPUT_MAX);
-			#ifdef SUPPORT_BUTTONS
-				button1 = ppm_captured_value[5] > 500;
-				button2 = 0;
+      cmd1_in = (ppm_captured_value[0] - 500) * 2;
+      cmd2_in = (ppm_captured_value[1] - 500) * 2;
+      #ifdef SUPPORT_BUTTONS
+	button1 = ppm_captured_value[5] > 500;
+	button2 = 0;
       #elif defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
         button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
         button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
-			#endif
+      #endif
       // float scale = ppm_captured_value[2] / 1000.0f;     // not used for now, uncomment if needed
     #endif
 
     #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-      cmd1 = addDeadBand((pwm_captured_ch1_value - 500) * 2, PWM_DEADBAND, PWM_CH1_MIN, 0, PWM_CH1_MAX, INPUT_MIN, INPUT_MAX);
-      #if !defined(VARIANT_SKATEBOARD)
-      cmd2 = addDeadBand((pwm_captured_ch2_value - 500) * 2, PWM_DEADBAND, PWM_CH2_MIN, 0, PWM_CH2_MAX, INPUT_MIN, INPUT_MAX);
-      #else      
-      cmd2 = addDeadBand((pwm_captured_ch2_value - 500) * 2, PWM_DEADBAND, PWM_CH2_MIN, 0, PWM_CH2_MAX, PWM_CH2_OUT_MIN, INPUT_MAX);
-      #endif
+      cmd1_in = (pwm_captured_ch1_value - 500) * 2;
+      cmd2_in = (pwm_captured_ch2_value - 500) * 2;
+     
       #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
         button1 = !HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN);
         button2 = !HAL_GPIO_ReadPin(BUTTON2_PORT, BUTTON2_PIN);
@@ -778,19 +775,8 @@ void readCommand(void) {
 
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
-      #ifdef ADC1_MID_POT
-	cmd1 = addDeadBand(adc_buffer.l_tx2, ADC_DEADBAND, ADC1_MIN_CAL, ADC1_MID_CAL, ADC1_MAX_CAL, INPUT_MIN, INPUT_MAX);     
-      #else
-	// cmd1 = MAP( adc_buffer.l_tx2 , ADC1_MIN_CAL, ADC1_MAX_CAL, 0, INPUT_MAX ); // ADC1
-        cmd1 = CLAMP((adc_buffer.l_tx2 - ADC1_MIN_CAL) * INPUT_MAX / (ADC1_MAX_CAL - ADC1_MIN_CAL), 0, INPUT_MAX);    // ADC1
-      #endif
-
-      #ifdef ADC2_MID_POT
-	cmd2 = addDeadBand(adc_buffer.l_rx2, ADC_DEADBAND, ADC2_MIN_CAL, ADC2_MID_CAL, ADC2_MAX_CAL, INPUT_MIN, INPUT_MAX);      
-      #else
-	// cmd2 = MAP( adc_buffer.l_rx2 , ADC2_MIN_CAL, ADC2_MAX_CAL, 0, INPUT_MAX ); // ADC2
-        cmd2 = CLAMP((adc_buffer.l_rx2 - ADC2_MIN_CAL) * INPUT_MAX / (ADC2_MAX_CAL - ADC2_MIN_CAL), 0, INPUT_MAX);    // ADC2
-      #endif
+	cmd1_in = adc_buffer.l_tx2;
+	cmd2_in = adc_buffer.l_rx2;
 
       #ifdef ADC_PROTECT_ENA
         if (adc_buffer.l_tx2 >= (ADC1_MIN_CAL - ADC_PROTECT_THRESH) && adc_buffer.l_tx2 <= (ADC1_MAX_CAL + ADC_PROTECT_THRESH) && 
@@ -822,8 +808,8 @@ void readCommand(void) {
         for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
           ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
         }
-        cmd1 = CLAMP((ibus_captured_value[0] - 500) * 2, INPUT_MIN, INPUT_MAX);
-        cmd2 = CLAMP((ibus_captured_value[1] - 500) * 2, INPUT_MIN, INPUT_MAX); 
+        cmd1_in = (ibus_captured_value[0] - 500) * 2;
+        cmd2_in = (ibus_captured_value[1] - 500) * 2; 
       #else
        if (IN_RANGE(command.steer, INPUT_MIN, INPUT_MAX) && IN_RANGE(command.speed, INPUT_MIN, INPUT_MAX)) {
         cmd1 = command.steer;
@@ -855,6 +841,25 @@ void readCommand(void) {
     #if defined(SIDEBOARD_SERIAL_USART2) && defined(SIDEBOARD_SERIAL_USART3)
       timeoutFlagSerial = timeoutFlagSerial_L || timeoutFlagSerial_R;
     #endif
+	
+    cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN, INPUT1_MID, INPUT1_MAX, INPUT_MIN, INPUT_MAX);
+    #if !defined(VARIANT_SKATEBOARD)
+       cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_MIN, INPUT_MAX);
+    #else      
+       cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_OUT_MIN, INPUT_MAX);
+    #endif
+	
+    #ifdef ADC1_MID_POT
+	    
+      #else
+	cmd1 = MAP( adc_buffer.l_tx2 , ADC1_MIN_CAL, ADC1_MAX_CAL, 0, INPUT_MAX ); // ADC1
+      #endif
+
+      #ifdef ADC2_MID_POT
+	      
+      #else
+	cmd2 = MAP( adc_buffer.l_rx2 , ADC2_MIN_CAL, ADC2_MAX_CAL, 0, INPUT_MAX ); // ADC2
+      #endif
 
     #ifdef VARIANT_HOVERCAR      
       brakePressed = (uint8_t)(cmd1 > 50);
