@@ -80,6 +80,7 @@ void poweroffPressCheck(void);
 
 // Read Command Function
 void readCommand(void);
+void readInput(void);
 void usart2_rx_check(void);
 void usart3_rx_check(void);
 #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
