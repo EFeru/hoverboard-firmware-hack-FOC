@@ -114,7 +114,7 @@ float    setDistance;
 uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1337};     // Virtual address defined by the user: 0xFFFF value is prohibited
 static   uint16_t saveValue       = 0;
 static   uint8_t  saveValue_valid = 0;
-#elif defined(CONTROL_ADC)
+#elif !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
 uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300, 1301, 1302, 1303, 1304, 1305, 1306, 1307, 1308};
 #else
 uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300};     // Dummy virtual address to avoid warnings
@@ -274,7 +274,7 @@ void Input_Init(void) {
     UART_DisableRxErrors(&huart3);
   #endif
 
-  #ifdef CONTROL_ADC  
+  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
 
     uint16_t writeCheck, i_max, n_max;
     HAL_FLASH_Unlock();    
@@ -438,17 +438,18 @@ void adcCalibLim(void) {
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   
   consoleLog("Input calibration started... ");
-    
+
+  readInput();  
   // Inititalization: MIN = a high values, MAX = a low value,
-  int32_t input1_fixdt = adc_buffer.l_tx2 << 16;
-  int32_t input2_fixdt = adc_buffer.l_rx2 << 16;
+  int32_t input1_fixdt = cmd1_in << 16;
+  int32_t input2_fixdt = cmd2_in << 16;
   uint16_t input_cal_timeout = 0;
-  uint16_t INPUT1_MIN_temp   = 4095;
-  uint16_t INPUT1_MID_temp   = 0;
-  uint16_t INPUT1_MAX_temp   = 0;
-  uint16_t INPUT2_MIN_temp   = 4095;
-  uint16_t INPUT2_MID_temp   = 0;
-  uint16_t INPUT2_MAX_temp   = 0;
+  int16_t INPUT1_MIN_temp   = INPUT1_MAX;
+  int16_t INPUT1_MID_temp   = 0;
+  int16_t INPUT1_MAX_temp   = INPUT1_MIN;
+  int16_t INPUT2_MIN_temp   = INPUT2_MAX;
+  int16_t INPUT2_MID_temp   = 0;
+  int16_t INPUT2_MAX_temp   = INPUT2_MIN;
     
   input_cal_valid = 1;
 
@@ -457,8 +458,9 @@ void adcCalibLim(void) {
     readInput();
     filtLowPass32(cmd1_in, FILTER, &input1_fixdt);
     filtLowPass32(cmd2_in, FILTER, &input2_fixdt);
-    INPUT1_MID_temp = (uint16_t)CLAMP(input1_fixdt >> 16, 0, 4095);                   // convert fixed-point to integer
-    INPUT2_MID_temp = (uint16_t)CLAMP(input2_fixdt >> 16, 0, 4095);
+    
+    INPUT1_MID_temp = (int16_t)CLAMP(input1_fixdt >> 16, INPUT1_MIN, INPUT1_MAX);                   // convert fixed-point to integer
+    INPUT2_MID_temp = (int16_t)CLAMP(input2_fixdt >> 16, INPUT2_MIN, INPUT2_MAX);
     INPUT1_MIN_temp = MIN(INPUT1_MIN_temp, INPUT1_MID_temp);
     INPUT1_MAX_temp = MAX(INPUT1_MAX_temp, INPUT1_MID_temp);      
     INPUT2_MIN_temp = MIN(INPUT2_MIN_temp, INPUT2_MID_temp);
@@ -477,20 +479,26 @@ void adcCalibLim(void) {
   }
   #endif
 
+  uint16_t input_margin = 0;
+  #ifdef CONTROL_ADC
+     input_margin = 100;
+  #endif
+
   // Add final ADC margin to have exact 0 and MAX at the minimum and maximum ADC value
   if (input_cal_valid && (INPUT1_MAX_temp - INPUT1_MIN_temp) > 500 && (INPUT2_MAX_temp - INPUT2_MIN_temp) > 500) {
-    INPUT1_MIN_CAL = INPUT1_MIN_temp + 100;
+    INPUT1_MIN_CAL = INPUT1_MIN_temp + input_margin;
     INPUT1_MID_CAL = INPUT1_MID_temp;
-    INPUT1_MAX_CAL = INPUT1_MAX_temp - 100;    
-    INPUT2_MIN_CAL = INPUT2_MIN_temp + 100;
+    INPUT1_MAX_CAL = INPUT1_MAX_temp - input_margin;    
+    INPUT2_MIN_CAL = INPUT2_MIN_temp + input_margin;
     INPUT2_MID_CAL = INPUT2_MID_temp;
-    INPUT2_MAX_CAL = INPUT2_MAX_temp - 100;      
+    INPUT2_MAX_CAL = INPUT2_MAX_temp - input_margin;      
     consoleLog("OK\n");
   } else {
     input_cal_valid = 0;
     consoleLog("FAIL (Pots travel too short)\n");
   }
   #endif
+
 }
 
 
@@ -550,7 +558,7 @@ void saveConfig() {
       HAL_FLASH_Lock();
     }
   #endif
-  #ifdef CONTROL_ADC
+  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
     if (input_cal_valid || cur_spd_valid) {
       HAL_FLASH_Unlock();
       EE_WriteVariable(VirtAddVarTab[0], FLASH_WRITE_KEY);
@@ -572,12 +580,12 @@ void saveConfig() {
  * This function realizes a dead-band around 0 and scales the input between [out_min, out_max]
  */
 int addDeadBand(int16_t u, int16_t deadBand, int16_t in_min, int16_t in_mid, int16_t in_max, int16_t out_min, int16_t out_max) {
-  if(u > in_mid - deadBand && u < in_mid + deadBand) {
+  if( u > in_mid - deadBand && u < in_mid + deadBand ) {
     return 0;
-  } else if(u > 0) {
-    return MAP(u, in_mid + deadBand, in_max, 0, out_max);
+  } else if(u > in_mid) {
+    return CLAMP( MAP(u, in_mid + deadBand, in_max, 0, out_max), 0 , out_max);
   } else {
-    return MAP(u, in_mid - deadBand, in_min, out_min, 0);
+    return CLAMP( MAP(u, in_mid - deadBand, in_min, 0, out_min), out_min, 0);
   }	
 }
 
@@ -683,7 +691,7 @@ void poweroff(void) {
 
 
 void poweroffPressCheck(void) {
-	#if defined(CONTROL_ADC)
+	#if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
     if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
       enable = 0;
       uint16_t cnt_press = 0;
@@ -741,13 +749,13 @@ void readInput(void) {
    #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
       if (nunchuk_connected != 0) {
         Nunchuk_Read();
-	cmd1_in = (nunchuk_data[0] - 127) * 8; // X axis 0-255
-	cmd2_in = (nunchuk_data[1] - 128) * 8; // Y axis 0-255
+	      cmd1_in = (nunchuk_data[0] - 127) * 8; // X axis 0-255
+	      cmd2_in = (nunchuk_data[1] - 128) * 8; // Y axis 0-255
         			
-	#ifdef SUPPORT_BUTTONS
-	  button1 = (uint8_t)nunchuk_data[5] & 1;
-	  button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
-	#endif
+        #ifdef SUPPORT_BUTTONS
+          button1 = (uint8_t)nunchuk_data[5] & 1;
+          button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
+        #endif
       }
     #endif
 
@@ -833,21 +841,25 @@ void readCommand(void) {
       timeoutFlagSerial = timeoutFlagSerial_L || timeoutFlagSerial_R;
     #endif
 
+    //setScopeChannel(4, (int16_t)INPUT1_MIN_CAL);
+    //setScopeChannel(5, (int16_t)INPUT1_MID_CAL);
+    //setScopeChannel(6, (int16_t)INPUT1_MAX_CAL);
+    
     #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
       #ifdef INPUT1_MID_POT
-        cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN, INPUT1_MID, INPUT1_MAX, INPUT_MIN, INPUT_MAX);
+        cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
       #else
-        cmd1 = MAP( cmd1_in , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ); // ADC1
+        cmd1 = CLAMP(MAP( cmd1_in , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX); // ADC1
       #endif
     
       #if !defined(VARIANT_SKATEBOARD)
         #ifdef INPUT2_MID_POT
-          cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT_MIN, INPUT_MAX);
+          cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
         #else
-          cmd2 = MAP( cmd2_in , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ); // ADC2
+          cmd2 = CLAMP(MAP( cmd2_in , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX); // ADC2
         #endif
       #else      
-        cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN, INPUT2_MID, INPUT2_MAX, INPUT2_OUT_MIN, INPUT_MAX);
+        cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_OUT_MIN, INPUT_MAX);
       #endif
     #endif
       
@@ -1033,7 +1045,7 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len)
 {
 	for (; len > 0; len--, userCommand++) {
 		if (*userCommand != '\n' && *userCommand != '\r') { 	// Do not accept 'new line' and 'carriage return' commands
-      consoleLog("-- Command received --\r\n");						
+      //consoleLog("-- Command received --\r\n");						
 			// handle_input(*userCommand);                      // -> Create this function to handle the user commands
 		}
   }

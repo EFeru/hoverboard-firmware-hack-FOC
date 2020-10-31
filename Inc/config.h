@@ -250,22 +250,22 @@
  * For middle resting potis: Let the potis in the middle resting position, write value 1 to ADC1_MID and value 2 to ADC2_MID
  * Make, flash and test it.
 */
-  #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
-  // #define ADC_PROTECT_ENA               // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
-  #define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
-  #define ADC_PROTECT_THRESH  300       // ADC Protection threshold below/above the MIN/MAX ADC values
-  #define INPUT1_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT2_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  // #define INPUT1_MID_POT                  // ADC1 middle resting poti: comment-out if NOT a middle resting poti
+  #define CONTROL_ADC                     // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
+  // #define ADC_PROTECT_ENA                 // ADC Protection Enable flag. Use this flag to make sure the ADC is protected when GND or Vcc wire is disconnected
+  #define ADC_PROTECT_TIMEOUT   100       // ADC Protection: number of wrong / missing input commands before safety state is taken
+  #define ADC_PROTECT_THRESH    300       // ADC Protection threshold below/above the MIN/MAX ADC values
+  #define INPUT1_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT1_MID_POT                  // ADC1 middle resting poti: comment-out if NOT a middle resting poti
   #define INPUT1_MIN            0         // min ADC1-value while poti at minimum-position (0 - 4095)
   #define INPUT1_MID            2048      // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
   #define INPUT1_MAX            4095      // max ADC1-value while poti at maximum-position (0 - 4095)
-  // #define INPUT2_MID_POT                  // ADC2 middle resting poti: comment-out if NOT a middle resting poti
+  #define INPUT2_MID_POT                  // ADC2 middle resting poti: comment-out if NOT a middle resting poti
   #define INPUT2_MIN            0         // min ADC2-value while poti at minimum-position (0 - 4095)
   #define INPUT2_MID            2048      // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
   #define INPUT2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
-  // #define SUPPORT_BUTTONS_LEFT          // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
-  // #define SUPPORT_BUTTONS_RIGHT         // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
+  // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
+  // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
 // ############################# END OF VARIANT_ADC SETTINGS #########################
 
@@ -311,13 +311,13 @@
   #define INPUT2_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define INPUT1_MID_POT
-  #define INPUT1_MIN        -1024    // (-1000 - 0)
+  #define INPUT1_MIN        -1024    // (-1024 - 0)
   #define INPUT1_MID         0
-  #define INPUT1_MAX         1024    // (0 - 1000)
+  #define INPUT1_MAX         1024    // (0 - 1024)
   #define INPUT2_MID_POT
-  #define INPUT2_MIN        -1024    // (-1000 - 0)
+  #define INPUT2_MIN        -1024    // (-1024 - 0)
   #define INPUT2_MID         0
-  #define INPUT2_MAX         1024    // (0 - 1000)
+  #define INPUT2_MAX         1024    // (0 - 1024)
   // # maybe good for ARMCHAIR #
   #define FILTER             3276    //  0.05f
   #define SPEED_COEFFICIENT  8192    //  0.5f
@@ -503,7 +503,7 @@
 */
   #undef  CTRL_MOD_REQ
   #define CTRL_MOD_REQ        TRQ_MODE  // SKATEBOARD works best in TORQUE Mode
-  // #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
+  //#define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
   #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
   #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   #define INPUT2_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
