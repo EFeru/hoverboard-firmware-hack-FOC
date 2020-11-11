@@ -115,7 +115,7 @@ uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1337};     // Virtual address defined by 
 static   uint16_t saveValue       = 0;
 static   uint8_t  saveValue_valid = 0;
 #elif !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300, 1301, 1302, 1303, 1304, 1305, 1306, 1307, 1308};
+uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300, 1301, 1302, 1303, 1304, 1305, 1306, 1307, 1308, 1309, 1310};
 #else
 uint16_t VirtAddVarTab[NB_OF_VAR] = {0x1300};     // Dummy virtual address to avoid warnings
 #endif
@@ -132,22 +132,16 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
   static uint8_t  cur_spd_valid = 0;
   static uint8_t  input_cal_valid = 0;
   static uint16_t INPUT1_MIN_CAL = INPUT1_MIN;
-  static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
-  static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
-  static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
-  #ifdef INPUT1_MID_POT
   static uint16_t INPUT1_MID_CAL = INPUT1_MID;
-  #else
-  static uint16_t INPUT1_MID_CAL = 0;
-  #endif
-  #ifdef INPUT1_MID_POT
+  static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
+  static uint16_t INPUT1_TYPE_CAL = INPUT1_TYPE; 
+  static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
   static uint16_t INPUT2_MID_CAL = INPUT2_MID;
-  #else
-  static uint16_t INPUT2_MID_CAL = 0;
-  #endif
+  static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
+  static uint16_t INPUT2_TYPE_CAL = INPUT2_TYPE;
 #endif
 
-#if defined(CONTROL_ADC) && defined(ADC_PROTECT_ENA)
+#if defined(CONTROL_ADC)
 static int16_t timeoutCntADC   = 0;  // Timeout counter for ADC Protection
 #endif
 
@@ -281,14 +275,16 @@ void Input_Init(void) {
     EE_Init();            /* EEPROM Init */    
     EE_ReadVariable(VirtAddVarTab[0], &writeCheck);
     if (writeCheck == FLASH_WRITE_KEY) {
-      EE_ReadVariable(VirtAddVarTab[1], &INPUT1_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[2], &INPUT1_MAX_CAL);
-      EE_ReadVariable(VirtAddVarTab[3], &INPUT1_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[4], &INPUT2_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[5], &INPUT2_MAX_CAL);
-      EE_ReadVariable(VirtAddVarTab[6], &INPUT2_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[7], &i_max);
-      EE_ReadVariable(VirtAddVarTab[8], &n_max);
+      EE_ReadVariable(VirtAddVarTab[1] , &INPUT1_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[2] , &INPUT1_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[3] , &INPUT1_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[4] , &INPUT2_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[5] , &INPUT2_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[6] , &INPUT2_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[7] , &i_max);
+      EE_ReadVariable(VirtAddVarTab[8] , &n_max);
+      EE_ReadVariable(VirtAddVarTab[9] , &INPUT1_TYPE_CAL);
+      EE_ReadVariable(VirtAddVarTab[10], &INPUT2_TYPE_CAL);
       rtP_Left.i_max  = i_max;
       rtP_Left.n_max  = n_max;
       rtP_Right.i_max = i_max;
@@ -437,7 +433,7 @@ void adcCalibLim(void) {
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   
-  consoleLog("Input calibration started... ");
+  consoleLog("Input calibration started...\n");
 
   readInput();  
   // Inititalization: MIN = a high values, MAX = a low value,
@@ -468,37 +464,90 @@ void adcCalibLim(void) {
     HAL_Delay(5);
   }
 
-  // ADC calibration checks 
-  #ifdef ADC_PROTECT_ENA
-  if ((INPUT1_MIN_temp + 100 - ADC_PROTECT_THRESH) > 0 && (INPUT1_MAX_temp - 100 + ADC_PROTECT_THRESH) < 4095 && 
-      (INPUT2_MIN_temp + 100 - ADC_PROTECT_THRESH) > 0 && (INPUT2_MAX_temp - 100 + ADC_PROTECT_THRESH) < 4095) {
-      input_cal_valid = 1;
-  } else {
-    input_cal_valid = 0;
-    consoleLog("FAIL (ADC out-of-range protection not possible)\n");
-  }
-  #endif
+  HAL_Delay(50);
 
   uint16_t input_margin = 0;
   #ifdef CONTROL_ADC
      input_margin = 100;
   #endif
-
-  // Add final ADC margin to have exact 0 and MAX at the minimum and maximum ADC value
-  if (input_cal_valid && (INPUT1_MAX_temp - INPUT1_MIN_temp) > 500 && (INPUT2_MAX_temp - INPUT2_MIN_temp) > 500) {
-    INPUT1_MIN_CAL = INPUT1_MIN_temp + input_margin;
-    INPUT1_MID_CAL = INPUT1_MID_temp;
-    INPUT1_MAX_CAL = INPUT1_MAX_temp - input_margin;    
-    INPUT2_MIN_CAL = INPUT2_MIN_temp + input_margin;
-    INPUT2_MID_CAL = INPUT2_MID_temp;
-    INPUT2_MAX_CAL = INPUT2_MAX_temp - input_margin;      
-    consoleLog("OK\n");
+  
+  int16_t threshold = (INPUT1_MAX - INPUT1_MIN) / 10;
+  INPUT1_MIN_CAL = INPUT1_MIN_temp + input_margin;
+  INPUT1_MID_CAL = INPUT1_MID_temp;
+  INPUT1_MAX_CAL = INPUT1_MAX_temp - input_margin;
+  if ( (INPUT1_MIN_temp/threshold) == (INPUT1_MAX_temp/threshold) ){
+      // MIN MID and MAX are close, there is no input
+      INPUT1_TYPE_CAL = 0;
+      consoleLog("Input1 is ignored");
   } else {
-    input_cal_valid = 0;
-    consoleLog("FAIL (Pots travel too short)\n");
-  }
-  #endif
+    if ( (INPUT1_MIN_temp/threshold) == (INPUT1_MID_temp/threshold) ){
+      // MIN and MID are close, it's a normal pot
+      INPUT1_TYPE_CAL = 1;
+      consoleLog("Input1 is a normal pot");
+    }else {
+      INPUT1_TYPE_CAL = 2;
+      consoleLog("Input1 is a mid-resting pot"); 
+    }
 
+    HAL_Delay(50);
+    #ifdef CONTROL_ADC
+    if ( (INPUT1_MIN_CAL - ADC_PROTECT_THRESH) > 0 && (INPUT1_MAX_CAL + ADC_PROTECT_THRESH) < 4095){
+      consoleLog(" and protected");
+    }
+    #endif
+    input_cal_valid = 1;
+  }
+
+  HAL_Delay(50);
+  consoleLog("\n");
+  HAL_Delay(50);
+
+  threshold = (INPUT2_MAX - INPUT2_MIN) / 10;
+  INPUT2_MIN_CAL = INPUT2_MIN_temp + input_margin;
+  INPUT2_MID_CAL = INPUT2_MID_temp;
+  INPUT2_MAX_CAL = INPUT2_MAX_temp - input_margin;    
+  if ( (INPUT2_MIN_temp/threshold) == (INPUT2_MAX_temp/threshold) ){
+      // MIN MID and MAX are close, there is no input
+      INPUT2_TYPE_CAL = 0;
+      consoleLog("Input2 is ignored");
+  } else {
+    if ( (INPUT2_MIN_temp/threshold) == (INPUT2_MID_temp/threshold) ){
+      // MIN and MID are close, it's a normal pot
+      INPUT2_TYPE_CAL = 1;
+      consoleLog("Input2 is a normal pot");
+    }else {
+      INPUT2_TYPE_CAL = 2;
+      consoleLog("Input2 is a mid-resting pot"); 
+    }
+
+    HAL_Delay(50);
+
+    #ifdef CONTROL_ADC
+    if ( (INPUT2_MIN_CAL - ADC_PROTECT_THRESH) > 0 && (INPUT2_MAX_CAL + ADC_PROTECT_THRESH) < 4095 ){
+      consoleLog(" and protected");
+    }
+    #endif
+    input_cal_valid = 1;
+  }
+
+  HAL_Delay(50);
+  consoleLog("\n");
+  HAL_Delay(50);
+  consoleLog("Saved limits\n");
+  HAL_Delay(50);
+  setScopeChannel(0, (int16_t)INPUT1_MIN_CAL);
+  setScopeChannel(1, (int16_t)INPUT1_MID_CAL);
+  setScopeChannel(2, (int16_t)INPUT1_MAX_CAL);
+  setScopeChannel(3, (int16_t)0);
+  setScopeChannel(4, (int16_t)INPUT2_MIN_CAL);
+  setScopeChannel(5, (int16_t)INPUT2_MID_CAL);
+  setScopeChannel(6, (int16_t)INPUT2_MAX_CAL);
+  setScopeChannel(7, (int16_t)0);
+  consoleScope();
+
+  HAL_Delay(50);
+  
+  #endif
 }
 
 
@@ -561,15 +610,17 @@ void saveConfig() {
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
     if (input_cal_valid || cur_spd_valid) {
       HAL_FLASH_Unlock();
-      EE_WriteVariable(VirtAddVarTab[0], FLASH_WRITE_KEY);
-      EE_WriteVariable(VirtAddVarTab[1], INPUT1_MIN_CAL);
-      EE_WriteVariable(VirtAddVarTab[2], INPUT1_MAX_CAL);
-      EE_WriteVariable(VirtAddVarTab[3], INPUT1_MID_CAL);
-      EE_WriteVariable(VirtAddVarTab[4], INPUT2_MIN_CAL);
-      EE_WriteVariable(VirtAddVarTab[5], INPUT2_MAX_CAL);
-      EE_WriteVariable(VirtAddVarTab[6], INPUT2_MID_CAL);
-      EE_WriteVariable(VirtAddVarTab[7], rtP_Left.i_max);
-      EE_WriteVariable(VirtAddVarTab[8], rtP_Left.n_max);
+      EE_WriteVariable(VirtAddVarTab[0] , FLASH_WRITE_KEY);
+      EE_WriteVariable(VirtAddVarTab[1] , INPUT1_MIN_CAL);
+      EE_WriteVariable(VirtAddVarTab[2] , INPUT1_MAX_CAL);
+      EE_WriteVariable(VirtAddVarTab[3] , INPUT1_MID_CAL);
+      EE_WriteVariable(VirtAddVarTab[4] , INPUT2_MIN_CAL);
+      EE_WriteVariable(VirtAddVarTab[5] , INPUT2_MAX_CAL);
+      EE_WriteVariable(VirtAddVarTab[6] , INPUT2_MID_CAL);
+      EE_WriteVariable(VirtAddVarTab[7] , rtP_Left.i_max);
+      EE_WriteVariable(VirtAddVarTab[8] , rtP_Left.n_max);
+      EE_WriteVariable(VirtAddVarTab[9] , INPUT1_TYPE_CAL);
+      EE_WriteVariable(VirtAddVarTab[10], INPUT2_TYPE_CAL);
       HAL_FLASH_Lock();
     }
   #endif 
@@ -803,23 +854,21 @@ void readInput(void) {
 void readCommand(void) {
     readInput();
     #ifdef CONTROL_ADC
-      #ifdef ADC_PROTECT_ENA
-        if (adc_buffer.l_tx2 >= (ADC1_MIN_CAL - ADC_PROTECT_THRESH) && adc_buffer.l_tx2 <= (ADC1_MAX_CAL + ADC_PROTECT_THRESH) && 
-            adc_buffer.l_rx2 >= (ADC2_MIN_CAL - ADC_PROTECT_THRESH) && adc_buffer.l_rx2 <= (ADC2_MAX_CAL + ADC_PROTECT_THRESH)) {
-          if (timeoutFlagADC) {                         // Check for previous timeout flag  
-            if (timeoutCntADC-- <= 0)                   // Timeout de-qualification
-              timeoutFlagADC  = 0;                      // Timeout flag cleared           
-          } else {
-            timeoutCntADC     = 0;                      // Reset the timeout counter         
-          }
+      // If input1 or Input2 is either below MIN - Threshold or above MAX + Threshold, ADC protection timeout
+      if ((IN_RANGE(cmd1_in,INPUT1_MIN_CAL - ADC_PROTECT_THRESH,INPUT1_MAX_CAL + ADC_PROTECT_THRESH)) &&
+          (IN_RANGE(cmd1_in,INPUT2_MIN_CAL - ADC_PROTECT_THRESH,INPUT2_MAX_CAL + ADC_PROTECT_THRESH))){
+        if (timeoutFlagADC) {                         // Check for previous timeout flag  
+          if (timeoutCntADC-- <= 0)                   // Timeout de-qualification
+            timeoutFlagADC  = 0;                      // Timeout flag cleared           
         } else {
-          if (timeoutCntADC++ >= ADC_PROTECT_TIMEOUT) { // Timeout qualification
-            timeoutFlagADC    = 1;                      // Timeout detected
-            timeoutCntADC     = ADC_PROTECT_TIMEOUT;    // Limit timout counter value
-          }
-        }   
-      #endif
-
+          timeoutCntADC     = 0;                      // Reset the timeout counter         
+        }
+      } else {
+        if (timeoutCntADC++ >= ADC_PROTECT_TIMEOUT) { // Timeout qualification
+          timeoutFlagADC    = 1;                      // Timeout detected
+          timeoutCntADC     = ADC_PROTECT_TIMEOUT;    // Limit timout counter value
+        }
+      }   
       timeoutCnt = 0;
     #endif
 
@@ -841,23 +890,37 @@ void readCommand(void) {
       timeoutFlagSerial = timeoutFlagSerial_L || timeoutFlagSerial_R;
     #endif
 
-    //setScopeChannel(4, (int16_t)INPUT1_MIN_CAL);
-    //setScopeChannel(5, (int16_t)INPUT1_MID_CAL);
-    //setScopeChannel(6, (int16_t)INPUT1_MAX_CAL);
-    
     #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-      #ifdef INPUT1_MID_POT
-        cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
-      #else
-        cmd1 = CLAMP(MAP( cmd1_in , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX); // ADC1
-      #endif
-    
+      switch (INPUT1_TYPE_CAL){
+        case 0: // Input1 is ignored 
+          cmd1 = 0;
+          break;
+        case 1: // Input1 is a normal pot 
+          cmd1 = CLAMP(MAP( cmd1_in , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX); // ADC1
+          break;
+        case 2: // Input1 is a mid resting pot 
+          cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
+          break;
+        default:
+          cmd1 = 0;
+          break; 
+      }
+      
       #if !defined(VARIANT_SKATEBOARD)
-        #ifdef INPUT2_MID_POT
-          cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
-        #else
-          cmd2 = CLAMP(MAP( cmd2_in , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX); // ADC2
-        #endif
+        switch (INPUT2_TYPE_CAL){
+          case 0: // Input2 is ignored 
+            cmd2 = 0;
+            break;
+          case 1: // Input2 is a normal pot 
+            cmd2 = CLAMP(MAP( cmd2_in , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX); // ADC2
+            break;
+          case 2: // Input2 is a mid resting pot 
+            cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
+            break;
+          default:
+            cmd2 = 0;
+            break; 
+        }
       #else      
         cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_OUT_MIN, INPUT_MAX);
       #endif
