@@ -464,7 +464,7 @@ void adcCalibLim(void) {
     HAL_Delay(5);
   }
 
-  HAL_Delay(50);
+  HAL_Delay(10);
 
   uint16_t input_margin = 0;
   #ifdef CONTROL_ADC
@@ -489,7 +489,7 @@ void adcCalibLim(void) {
       consoleLog("Input1 is a mid-resting pot"); 
     }
 
-    HAL_Delay(50);
+    HAL_Delay(10);
     #ifdef CONTROL_ADC
     if ( (INPUT1_MIN_CAL - ADC_PROTECT_THRESH) > 0 && (INPUT1_MAX_CAL + ADC_PROTECT_THRESH) < 4095){
       consoleLog(" and protected");
@@ -498,9 +498,9 @@ void adcCalibLim(void) {
     input_cal_valid = 1;
   }
 
-  HAL_Delay(50);
+  HAL_Delay(10);
   consoleLog("\n");
-  HAL_Delay(50);
+  HAL_Delay(10);
 
   threshold = (INPUT2_MAX - INPUT2_MIN) / 10;
   INPUT2_MIN_CAL = INPUT2_MIN_temp + input_margin;
@@ -520,7 +520,7 @@ void adcCalibLim(void) {
       consoleLog("Input2 is a mid-resting pot"); 
     }
 
-    HAL_Delay(50);
+    HAL_Delay(10);
 
     #ifdef CONTROL_ADC
     if ( (INPUT2_MIN_CAL - ADC_PROTECT_THRESH) > 0 && (INPUT2_MAX_CAL + ADC_PROTECT_THRESH) < 4095 ){
@@ -530,11 +530,11 @@ void adcCalibLim(void) {
     input_cal_valid = 1;
   }
 
-  HAL_Delay(50);
+  HAL_Delay(10);
   consoleLog("\n");
-  HAL_Delay(50);
+  HAL_Delay(10);
   consoleLog("Saved limits\n");
-  HAL_Delay(50);
+  HAL_Delay(10);
   setScopeChannel(0, (int16_t)INPUT1_MIN_CAL);
   setScopeChannel(1, (int16_t)INPUT1_MID_CAL);
   setScopeChannel(2, (int16_t)INPUT1_MAX_CAL);
@@ -545,8 +545,9 @@ void adcCalibLim(void) {
   setScopeChannel(7, (int16_t)0);
   consoleScope();
 
-  HAL_Delay(50);
-  
+  HAL_Delay(20);
+  consoleLog("OK\n");
+
   #endif
 }
 
@@ -565,7 +566,7 @@ void updateCurSpdLim(void) {
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   
-  consoleLog("Torque and Speed limits update started... ");
+  consoleLog("Torque and Speed limits update started...\n");
 
   int32_t input1_fixdt = cmd1_in << 16;
   int32_t input2_fixdt = cmd2_in << 16;
@@ -582,13 +583,28 @@ void updateCurSpdLim(void) {
   }
 
   // Calculate scaling factors
-  cur_factor      = CLAMP((input1_fixdt - (INPUT1_MIN_CAL << 16)) / (INPUT1_MAX_CAL - INPUT1_MIN_CAL), 6553, 65535);    // ADC1, MIN_cur(10%) = 1.5 A 
-  spd_factor      = CLAMP((input2_fixdt - (INPUT2_MIN_CAL << 16)) / (INPUT2_MAX_CAL - INPUT2_MIN_CAL), 3276, 65535);    // ADC2, MIN_spd(5%)  = 50 rpm
+  cur_factor      = CLAMP((input1_fixdt - ((int16_t)INPUT1_MIN_CAL << 16)) / ((int16_t)INPUT1_MAX_CAL - (int16_t)INPUT1_MIN_CAL), 6553, 65535);    // ADC1, MIN_cur(10%) = 1.5 A 
+  spd_factor      = CLAMP((input2_fixdt - ((int16_t)INPUT2_MIN_CAL << 16)) / ((int16_t)INPUT2_MAX_CAL - (int16_t)INPUT2_MIN_CAL), 3276, 65535);    // ADC2, MIN_spd(5%)  = 50 rpm
   // Update maximum limits
   rtP_Left.i_max  = (int16_t)((I_MOT_MAX * A2BIT_CONV * cur_factor) >> 12);    // fixdt(0,16,16) to fixdt(1,16,4)
   rtP_Left.n_max  = (int16_t)((N_MOT_MAX * spd_factor) >> 12);                 // fixdt(0,16,16) to fixdt(1,16,4)
   rtP_Right.i_max = rtP_Left.i_max;
   rtP_Right.n_max = rtP_Left.n_max;
+
+  HAL_Delay(10);
+  consoleLog("Saved limits\n");
+  HAL_Delay(10);
+  setScopeChannel(0, (int16_t)input1_fixdt);
+  setScopeChannel(1, (uint16_t)cur_factor);
+  setScopeChannel(2, (int16_t)rtP_Right.i_max);
+  setScopeChannel(3, (int16_t)0);
+  setScopeChannel(4, (int16_t)input2_fixdt);
+  setScopeChannel(5, (uint16_t)spd_factor);
+  setScopeChannel(6, (int16_t)rtP_Right.n_max);
+  setScopeChannel(7, (int16_t)0);
+  consoleScope();
+
+  HAL_Delay(20);
 
   cur_spd_valid   = 1;
   consoleLog("OK\n");

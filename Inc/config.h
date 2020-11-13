@@ -135,8 +135,8 @@
 #define TRQ_MODE        3               // [-] TORQUE mode
 
 // Enable/Disable Motor
-//#define MOTOR_LEFT_ENA                  // [-] Enable LEFT motor.  Comment-out if this motor is not needed to be operational
-//#define MOTOR_RIGHT_ENA                 // [-] Enable RIGHT motor. Comment-out if this motor is not needed to be operational
+#define MOTOR_LEFT_ENA                  // [-] Enable LEFT motor.  Comment-out if this motor is not needed to be operational
+#define MOTOR_RIGHT_ENA                 // [-] Enable RIGHT motor. Comment-out if this motor is not needed to be operational
 
 // Control selections
 #define CTRL_TYP_SEL    FOC_CTRL        // [-] Control type selection: COM_CTRL, SIN_CTRL, FOC_CTRL (default)
@@ -324,6 +324,7 @@
   #define FILTER             3276    //  0.05f
   #define SPEED_COEFFICIENT  8192    //  0.5f
   #define STEER_COEFFICIENT  62259   // -0.2f
+  #define DEBUG_SERIAL_USART2       // left sensor cable debug
   // #define SUPPORT_BUTTONS            // Define for Nunchuck buttons support
 #endif
 // ############################# END OF VARIANT_NUNCHUK SETTINGS #########################
@@ -371,6 +372,11 @@
 */
   #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
   // #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
+  #ifdef CONTROL_PWM_RIGHT
+    #define DEBUG_SERIAL_USART2       // left sensor cable debug
+  #else
+    #define DEBUG_SERIAL_USART3       // right sensor cable debug
+  #endif
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define INPUT1_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
   #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
@@ -519,7 +525,11 @@
   #define CTRL_MOD_REQ        TRQ_MODE  // SKATEBOARD works best in TORQUE Mode
   //#define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
   #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
-  
+  #ifdef CONTROL_PWM_RIGHT
+    #define DEBUG_SERIAL_USART2       // left sensor cable debug
+  #else
+    #define DEBUG_SERIAL_USART3       // right sensor cable debug
+  #endif  
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define INPUT1_TYPE        0       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
   #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
@@ -542,11 +552,6 @@
   // #define SUPPORT_BUTTONS_LEFT        // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT       // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
   // #define STANDSTILL_HOLD_ENABLE      // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
-  #ifdef CONTROL_PWM_RIGHT
-    #define DEBUG_SERIAL_USART2       // left sensor cable debug
-  #else
-    #define DEBUG_SERIAL_USART3       // right sensor cable debug
-  #endif
 #endif
 // ############################# END OF VARIANT_SKATEBOARD SETTINGS ############################
 
