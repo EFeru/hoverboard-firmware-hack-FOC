@@ -88,8 +88,8 @@ ExtY     rtY_Right;                     /* External outputs */
 
 int16_t  cmd1;                          // normalized input value. -1000 to 1000
 int16_t  cmd2;                          // normalized input value. -1000 to 1000
-int16_t  cmd1_in;                       // normalized input value. -1000 to 1000
-int16_t  cmd2_in;                       // normalized input value. -1000 to 1000
+int16_t  input1;                        // Non normalized input value
+int16_t  input2;                        // Non normalized input value
 
 int16_t  speedAvg;                      // average measured speed
 int16_t  speedAvgAbs;                   // average measured speed in absolute
@@ -437,8 +437,8 @@ void adcCalibLim(void) {
 
   readInput();  
   // Inititalization: MIN = a high values, MAX = a low value,
-  int32_t input1_fixdt = cmd1_in << 16;
-  int32_t input2_fixdt = cmd2_in << 16;
+  int32_t input1_fixdt = input1 << 16;
+  int32_t input2_fixdt = input2 << 16;
   uint16_t input_cal_timeout = 0;
   int16_t INPUT1_MIN_temp   = INPUT1_MAX;
   int16_t INPUT1_MID_temp   = 0;
@@ -452,8 +452,8 @@ void adcCalibLim(void) {
   // Extract MIN, MAX and MID from ADC while the power button is not pressed
   while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && input_cal_timeout++ < 4000) {   // 20 sec timeout
     readInput();
-    filtLowPass32(cmd1_in, FILTER, &input1_fixdt);
-    filtLowPass32(cmd2_in, FILTER, &input2_fixdt);
+    filtLowPass32(input1, FILTER, &input1_fixdt);
+    filtLowPass32(input2, FILTER, &input2_fixdt);
     
     INPUT1_MID_temp = (int16_t)CLAMP(input1_fixdt >> 16, INPUT1_MIN, INPUT1_MAX);                   // convert fixed-point to integer
     INPUT2_MID_temp = (int16_t)CLAMP(input2_fixdt >> 16, INPUT2_MIN, INPUT2_MAX);
@@ -463,8 +463,6 @@ void adcCalibLim(void) {
     INPUT2_MAX_temp = MAX(INPUT2_MAX_temp, INPUT2_MID_temp);
     HAL_Delay(5);
   }
-
-  HAL_Delay(10);
 
   uint16_t input_margin = 0;
   #ifdef CONTROL_ADC
@@ -491,7 +489,7 @@ void adcCalibLim(void) {
 
     HAL_Delay(10);
     #ifdef CONTROL_ADC
-    if ( (INPUT1_MIN_CAL - ADC_PROTECT_THRESH) > 0 && (INPUT1_MAX_CAL + ADC_PROTECT_THRESH) < 4095){
+    if ( ((int16_t)INPUT1_MIN_CAL - ADC_PROTECT_THRESH) > 0 && ((int16_t)INPUT1_MAX_CAL + ADC_PROTECT_THRESH) < 4095){
       consoleLog(" and protected");
     }
     #endif
@@ -523,31 +521,19 @@ void adcCalibLim(void) {
     HAL_Delay(10);
 
     #ifdef CONTROL_ADC
-    if ( (INPUT2_MIN_CAL - ADC_PROTECT_THRESH) > 0 && (INPUT2_MAX_CAL + ADC_PROTECT_THRESH) < 4095 ){
+    if ( ((int16_t)INPUT2_MIN_CAL - ADC_PROTECT_THRESH) > 0 && ((int16_t)INPUT2_MAX_CAL + ADC_PROTECT_THRESH) < 4095 ){
       consoleLog(" and protected");
     }
     #endif
     input_cal_valid = 1;
   }
 
-  HAL_Delay(10);
-  consoleLog("\n");
-  HAL_Delay(10);
-  consoleLog("Saved limits\n");
-  HAL_Delay(10);
-  setScopeChannel(0, (int16_t)INPUT1_MIN_CAL);
-  setScopeChannel(1, (int16_t)INPUT1_MID_CAL);
-  setScopeChannel(2, (int16_t)INPUT1_MAX_CAL);
-  setScopeChannel(3, (int16_t)0);
-  setScopeChannel(4, (int16_t)INPUT2_MIN_CAL);
-  setScopeChannel(5, (int16_t)INPUT2_MID_CAL);
-  setScopeChannel(6, (int16_t)INPUT2_MAX_CAL);
-  setScopeChannel(7, (int16_t)0);
-  consoleScope();
-
-  HAL_Delay(20);
-  consoleLog("OK\n");
-
+  print("\n");
+  print("Saved limits\n");
+  print("INPUT1_MIN:%i INPUT1_MID:%i INPUT1_MAX:%i\n", (int16_t)INPUT1_MIN_CAL,(int16_t)INPUT1_MID_CAL,(int16_t)INPUT1_MAX_CAL);
+  print("INPUT2_MIN:%i INPUT2_MID:%i INPUT2_MAX:%i\n", (int16_t)INPUT2_MIN_CAL,(int16_t)INPUT2_MID_CAL,(int16_t)INPUT2_MAX_CAL);
+  print("OK\n");
+  
   #endif
 }
 
@@ -568,8 +554,8 @@ void updateCurSpdLim(void) {
   
   consoleLog("Torque and Speed limits update started...\n");
 
-  int32_t input1_fixdt = cmd1_in << 16;
-  int32_t input2_fixdt = cmd2_in << 16;
+  int32_t input1_fixdt = input1 << 16;
+  int32_t input2_fixdt = input2 << 16;
   uint16_t cur_spd_timeout = 0;
   uint16_t cur_factor;    // fixdt(0,16,16)
   uint16_t spd_factor;    // fixdt(0,16,16)
@@ -577,21 +563,26 @@ void updateCurSpdLim(void) {
   // Wait for the power button press
   while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && cur_spd_timeout++ < 2000) {  // 10 sec timeout
     readInput();
-    filtLowPass32(cmd1_in, FILTER, &input1_fixdt);
-    filtLowPass32(cmd2_in, FILTER, &input2_fixdt);
+    filtLowPass32(input1, FILTER, &input1_fixdt);
+    filtLowPass32(input2, FILTER, &input2_fixdt);
     HAL_Delay(5);      
   }
-
   // Calculate scaling factors
   cur_factor      = CLAMP((input1_fixdt - ((int16_t)INPUT1_MIN_CAL << 16)) / ((int16_t)INPUT1_MAX_CAL - (int16_t)INPUT1_MIN_CAL), 6553, 65535);    // ADC1, MIN_cur(10%) = 1.5 A 
   spd_factor      = CLAMP((input2_fixdt - ((int16_t)INPUT2_MIN_CAL << 16)) / ((int16_t)INPUT2_MAX_CAL - (int16_t)INPUT2_MIN_CAL), 3276, 65535);    // ADC2, MIN_spd(5%)  = 50 rpm
-  // Update maximum limits
-  rtP_Left.i_max  = (int16_t)((I_MOT_MAX * A2BIT_CONV * cur_factor) >> 12);    // fixdt(0,16,16) to fixdt(1,16,4)
-  rtP_Left.n_max  = (int16_t)((N_MOT_MAX * spd_factor) >> 12);                 // fixdt(0,16,16) to fixdt(1,16,4)
-  rtP_Right.i_max = rtP_Left.i_max;
-  rtP_Right.n_max = rtP_Left.n_max;
+      
+  if (INPUT1_TYPE != 0){
+    // Update current limit
+    rtP_Right.i_max = rtP_Left.i_max  = (int16_t)((I_MOT_MAX * A2BIT_CONV * cur_factor) >> 12);    // fixdt(0,16,16) to fixdt(1,16,4)
+    cur_spd_valid   = 1;
+  }
 
-  HAL_Delay(10);
+  if (INPUT2_TYPE != 0){
+    // Update speed limit
+    rtP_Right.n_max = rtP_Left.n_max  = (int16_t)((N_MOT_MAX * spd_factor) >> 12);                 // fixdt(0,16,16) to fixdt(1,16,4)
+    cur_spd_valid   = 1;
+  }
+  
   consoleLog("Saved limits\n");
   HAL_Delay(10);
   setScopeChannel(0, (int16_t)input1_fixdt);
@@ -603,11 +594,9 @@ void updateCurSpdLim(void) {
   setScopeChannel(6, (int16_t)rtP_Right.n_max);
   setScopeChannel(7, (int16_t)0);
   consoleScope();
-
   HAL_Delay(20);
-
-  cur_spd_valid   = 1;
   consoleLog("OK\n");
+
   #endif
 }
 
@@ -816,8 +805,8 @@ void readInput(void) {
    #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
       if (nunchuk_connected != 0) {
         Nunchuk_Read();
-	      cmd1_in = (nunchuk_data[0] - 127) * 8; // X axis 0-255
-	      cmd2_in = (nunchuk_data[1] - 128) * 8; // Y axis 0-255
+	      input1 = (nunchuk_data[0] - 127) * 8; // X axis 0-255
+	      input2 = (nunchuk_data[1] - 128) * 8; // Y axis 0-255
         			
         #ifdef SUPPORT_BUTTONS
           button1 = (uint8_t)nunchuk_data[5] & 1;
@@ -827,8 +816,8 @@ void readInput(void) {
     #endif
 
     #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
-      cmd1_in = (ppm_captured_value[0] - 500) * 2;
-      cmd2_in = (ppm_captured_value[1] - 500) * 2;
+      input1 = (ppm_captured_value[0] - 500) * 2;
+      input2 = (ppm_captured_value[1] - 500) * 2;
       #ifdef SUPPORT_BUTTONS
 	      button1 = ppm_captured_value[5] > 500;
 	      button2 = 0;
@@ -836,14 +825,14 @@ void readInput(void) {
     #endif
 
     #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-      cmd1_in = (pwm_captured_ch1_value - 500) * 2;
-      cmd2_in = (pwm_captured_ch2_value - 500) * 2;
+      input1 = (pwm_captured_ch1_value - 500) * 2;
+      input2 = (pwm_captured_ch2_value - 500) * 2;
     #endif
 
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
-	    cmd1_in = adc_buffer.l_tx2;
-	    cmd2_in = adc_buffer.l_rx2;
+	    input1 = adc_buffer.l_tx2;
+	    input2 = adc_buffer.l_rx2;
     #endif
 
     #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
@@ -852,12 +841,12 @@ void readInput(void) {
         for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
           ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
         }
-        cmd1_in = (ibus_captured_value[0] - 500) * 2;
-        cmd2_in = (ibus_captured_value[1] - 500) * 2; 
+        input1 = (ibus_captured_value[0] - 500) * 2;
+        input2 = (ibus_captured_value[1] - 500) * 2; 
       #else
        if (IN_RANGE(command.steer, INPUT_MIN, INPUT_MAX) && IN_RANGE(command.speed, INPUT_MIN, INPUT_MAX)) {
-        cmd1_in = command.steer;
-        cmd2_in = command.speed;
+        input1 = command.steer;
+        input2 = command.speed;
        }
       #endif
       timeoutCnt = 0;
@@ -871,8 +860,8 @@ void readCommand(void) {
     readInput();
     #ifdef CONTROL_ADC
       // If input1 or Input2 is either below MIN - Threshold or above MAX + Threshold, ADC protection timeout
-      if ((IN_RANGE(cmd1_in,INPUT1_MIN_CAL - ADC_PROTECT_THRESH,INPUT1_MAX_CAL + ADC_PROTECT_THRESH)) &&
-          (IN_RANGE(cmd1_in,INPUT2_MIN_CAL - ADC_PROTECT_THRESH,INPUT2_MAX_CAL + ADC_PROTECT_THRESH))){
+      if ((IN_RANGE(input1,(int16_t)INPUT1_MIN_CAL - ADC_PROTECT_THRESH,(int16_t)INPUT1_MAX_CAL + ADC_PROTECT_THRESH)) &&
+          (IN_RANGE(input2,(int16_t)INPUT2_MIN_CAL - ADC_PROTECT_THRESH,(int16_t)INPUT2_MAX_CAL + ADC_PROTECT_THRESH))){
         if (timeoutFlagADC) {                         // Check for previous timeout flag  
           if (timeoutCntADC-- <= 0)                   // Timeout de-qualification
             timeoutFlagADC  = 0;                      // Timeout flag cleared           
@@ -912,10 +901,10 @@ void readCommand(void) {
           cmd1 = 0;
           break;
         case 1: // Input1 is a normal pot 
-          cmd1 = CLAMP(MAP( cmd1_in , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX); // ADC1
+          cmd1 = CLAMP(MAP( input1 , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX);
           break;
         case 2: // Input1 is a mid resting pot 
-          cmd1 = addDeadBand(cmd1_in, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
+          cmd1 = addDeadBand(input1, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
           break;
         default:
           cmd1 = 0;
@@ -928,17 +917,17 @@ void readCommand(void) {
             cmd2 = 0;
             break;
           case 1: // Input2 is a normal pot 
-            cmd2 = CLAMP(MAP( cmd2_in , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX); // ADC2
+            cmd2 = CLAMP(MAP( input2 , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX);
             break;
           case 2: // Input2 is a mid resting pot 
-            cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
+            cmd2 = addDeadBand(input2, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
             break;
           default:
             cmd2 = 0;
             break; 
         }
       #else      
-        cmd2 = addDeadBand(cmd2_in, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_OUT_MIN, INPUT_MAX);
+        cmd2 = addDeadBand(input2, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_OUT_MIN, INPUT_MAX);
       #endif
     #endif
       

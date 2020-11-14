@@ -62,8 +62,8 @@ extern ExtY rtY_Right;                  /* External outputs */
 
 extern int16_t cmd1;                    // normalized input value. -1000 to 1000
 extern int16_t cmd2;                    // normalized input value. -1000 to 1000
-extern int16_t cmd1_in;                    // normalized input value. -1000 to 1000
-extern int16_t cmd2_in;                    // normalized input value. -1000 to 1000
+extern int16_t input1;                  // Non normalized input value
+extern int16_t input2;                  // Non normalized input value
 
 extern int16_t speedAvg;                // Average measured speed
 extern int16_t speedAvgAbs;             // Average measured speed in absolute
@@ -409,8 +409,8 @@ int main(void) {
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
-        setScopeChannel(0, (int16_t)cmd1_in);                   // 1: ADC1
-        setScopeChannel(1, (int16_t)cmd2_in);                   // 2: ADC2
+        setScopeChannel(0, (int16_t)input1);                   // 1: ADC1
+        setScopeChannel(1, (int16_t)input2);                   // 2: ADC2
         setScopeChannel(2, (int16_t)cmd1); //speedR);                    // 3: output command: [-1000, 1000]
         setScopeChannel(3, (int16_t)cmd2); //speedL);                    // 4: output command: [-1000, 1000]
         setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
