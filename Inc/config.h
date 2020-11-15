@@ -434,6 +434,7 @@
   #define USART2_BAUD         115200
   #define CONTROL_SERIAL_USART2                         // left sensor board cable, disable if ADC or PPM is used!
   #define FEEDBACK_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
+  // #define DEBUG_SERIAL_USART3                           // right sensor cable debug
 #endif
 // ############################# END OF VARIANT_IBUS SETTINGS ############################
 

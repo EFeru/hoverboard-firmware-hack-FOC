@@ -455,86 +455,87 @@ void adcCalibLim(void) {
     filtLowPass32(input1, FILTER, &input1_fixdt);
     filtLowPass32(input2, FILTER, &input2_fixdt);
     
-    INPUT1_MID_temp = (int16_t)CLAMP(input1_fixdt >> 16, INPUT1_MIN, INPUT1_MAX);                   // convert fixed-point to integer
-    INPUT2_MID_temp = (int16_t)CLAMP(input2_fixdt >> 16, INPUT2_MIN, INPUT2_MAX);
+    INPUT1_MID_temp = (int16_t)(input1_fixdt >> 16);// CLAMP(input1_fixdt >> 16, INPUT1_MIN, INPUT1_MAX);                   // convert fixed-point to integer
+    INPUT2_MID_temp = (int16_t)(input2_fixdt >> 16);// CLAMP(input2_fixdt >> 16, INPUT2_MIN, INPUT2_MAX);
     INPUT1_MIN_temp = MIN(INPUT1_MIN_temp, INPUT1_MID_temp);
     INPUT1_MAX_temp = MAX(INPUT1_MAX_temp, INPUT1_MID_temp);      
     INPUT2_MIN_temp = MIN(INPUT2_MIN_temp, INPUT2_MID_temp);
     INPUT2_MAX_temp = MAX(INPUT2_MAX_temp, INPUT2_MID_temp);
     HAL_Delay(5);
   }
-
+  
   uint16_t input_margin = 0;
   #ifdef CONTROL_ADC
      input_margin = 100;
   #endif
   
-  int16_t threshold = (INPUT1_MAX - INPUT1_MIN) / 10;
   INPUT1_MIN_CAL = INPUT1_MIN_temp + input_margin;
   INPUT1_MID_CAL = INPUT1_MID_temp;
   INPUT1_MAX_CAL = INPUT1_MAX_temp - input_margin;
-  if ( (INPUT1_MIN_temp/threshold) == (INPUT1_MAX_temp/threshold) ){
-      // MIN MID and MAX are close, there is no input
-      INPUT1_TYPE_CAL = 0;
-      consoleLog("Input1 is ignored");
-  } else {
-    if ( (INPUT1_MIN_temp/threshold) == (INPUT1_MID_temp/threshold) ){
-      // MIN and MID are close, it's a normal pot
-      INPUT1_TYPE_CAL = 1;
-      consoleLog("Input1 is a normal pot");
-    }else {
-      INPUT1_TYPE_CAL = 2;
-      consoleLog("Input1 is a mid-resting pot"); 
-    }
+  INPUT1_TYPE_CAL = checkInputType(INPUT1_MIN_CAL,INPUT1_MID_CAL,INPUT1_MAX_CAL);
 
-    HAL_Delay(10);
-    #ifdef CONTROL_ADC
-    if ( ((int16_t)INPUT1_MIN_CAL - ADC_PROTECT_THRESH) > 0 && ((int16_t)INPUT1_MAX_CAL + ADC_PROTECT_THRESH) < 4095){
-      consoleLog(" and protected");
-    }
-    #endif
-    input_cal_valid = 1;
+  INPUT2_MIN_CAL = INPUT2_MIN_temp + input_margin;
+  INPUT2_MID_CAL = INPUT2_MID_temp;
+  INPUT2_MAX_CAL = INPUT2_MAX_temp - input_margin;
+  INPUT2_TYPE_CAL = checkInputType(INPUT2_MIN_CAL,INPUT2_MID_CAL,INPUT2_MAX_CAL);
+  
+  consoleLog("Saved limits\n");
+  HAL_Delay(10);
+  setScopeChannel(0, (int16_t)INPUT1_MIN_CAL);
+  setScopeChannel(1, (uint16_t)INPUT1_MID_CAL);
+  setScopeChannel(2, (int16_t)INPUT1_MAX_CAL);
+  setScopeChannel(3, (int16_t)0);
+  setScopeChannel(4, (int16_t)INPUT2_MIN_CAL);
+  setScopeChannel(5, (uint16_t)INPUT2_MID_CAL);
+  setScopeChannel(6, (int16_t)INPUT2_MAX_CAL);
+  setScopeChannel(7, (int16_t)0);
+  consoleScope();
+  HAL_Delay(20);
+  consoleLog("OK\n");
+  
+  #endif
+}
+
+int checkInputType(int16_t min, int16_t mid, int16_t max){
+  
+  HAL_Delay(10);
+
+  int type = 0;
+
+  // Threshold to define if values are too close
+  int16_t threshold = 200;
+  #ifdef CONTROL_ADC
+    threshold = 400;
+  #endif
+
+  if ( (min/threshold) == (max/threshold) ){
+        // MIN MID and MAX are close, disable input
+        consoleLog("Input is ignored");
+        type = 0;
+    } else {
+      if ( (min/threshold) == (mid/threshold) ){
+        // MIN and MID are close, it's a normal pot
+        consoleLog("Input is a normal pot");
+        type = 1;
+      }else {
+        // it's a mid resting pot
+        consoleLog("Input is a mid-resting pot");
+        type = 2; 
+      }
+
+      HAL_Delay(10);
+      #ifdef CONTROL_ADC
+      if ( (min - ADC_PROTECT_THRESH) > 0 && (max + ADC_PROTECT_THRESH) < 4095){
+        consoleLog(" and protected");
+      }
+      #endif
   }
 
   HAL_Delay(10);
   consoleLog("\n");
   HAL_Delay(10);
-
-  threshold = (INPUT2_MAX - INPUT2_MIN) / 10;
-  INPUT2_MIN_CAL = INPUT2_MIN_temp + input_margin;
-  INPUT2_MID_CAL = INPUT2_MID_temp;
-  INPUT2_MAX_CAL = INPUT2_MAX_temp - input_margin;    
-  if ( (INPUT2_MIN_temp/threshold) == (INPUT2_MAX_temp/threshold) ){
-      // MIN MID and MAX are close, there is no input
-      INPUT2_TYPE_CAL = 0;
-      consoleLog("Input2 is ignored");
-  } else {
-    if ( (INPUT2_MIN_temp/threshold) == (INPUT2_MID_temp/threshold) ){
-      // MIN and MID are close, it's a normal pot
-      INPUT2_TYPE_CAL = 1;
-      consoleLog("Input2 is a normal pot");
-    }else {
-      INPUT2_TYPE_CAL = 2;
-      consoleLog("Input2 is a mid-resting pot"); 
-    }
-
-    HAL_Delay(10);
-
-    #ifdef CONTROL_ADC
-    if ( ((int16_t)INPUT2_MIN_CAL - ADC_PROTECT_THRESH) > 0 && ((int16_t)INPUT2_MAX_CAL + ADC_PROTECT_THRESH) < 4095 ){
-      consoleLog(" and protected");
-    }
-    #endif
-    input_cal_valid = 1;
-  }
-
-  print("\n");
-  print("Saved limits\n");
-  print("INPUT1_MIN:%i INPUT1_MID:%i INPUT1_MAX:%i\n", (int16_t)INPUT1_MIN_CAL,(int16_t)INPUT1_MID_CAL,(int16_t)INPUT1_MAX_CAL);
-  print("INPUT2_MIN:%i INPUT2_MID:%i INPUT2_MAX:%i\n", (int16_t)INPUT2_MIN_CAL,(int16_t)INPUT2_MID_CAL,(int16_t)INPUT2_MAX_CAL);
-  print("OK\n");
   
-  #endif
+  return type;
 }
 
 
@@ -571,13 +572,13 @@ void updateCurSpdLim(void) {
   cur_factor      = CLAMP((input1_fixdt - ((int16_t)INPUT1_MIN_CAL << 16)) / ((int16_t)INPUT1_MAX_CAL - (int16_t)INPUT1_MIN_CAL), 6553, 65535);    // ADC1, MIN_cur(10%) = 1.5 A 
   spd_factor      = CLAMP((input2_fixdt - ((int16_t)INPUT2_MIN_CAL << 16)) / ((int16_t)INPUT2_MAX_CAL - (int16_t)INPUT2_MIN_CAL), 3276, 65535);    // ADC2, MIN_spd(5%)  = 50 rpm
       
-  if (INPUT1_TYPE != 0){
+  if (INPUT1_TYPE_CAL != 0){
     // Update current limit
     rtP_Right.i_max = rtP_Left.i_max  = (int16_t)((I_MOT_MAX * A2BIT_CONV * cur_factor) >> 12);    // fixdt(0,16,16) to fixdt(1,16,4)
     cur_spd_valid   = 1;
   }
 
-  if (INPUT2_TYPE != 0){
+  if (INPUT2_TYPE_CAL != 0){
     // Update speed limit
     rtP_Right.n_max = rtP_Left.n_max  = (int16_t)((N_MOT_MAX * spd_factor) >> 12);                 // fixdt(0,16,16) to fixdt(1,16,4)
     cur_spd_valid   = 1;
@@ -635,13 +636,22 @@ void saveConfig() {
  * Add Dead-band to a signal
  * This function realizes a dead-band around 0 and scales the input between [out_min, out_max]
  */
-int addDeadBand(int16_t u, int16_t deadBand, int16_t in_min, int16_t in_mid, int16_t in_max, int16_t out_min, int16_t out_max) {
-  if( u > in_mid - deadBand && u < in_mid + deadBand ) {
-    return 0;
-  } else if(u > in_mid) {
-    return CLAMP( MAP(u, in_mid + deadBand, in_max, 0, out_max), 0 , out_max);
-  } else {
-    return CLAMP( MAP(u, in_mid - deadBand, in_min, 0, out_min), out_min, 0);
+int addDeadBand(int16_t u, int16_t type, int16_t deadBand, int16_t in_min, int16_t in_mid, int16_t in_max, int16_t out_min, int16_t out_max) {
+  switch (type){
+    case 0: // Input is ignored 
+      return 0;
+    case 1: // Input is a normal pot 
+      return CLAMP(MAP( u , in_min, in_max, 0, out_max ), 0, out_max);
+    case 2: // Input is a mid resting pot 
+      if( u > in_mid - deadBand && u < in_mid + deadBand ) {
+        return 0;
+      } else if(u > in_mid) {
+        return CLAMP( MAP(u, in_mid + deadBand, in_max, 0, out_max), 0 , out_max);
+      } else {
+        return CLAMP( MAP(u, in_mid - deadBand, in_min, 0, out_min), out_min, 0);
+      }
+    default:
+      return 0; 
   }	
 }
 
@@ -896,38 +906,11 @@ void readCommand(void) {
     #endif
 
     #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-      switch (INPUT1_TYPE_CAL){
-        case 0: // Input1 is ignored 
-          cmd1 = 0;
-          break;
-        case 1: // Input1 is a normal pot 
-          cmd1 = CLAMP(MAP( input1 , INPUT1_MIN_CAL, INPUT1_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX);
-          break;
-        case 2: // Input1 is a mid resting pot 
-          cmd1 = addDeadBand(input1, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
-          break;
-        default:
-          cmd1 = 0;
-          break; 
-      }
-      
+      cmd1 = addDeadBand(input1, INPUT1_TYPE_CAL, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
       #if !defined(VARIANT_SKATEBOARD)
-        switch (INPUT2_TYPE_CAL){
-          case 0: // Input2 is ignored 
-            cmd2 = 0;
-            break;
-          case 1: // Input2 is a normal pot 
-            cmd2 = CLAMP(MAP( input2 , INPUT2_MIN_CAL, INPUT2_MAX_CAL, 0, INPUT_MAX ), 0, INPUT_MAX);
-            break;
-          case 2: // Input2 is a mid resting pot 
-            cmd2 = addDeadBand(input2, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
-            break;
-          default:
-            cmd2 = 0;
-            break; 
-        }
+        cmd2 = addDeadBand(input2, INPUT2_TYPE_CAL, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
       #else      
-        cmd2 = addDeadBand(input2, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_OUT_MIN, INPUT_MAX);
+        cmd2 = addDeadBand(input2, INPUT2_TYPE_CAL, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_OUT_MIN, INPUT_MAX);
       #endif
     #endif
       

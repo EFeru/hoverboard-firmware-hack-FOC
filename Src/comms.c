@@ -80,28 +80,3 @@ void consoleLog(char *message)
     #endif
   #endif
 }
-
-void print( const char * format, ... )
-{
-  va_list args;
-  va_start (args, format);
-
-  static volatile uint8_t buffer[100];
-  int strLength;
-  strLength = vsprintf((char *)(uintptr_t)buffer,format, args);
-  
-  #ifdef DEBUG_SERIAL_USART2
-  while(__HAL_DMA_GET_COUNTER(huart2.hdmatx) > 0) {
-    HAL_Delay(1);	 
-  }
-  HAL_UART_Transmit_DMA(&huart2, (uint8_t *)buffer, strLength);
-  #endif
-  #ifdef DEBUG_SERIAL_USART3
-  while(__HAL_DMA_GET_COUNTER(huart3.hdmatx) > 0) {
-    HAL_Delay(1);	 
-  }
-  HAL_UART_Transmit_DMA(&huart3, (uint8_t *)buffer, strLength);
-  #endif
-
-  va_end (args);
-}
