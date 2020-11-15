@@ -192,6 +192,10 @@ static uint8_t button2;                 // Green
 static uint8_t brakePressed;
 #endif
 
+#if defined(CRUISE_CONTROL_SUPPORT) || (defined(STANDSTILL_HOLD_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ != SPD_MODE))
+static uint8_t cruiseCtrlAcv = 0;
+static uint8_t standstillAcv = 0;
+#endif
 
 /* =========================== Initialization Functions =========================== */
 
@@ -657,23 +661,30 @@ int addDeadBand(int16_t u, int16_t type, int16_t deadBand, int16_t in_min, int16
 
  /*
  * Standstill Hold Function
- * This function will switch to SPEED mode at standstill to provide an anti-roll functionality.
- * Only available and makes sense for VOLTAGE or TORQUE mode.
+ * This function uses Cruise Control to provide an anti-roll functionality at standstill.
+ * Only available and makes sense for FOC VOLTAGE or FOC TORQUE mode.
  * 
- * Input: pointer *speedCmd
- * Output: modified Control Mode Request
+ * Input:  none
+ * Output: standstillAcv
  */
-void standstillHold(int16_t *speedCmd) {
+void standstillHold(void) {
   #if defined(STANDSTILL_HOLD_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ != SPD_MODE)
-    if (*speedCmd > -20 && *speedCmd < 20) {                          // If speedCmd (Throttle) is small
-      if (ctrlModReqRaw != SPD_MODE && speedAvgAbs < 3) {             // and If measured speed is small (meaning we are at standstill)
-        ctrlModReqRaw = SPD_MODE;                                     // Switch to Speed mode
+    if (!rtP_Left.b_cruiseCtrlEna) {                          // If Stanstill in NOT Active -> try Activation
+      if (((cmd1 > 50 || cmd2 < -50) && speedAvgAbs < 30)     // Check if Brake is pressed AND measured speed is small
+          || (cmd2 < 20 && speedAvgAbs < 5)) {                // OR Throttle is small AND measured speed is very small
+        rtP_Left.n_cruiseMotTgt   = 0;
+        rtP_Right.n_cruiseMotTgt  = 0;
+        rtP_Left.b_cruiseCtrlEna  = 1;
+        rtP_Right.b_cruiseCtrlEna = 1;
+        standstillAcv = 1;
+      } 
+    }
+    else {                                                    // If Stanstill is Active -> try Deactivation
+      if (cmd1 < 20 && cmd2 > 50 && !cruiseCtrlAcv) {         // Check if Brake is released AND Throttle is pressed AND no Cruise Control
+        rtP_Left.b_cruiseCtrlEna  = 0;
+        rtP_Right.b_cruiseCtrlEna = 0;
+        standstillAcv = 0;
       }
-      if (ctrlModReqRaw == SPD_MODE) {                                // If we are in Speed mode
-        *speedCmd = 0;                                                // Request standstill (0 rpm)
-      }
-    } else if (ctrlModReqRaw != CTRL_MOD_REQ && (*speedCmd < -50 || *speedCmd > 50)) { // Else if speedCmd (Throttle) becomes significant
-      ctrlModReqRaw = CTRL_MOD_REQ;                                   // Follow the Mode request
     }
   #endif
 }
@@ -720,19 +731,21 @@ void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
  * This function activates/deactivates cruise control.
  * 
  * Input: button (as a pulse)
- * Output: none
+ * Output: cruiseCtrlAcv
  */
 void cruiseControl(uint8_t button) {
   #ifdef CRUISE_CONTROL_SUPPORT
-    if (button && !rtP_Left.b_cruiseCtrlEna) {                       // Cruise control activated
+    if (button && !rtP_Left.b_cruiseCtrlEna) {                          // Cruise control activated
       rtP_Left.n_cruiseMotTgt   = rtY_Left.n_mot;
       rtP_Right.n_cruiseMotTgt  = rtY_Right.n_mot;
       rtP_Left.b_cruiseCtrlEna  = 1;
       rtP_Right.b_cruiseCtrlEna = 1;
-      shortBeepMany(2, 1);                                           // 200 ms beep delay. Acts as a debounce also.
-    } else if (button && rtP_Left.b_cruiseCtrlEna) {                 // Cruise control deactivated
+      cruiseCtrlAcv = 1;
+      shortBeepMany(2, 1);                                              // 200 ms beep delay. Acts as a debounce also.
+    } else if (button && rtP_Left.b_cruiseCtrlEna && !standstillAcv) {  // Cruise control deactivated if no Standstill Hold is active
       rtP_Left.b_cruiseCtrlEna  = 0;
       rtP_Right.b_cruiseCtrlEna = 0;
+      cruiseCtrlAcv = 0;
       shortBeepMany(2, -1);
     }
   #endif
