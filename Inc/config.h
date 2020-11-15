@@ -338,7 +338,7 @@
  * https://gist.github.com/peterpoetzi/1b63a4a844162196613871767189bd05
 */
   #define CONTROL_PPM_LEFT            // use PPM-Sum as input on the LEFT cable . disable CONTROL_SERIAL_USART2!
-  // #define CONTROL_PPM_RIGHT           // use PPM-Sum as input on the RIGHT cable. disable CONTROL_SERIAL_USART3!
+  //#define CONTROL_PPM_RIGHT           // use PPM-Sum as input on the RIGHT cable. disable CONTROL_SERIAL_USART3!
   #ifdef CONTROL_PPM_RIGHT
     #define DEBUG_SERIAL_USART2       // left sensor cable debug
   #else

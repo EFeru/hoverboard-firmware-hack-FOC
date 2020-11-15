@@ -34,13 +34,14 @@ void PPM_ISR_Callback(void) {
   if (rc_delay > 3000) {
     if (ppm_valid && ppm_count == PPM_NUM_CHANNELS) {
       ppm_timeout = 0;
+      timeoutCnt = 0; // added this
       memcpy(ppm_captured_value, ppm_captured_value_buffer, sizeof(ppm_captured_value));
     }
     ppm_valid = true;
     ppm_count = 0;
   }
   else if (ppm_count < PPM_NUM_CHANNELS && IN_RANGE(rc_delay, 900, 2100)){
-    timeoutCnt = 0;
+    //timeoutCnt = 0;
     ppm_captured_value_buffer[ppm_count++] = CLAMP(rc_delay, 1000, 2000) - 1000;
   } else {
     ppm_valid = false;
@@ -77,9 +78,18 @@ void PPM_Init(void) {
   TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
   HAL_TIM_Base_Init(&TimHandle);
 
+  #if defined(CONTROL_PPM_LEFT)  
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+  #endif
+
+  #if defined(CONTROL_PPM_RIGHT)  
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  #endif
+
   HAL_TIM_Base_Start(&TimHandle);
 }
 #endif
