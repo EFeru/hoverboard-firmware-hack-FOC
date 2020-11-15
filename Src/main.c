@@ -220,6 +220,10 @@ int main(void) {
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50); // speedBlend [0,1] is within [10 rpm, 60rpm]
       #endif
 
+      #ifdef STANDSTILL_HOLD_ENABLE
+        standstillHold();                                           // Apply Standstill Hold functionality. Only available and makes sense for VOLTAGE or TORQUE Mode
+      #endif
+
       #ifdef VARIANT_HOVERCAR        
         if (speedAvgAbs < 60) {                                     // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
           multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBrake);   // Brake pedal in this case is "cmd1" variable
@@ -260,10 +264,6 @@ int main(void) {
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
       speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer
-
-      #ifdef STANDSTILL_HOLD_ENABLE
-        standstillHold(&speed);                 // Apply Standstill Hold functionality. Only available and makes sense for VOLTAGE or TORQUE Mode
-      #endif
 
       // ####### VARIANT_HOVERCAR #######
       #ifdef VARIANT_HOVERCAR        
