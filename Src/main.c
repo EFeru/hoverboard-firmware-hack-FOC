@@ -210,6 +210,7 @@ int main(void) {
       if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
         shortBeep(6);                     // make 2 beeps indicating the motor enable
         shortBeep(4); HAL_Delay(100);
+        steerFixdt = speedFixdt = 0;      // reset filters
         enable = 1;                       // enable motors
         consoleLog("-- Motors enabled --\r\n");
       }

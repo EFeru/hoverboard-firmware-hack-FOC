@@ -166,9 +166,9 @@
 
 // ############################## DEFAULT SETTINGS ############################
 // Default settings will be applied at the end of this config file if not set before
-#define INACTIVITY_TIMEOUT      	8       // Minutes of not driving until poweroff. it is not very precise.
-#define BEEPS_BACKWARD          	1       // 0 or 1
-#define FLASH_WRITE_KEY           0x1234  // Flash writing key, used when writing data to flash memory
+#define INACTIVITY_TIMEOUT        8       // Minutes of not driving until poweroff. it is not very precise.
+#define BEEPS_BACKWARD            1       // 0 or 1
+#define FLASH_WRITE_KEY           0x1233  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
 
 /* FILTER is in fixdt(0,16,16): VAL_fixedPoint = VAL_floatingPoint * 2^16. In this case 6553 = 0.1 * 2^16
  * Value of COEFFICIENT is in fixdt(1,16,14)
@@ -201,7 +201,7 @@
 
 // ############################### DEBUG SERIAL ###############################
 /* Connect GND and RX of a 3.3v uart-usb adapter to the left (USART2) or right sensor board cable (USART3)
- * Be careful not to use the red wire of the cable. 15v will destroye evrything.
+ * Be careful not to use the red wire of the cable. 15v will destroy everything.
  * If you are using VARIANT_NUNCHUK, disable it temporarily.
  * enable DEBUG_SERIAL_USART3 or DEBUG_SERIAL_USART2
  * and DEBUG_SERIAL_ASCII use asearial terminal.
@@ -210,8 +210,8 @@
  * DEBUG_SERIAL_ASCII output is:
  * // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
  *
- * 1:   (int16_t)adc_buffer.l_tx2);                                         ADC1
- * 2:   (int16_t)adc_buffer.l_rx2);                                         ADC2
+ * 1:   (int16_t)input1);                                                   raw input1: ADC1, UART, PWM, PPM, iBUS
+ * 2:   (int16_t)input2);                                                   raw input2: ADC2, UART, PWM, PPM, iBUS
  * 3:   (int16_t)speedR);                                                   output command: [-1000, 1000]
  * 4:   (int16_t)speedL);                                                   output command: [-1000, 1000]
  * 5:   (int16_t)adc_buffer.batt1);                                         Battery adc-value measured by mainboard
@@ -252,18 +252,18 @@
 */
   #define CONTROL_ADC                     // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   #define ADC_PROTECT_TIMEOUT   100       // ADC Protection: number of wrong / missing input commands before safety state is taken
-  #define ADC_PROTECT_THRESH    300       // ADC Protection threshold below/above the MIN/MAX ADC values
+  #define ADC_PROTECT_THRESH    200       // ADC Protection threshold below/above the MIN/MAX ADC values
   #define INPUT1_TYPE           2         // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT1_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   #define INPUT1_MIN            0         // min ADC1-value while poti at minimum-position (0 - 4095)
   #define INPUT1_MID            2048      // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
   #define INPUT1_MAX            4095      // max ADC1-value while poti at maximum-position (0 - 4095)
+  #define INPUT1_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
   #define INPUT2_TYPE           2         // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT2_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   #define INPUT2_MIN            0         // min ADC2-value while poti at minimum-position (0 - 4095)
   #define INPUT2_MID            2048      // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
   #define INPUT2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
+  #define INPUT2_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
@@ -282,18 +282,18 @@
   #define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define INPUT1_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT1_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   #define INPUT1_MIN        -1000    // (-1000 - 0)
   #define INPUT1_MID         0
   #define INPUT1_MAX         1000    // (0 - 1000)
+  #define INPUT1_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
   #define INPUT2_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT2_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   #define INPUT2_MIN        -1000    // (-1000 - 0)
   #define INPUT2_MID         0
   #define INPUT2_MAX         1000    // (0 - 1000)
-  // #define SUPPORT_BUTTONS_LEFT          // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
-  // #define SUPPORT_BUTTONS_RIGHT         // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
+  #define INPUT2_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  // #define SUPPORT_BUTTONS_LEFT       // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
+  // #define SUPPORT_BUTTONS_RIGHT      // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
 // ######################## END OF VARIANT_USART SETTINGS #########################
 
@@ -301,7 +301,7 @@
 
 // ################################# VARIANT_NUNCHUK SETTINGS ############################
 #ifdef VARIANT_NUNCHUK
-  /* left sensor board cable. USART3
+  /* on Right sensor cable
    * keep cable short, use shielded cable, use ferrits, stabalize voltage in nunchuk,
    * use the right one of the 2 types of nunchuks, add i2c pullups.
    * use original nunchuk. most clones does not work very well.
@@ -309,23 +309,23 @@
   */
   #define CONTROL_NUNCHUK           // use nunchuk as input. disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define INPUT1_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT1_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT1_MIN        -1024    // (-1024 - 0)
+  #define INPUT1_TYPE        2      // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT1_MIN        -1024   // (-1024 - 0)
   #define INPUT1_MID         0
-  #define INPUT1_MAX         1024    // (0 - 1024)
+  #define INPUT1_MAX         1024   // (0 - 1024)
+  #define INPUT1_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
-  #define INPUT2_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT2_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT2_MIN        -1024    // (-1024 - 0)
+  #define INPUT2_TYPE        2      // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT2_MIN        -1024   // (-1024 - 0)
   #define INPUT2_MID         0
-  #define INPUT2_MAX         1024    // (0 - 1024)
+  #define INPUT2_MAX         1024   // (0 - 1024)
+  #define INPUT2_DEADBAND    0      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // # maybe good for ARMCHAIR #
-  #define FILTER             3276    //  0.05f
-  #define SPEED_COEFFICIENT  8192    //  0.5f
-  #define STEER_COEFFICIENT  62259   // -0.2f
+  #define FILTER             3276   //  0.05f
+  #define SPEED_COEFFICIENT  8192   //  0.5f
+  #define STEER_COEFFICIENT  62259  // -0.2f
   #define DEBUG_SERIAL_USART2       // left sensor cable debug
-  // #define SUPPORT_BUTTONS            // Define for Nunchuck buttons support
+  // #define SUPPORT_BUTTONS           // Define for Nunchuck buttons support
 #endif
 // ############################# END OF VARIANT_NUNCHUK SETTINGS #########################
 
@@ -338,25 +338,25 @@
  * https://gist.github.com/peterpoetzi/1b63a4a844162196613871767189bd05
 */
   #define CONTROL_PPM_LEFT            // use PPM-Sum as input on the LEFT cable . disable CONTROL_SERIAL_USART2!
-  //#define CONTROL_PPM_RIGHT           // use PPM-Sum as input on the RIGHT cable. disable CONTROL_SERIAL_USART3!
+  // #define CONTROL_PPM_RIGHT           // use PPM-Sum as input on the RIGHT cable. disable CONTROL_SERIAL_USART3!
   #ifdef CONTROL_PPM_RIGHT
     #define DEBUG_SERIAL_USART2       // left sensor cable debug
   #else
     #define DEBUG_SERIAL_USART3       // right sensor cable debug
   #endif
-  #define PPM_NUM_CHANNELS   6       // total number of PPM channels to receive, even if they are not used.
+  #define PPM_NUM_CHANNELS   6        // total number of PPM channels to receive, even if they are not used.
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define INPUT1_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT1_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_TYPE        2        // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT1_MIN        -1000     // (-1000 - 0)
   #define INPUT1_MID         0
-  #define INPUT1_MAX         1000    // (0 - 1000)
+  #define INPUT1_MAX         1000     // (0 - 1000)
+  #define INPUT1_DEADBAND    100      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
-  #define INPUT2_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT2_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT2_MIN        -1000    // (-1000 - 0)
+  #define INPUT2_TYPE        2        // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT2_MIN        -1000     // (-1000 - 0)
   #define INPUT2_MID         0
-  #define INPUT2_MAX         1000    // (0 - 1000)
+  #define INPUT2_MAX         1000     // (0 - 1000)
+  #define INPUT2_DEADBAND    100      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // #define SUPPORT_BUTTONS             // Define for PPM buttons support
   // #define SUPPORT_BUTTONS_LEFT        // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT       // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
@@ -378,17 +378,17 @@
     #define DEBUG_SERIAL_USART3       // right sensor cable debug
   #endif
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define INPUT1_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT1_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_TYPE        2        // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT1_MIN        -1000     // (-1000 - 0)
   #define INPUT1_MID         0
-  #define INPUT1_MAX         1000    // (0 - 1000)
+  #define INPUT1_MAX         1000     // (0 - 1000)
+  #define INPUT1_DEADBAND    100      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
-  #define INPUT2_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT2_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT2_MIN        -1000    // (-1000 - 0)
+  #define INPUT2_TYPE        2        // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT2_MIN        -1000     // (-1000 - 0)
   #define INPUT2_MID         0
-  #define INPUT2_MAX         1000    // (0 - 1000)
+  #define INPUT2_MAX         1000     // (0 - 1000)
+  #define INPUT2_DEADBAND    100      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
   #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
@@ -397,11 +397,6 @@
   // #define INVERT_L_DIRECTION
   // #define SUPPORT_BUTTONS_LEFT        // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT       // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
-  #ifdef CONTROL_PWM_RIGHT
-    #define DEBUG_SERIAL_USART2       // left sensor cable debug
-  #else
-    #define DEBUG_SERIAL_USART3       // right sensor cable debug
-  #endif
 #endif
 // ############################# END OF VARIANT_PWM SETTINGS ############################
 
@@ -412,29 +407,29 @@
 /* CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL 
 * Connected to Left sensor board cable. Channel 1: steering, Channel 2: speed.
 */
-  #define CONTROL_IBUS                                  // use IBUS as input
-  #define IBUS_NUM_CHANNELS   14                        // total number of IBUS channels to receive, even if they are not used.
+  #define CONTROL_IBUS               // use IBUS as input
+  #define IBUS_NUM_CHANNELS   14     // total number of IBUS channels to receive, even if they are not used.
   #define IBUS_LENGTH         0x20
   #define IBUS_COMMAND        0x40
 
-  // Min / Max values of each channel (use DEBUG to determine these values)
-  #define INPUT1_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT1_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT1_MIN        -1000    // (-1000 - 0)
-  #define INPUT1_MID         0
-  #define INPUT1_MAX         1000    // (0 - 1000)  
-  
-  #define INPUT2_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT2_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT2_MIN        -1000    // (-1000 - 0)
-  #define INPUT2_MID         0
-  #define INPUT2_MAX         1000    // (0 - 1000)
-
   #undef  USART2_BAUD
-  #define USART2_BAUD         115200
-  #define CONTROL_SERIAL_USART2                         // left sensor board cable, disable if ADC or PPM is used!
-  #define FEEDBACK_SERIAL_USART2                        // left sensor board cable, disable if ADC or PPM is used!
-  // #define DEBUG_SERIAL_USART3                           // right sensor cable debug
+  #define USART2_BAUD        115200
+  #define CONTROL_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used!
+  #define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
+  // #define DEBUG_SERIAL_USART3         // right sensor cable debug
+
+  // Min / Max values of each channel (use DEBUG to determine these values)
+  #define INPUT1_TYPE        2        // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT1_MIN        -1000     // (-1000 - 0)
+  #define INPUT1_MID         0
+  #define INPUT1_MAX         1000     // (0 - 1000)
+  #define INPUT1_DEADBAND    0        // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  
+  #define INPUT2_TYPE        2        // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT2_MIN        -1000     // (-1000 - 0)
+  #define INPUT2_MID         0
+  #define INPUT2_MAX         1000     // (0 - 1000)
+  #define INPUT2_DEADBAND    0        // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
 #endif
 // ############################# END OF VARIANT_IBUS SETTINGS ############################
 
@@ -446,19 +441,19 @@
   #define CTRL_MOD_REQ        TRQ_MODE  // HOVERCAR works best in TORQUE Mode
   #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   #define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
-  #define ADC_PROTECT_THRESH  300       // ADC Protection threshold below/above the MIN/MAX ADC values
+  #define ADC_PROTECT_THRESH  200       // ADC Protection threshold below/above the MIN/MAX ADC values
   
   #define INPUT1_TYPE         1         // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT1_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   #define INPUT1_MIN          1000      // min ADC1-value while poti at minimum-position (0 - 4095)
   #define INPUT1_MID          0
   #define INPUT1_MAX          2500      // max ADC1-value while poti at maximum-position (0 - 4095)
+  #define INPUT1_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
   #define INPUT2_TYPE         1         // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT2_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   #define INPUT2_MIN          500       // min ADC2-value while poti at minimum-position (0 - 4095)
   #define INPUT2_MID          0
   #define INPUT2_MAX          2200      // max ADC2-value while poti at maximum-position (0 - 4095)
+  #define INPUT2_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
   #define SPEED_COEFFICIENT   16384     // 1.0f
   #define STEER_COEFFICIENT   0         // 0.0f
@@ -523,7 +518,7 @@
  * Channel 1: steering, Channel 2: speed.
 */
   #undef  CTRL_MOD_REQ
-  #define CTRL_MOD_REQ        TRQ_MODE  // SKATEBOARD works best in TORQUE Mode
+  #define CTRL_MOD_REQ       TRQ_MODE // SKATEBOARD works best in TORQUE Mode
   //#define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
   #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
   #ifdef CONTROL_PWM_RIGHT
@@ -532,18 +527,18 @@
     #define DEBUG_SERIAL_USART3       // right sensor cable debug
   #endif  
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define INPUT1_TYPE        0       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT1_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT1_MIN        -1000    // (-1000 - 0)
+  #define INPUT1_TYPE        0        // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT1_MIN        -1000     // (-1000 - 0)
   #define INPUT1_MID         0
-  #define INPUT1_MAX         1000    // (0 - 1000)
+  #define INPUT1_MAX         1000     // (0 - 1000)
+  #define INPUT1_DEADBAND    100      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
-  #define INPUT2_TYPE        2       // 0:Disabled 1:Normal POT 2:Middle Resting Pot
-  #define INPUT2_DEADBAND    100     // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  #define INPUT2_MIN        -800     // (-1000 - 0)
+  #define INPUT2_TYPE        2        // 0:Disabled 1:Normal POT 2:Middle Resting Pot
+  #define INPUT2_MIN        -800      // (-1000 - 0)
   #define INPUT2_MID         0
-  #define INPUT2_MAX         700     // (0 - 1000)
-  #define INPUT2_OUT_MIN    -400     // (-1000 - 0) Change this value to adjust the braking amount
+  #define INPUT2_MAX         700      // (0 - 1000)
+  #define INPUT2_DEADBAND    100      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+  #define INPUT2_BRAKE      -400      // (-1000 - 0) Change this value to adjust the braking amount
   
   #define FILTER              6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT   16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
@@ -711,16 +706,6 @@
 
 
 // Functional checks
-#if defined(ADC_PROTECT_ENA) && ((ADC1_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC1_MAX + ADC_PROTECT_THRESH) >= 4095)
-  #warning ADC1 Protection NOT possible! Adjust the ADC thresholds.
-  #undef ADC_PROTECT_ENA
-#endif
-
-#if defined(ADC_PROTECT_ENA) && ((ADC2_MIN - ADC_PROTECT_THRESH) <= 0 || (ADC2_MAX + ADC_PROTECT_THRESH) >= 4095)
-  #warning ADC2 Protection NOT possible! Adjust the ADC thresholds.
-  #undef ADC_PROTECT_ENA
-#endif
-
 #if (defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)) && !defined(PPM_NUM_CHANNELS)
   #error Total number of PPM channels needs to be set
 #endif

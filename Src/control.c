@@ -34,14 +34,13 @@ void PPM_ISR_Callback(void) {
   if (rc_delay > 3000) {
     if (ppm_valid && ppm_count == PPM_NUM_CHANNELS) {
       ppm_timeout = 0;
-      timeoutCnt = 0; // added this
+      timeoutCnt = 0;
       memcpy(ppm_captured_value, ppm_captured_value_buffer, sizeof(ppm_captured_value));
     }
     ppm_valid = true;
     ppm_count = 0;
   }
   else if (ppm_count < PPM_NUM_CHANNELS && IN_RANGE(rc_delay, 900, 2100)){
-    //timeoutCnt = 0;
     ppm_captured_value_buffer[ppm_count++] = CLAMP(rc_delay, 1000, 2000) - 1000;
   } else {
     ppm_valid = false;
