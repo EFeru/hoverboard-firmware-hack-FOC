@@ -280,12 +280,12 @@ void Input_Init(void) {
     if (writeCheck == FLASH_WRITE_KEY) {
       EE_ReadVariable(VirtAddVarTab[1] , &INPUT1_TYP_CAL);
       EE_ReadVariable(VirtAddVarTab[2] , &INPUT1_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[3] , &INPUT1_MAX_CAL);
-      EE_ReadVariable(VirtAddVarTab[4] , &INPUT1_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[3] , &INPUT1_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[4] , &INPUT1_MAX_CAL);
       EE_ReadVariable(VirtAddVarTab[5] , &INPUT2_TYP_CAL);
       EE_ReadVariable(VirtAddVarTab[6] , &INPUT2_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[7] , &INPUT2_MAX_CAL);
-      EE_ReadVariable(VirtAddVarTab[8] , &INPUT2_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[7] , &INPUT2_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[8] , &INPUT2_MAX_CAL);
       EE_ReadVariable(VirtAddVarTab[9] , &i_max);
       EE_ReadVariable(VirtAddVarTab[10], &n_max);
       rtP_Left.i_max  = i_max;
@@ -637,14 +637,14 @@ void saveConfig() {
       EE_WriteVariable(VirtAddVarTab[0] , FLASH_WRITE_KEY);
       EE_WriteVariable(VirtAddVarTab[1] , INPUT1_TYP_CAL);
       EE_WriteVariable(VirtAddVarTab[2] , INPUT1_MIN_CAL);
-      EE_WriteVariable(VirtAddVarTab[3] , INPUT1_MAX_CAL);
-      EE_WriteVariable(VirtAddVarTab[4] , INPUT1_MID_CAL);
+      EE_WriteVariable(VirtAddVarTab[3] , INPUT1_MID_CAL);
+      EE_WriteVariable(VirtAddVarTab[4] , INPUT1_MAX_CAL);
       EE_WriteVariable(VirtAddVarTab[5] , INPUT2_TYP_CAL);
       EE_WriteVariable(VirtAddVarTab[6] , INPUT2_MIN_CAL);
-      EE_WriteVariable(VirtAddVarTab[7] , INPUT2_MAX_CAL);
-      EE_WriteVariable(VirtAddVarTab[8] , INPUT2_MID_CAL);
+      EE_WriteVariable(VirtAddVarTab[7] , INPUT2_MID_CAL);
+      EE_WriteVariable(VirtAddVarTab[8] , INPUT2_MAX_CAL);
       EE_WriteVariable(VirtAddVarTab[9] , rtP_Left.i_max);
-      EE_WriteVariable(VirtAddVarTab[10], rtP_Left.n_max);      
+      EE_WriteVariable(VirtAddVarTab[10], rtP_Left.n_max);
       HAL_FLASH_Lock();
     }
   #endif 
