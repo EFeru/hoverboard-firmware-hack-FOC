@@ -62,6 +62,8 @@ extern ExtY rtY_Right;                  /* External outputs */
 
 extern int16_t cmd1;                    // normalized input value. -1000 to 1000
 extern int16_t cmd2;                    // normalized input value. -1000 to 1000
+extern int16_t input1;                  // Non normalized input value
+extern int16_t input2;                  // Non normalized input value
 
 extern int16_t speedAvg;                // Average measured speed
 extern int16_t speedAvgAbs;             // Average measured speed in absolute
@@ -208,6 +210,7 @@ int main(void) {
       if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
         shortBeep(6);                     // make 2 beeps indicating the motor enable
         shortBeep(4); HAL_Delay(100);
+        steerFixdt = speedFixdt = 0;      // reset filters
         enable = 1;                       // enable motors
         consoleLog("-- Motors enabled --\r\n");
       }
@@ -407,18 +410,8 @@ int main(void) {
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
-        #ifdef CONTROL_ADC
-        setScopeChannel(0, (int16_t)adc_buffer.l_tx2);          // 1: ADC1
-        setScopeChannel(1, (int16_t)adc_buffer.l_rx2);          // 2: ADC2
-        #endif
-        #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
-        setScopeChannel(0, ppm_captured_value[0]);              // 1: CH1
-        setScopeChannel(1, ppm_captured_value[1]);              // 2: CH2
-        #endif
-        #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-        setScopeChannel(0, (pwm_captured_ch1_value - 500) * 2); // 1: CH1
-        setScopeChannel(1, (pwm_captured_ch2_value - 500) * 2); // 2: CH2
-        #endif
+        setScopeChannel(0, (int16_t)input1);                    // 1: INPUT1
+        setScopeChannel(1, (int16_t)input2);                    // 2: INPUT2
         setScopeChannel(2, (int16_t)speedR);                    // 3: output command: [-1000, 1000]
         setScopeChannel(3, (int16_t)speedL);                    // 4: output command: [-1000, 1000]
         setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
