@@ -352,7 +352,7 @@
   #define INPUT1_MAX         1000     // (0 - 1000)
   #define INPUT1_DEADBAND    100      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
-  #define INPUT2_TYPE        2        // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
+  #define INPUT2_TYPE        3        // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
   #define INPUT2_MIN        -1000     // (-1000 - 0)
   #define INPUT2_MID         0
   #define INPUT2_MAX         1000     // (0 - 1000)
