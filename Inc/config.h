@@ -334,11 +334,11 @@
 // ################################# VARIANT_PPM SETTINGS ##############################
 #ifdef VARIANT_PPM
 /* ###### CONTROL VIA RC REMOTE ######
- * left sensor board cable. Channel 1: steering, Channel 2: speed.
+ * Right sensor board cable. Channel 1: steering, Channel 2: speed.
  * https://gist.github.com/peterpoetzi/1b63a4a844162196613871767189bd05
 */
-  #define CONTROL_PPM_LEFT            // use PPM-Sum as input on the LEFT cable . disable CONTROL_SERIAL_USART2!
-  // #define CONTROL_PPM_RIGHT           // use PPM-Sum as input on the RIGHT cable. disable CONTROL_SERIAL_USART3!
+  // #define CONTROL_PPM_LEFT            // use PPM-Sum as input on the LEFT cable . disable CONTROL_SERIAL_USART2!
+  #define CONTROL_PPM_RIGHT           // use PPM-Sum as input on the RIGHT cable. disable CONTROL_SERIAL_USART3!
   #ifdef CONTROL_PPM_RIGHT
     #define DEBUG_SERIAL_USART2       // left sensor cable debug
   #else
@@ -348,7 +348,7 @@
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define INPUT1_TYPE        3        // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
   #define INPUT1_MIN        -1000     // (-1000 - 0)
-  #define INPUT1_MID         3
+  #define INPUT1_MID         0
   #define INPUT1_MAX         1000     // (0 - 1000)
   #define INPUT1_DEADBAND    100      // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
@@ -367,11 +367,11 @@
 // ################################# VARIANT_PWM SETTINGS ##############################
 #ifdef VARIANT_PWM
 /* ###### CONTROL VIA RC REMOTE ######
- * left sensor board cable. Connect PA2 to channel 1 and PA3 to channel 2 on receiver.
+ * Right sensor board cable. Connect PA2 to channel 1 and PA3 to channel 2 on receiver.
  * Channel 1: steering, Channel 2: speed.
 */
-  #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
-  // #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
+  // #define CONTROL_PWM_LEFT            // use RC PWM as input on the LEFT cable. disable DEBUG_SERIAL_USART2!
+  #define CONTROL_PWM_RIGHT           // use RC PWM as input on the RIGHT cable. disable DEBUG_SERIAL_USART3!
   #ifdef CONTROL_PWM_RIGHT
     #define DEBUG_SERIAL_USART2       // left sensor cable debug
   #else
@@ -405,18 +405,22 @@
 // ################################# VARIANT_IBUS SETTINGS ##############################
 #ifdef VARIANT_IBUS
 /* CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL 
-* Connected to Left sensor board cable. Channel 1: steering, Channel 2: speed.
+* Connected to Right sensor board cable. Channel 1: steering, Channel 2: speed.
 */
   #define CONTROL_IBUS               // use IBUS as input
   #define IBUS_NUM_CHANNELS   14     // total number of IBUS channels to receive, even if they are not used.
   #define IBUS_LENGTH         0x20
   #define IBUS_COMMAND        0x40
 
-  #undef  USART2_BAUD
-  #define USART2_BAUD        115200
-  #define CONTROL_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used!
-  #define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
-  // #define DEBUG_SERIAL_USART3         // right sensor cable debug
+  #undef  USART3_BAUD
+  #define USART3_BAUD        115200
+  #define CONTROL_SERIAL_USART3       // left sensor board cable, disable if ADC or PPM is used!
+  #define FEEDBACK_SERIAL_USART3      // left sensor board cable, disable if ADC or PPM is used!
+  #ifdef CONTROL_SERIAL_USART3
+    #define DEBUG_SERIAL_USART2       // left sensor cable debug
+  #else
+    #define DEBUG_SERIAL_USART3       // right sensor cable debug
+  #endif
 
   // Min / Max values of each channel (use DEBUG to determine these values)
   #define INPUT1_TYPE        3        // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
@@ -567,7 +571,9 @@
   #define USART2_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
 #if defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-  #define USART3_BAUD             38400                   // UART3 baud rate (short wired cable)
+  #ifndef USART3_BAUD
+    #define USART3_BAUD             38400                 // UART3 baud rate (short wired cable)
+  #endif
   #define USART3_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
 // ########################### UART SETIINGS ############################

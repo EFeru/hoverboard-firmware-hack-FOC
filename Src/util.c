@@ -456,7 +456,7 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
   #endif
 
   HAL_Delay(10);
-  if ((min / threshold) == (max / threshold) || (mid / threshold) == (max / threshold)) {
+  if ((min / threshold) == (max / threshold) || (mid / threshold) == (max / threshold) || min > max || mid > max) {
     type = 0;
     consoleLog("Input is ignored");               // (MIN and MAX) OR (MID and MAX) are close, disable input
   } else {
@@ -769,12 +769,12 @@ void poweroffPressCheck(void) {
       uint16_t cnt_press = 0;
       while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
         HAL_Delay(10);
-        if (cnt_press++ == 5 * 100) { shortBeep(5); }          
+        if (cnt_press++ == 5 * 100) { shortBeep(5); }
       }
       if (cnt_press >= 5 * 100) {                         // Check if press is more than 5 sec
-        HAL_Delay(300);        
+        HAL_Delay(1000);
         if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {  // Double press: Adjust Max Current, Max Speed
-          while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }  
+          while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
           longBeep(8);
           updateCurSpdLim();
           shortBeep(5);
