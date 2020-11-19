@@ -292,6 +292,9 @@ void Input_Init(void) {
       rtP_Left.n_max  = n_max;
       rtP_Right.i_max = i_max;
       rtP_Right.n_max = n_max;
+    } else { // Else If Input type is 3 (auto), identify the input type based on the values from config.h
+      if (INPUT1_TYPE == 3) { INPUT1_TYP_CAL = checkInputType(INPUT1_MIN, INPUT1_MID, INPUT1_MAX); }
+      if (INPUT2_TYPE == 3) { INPUT2_TYP_CAL = checkInputType(INPUT2_MIN, INPUT2_MID, INPUT2_MAX); }
     }
     HAL_FLASH_Lock();
   #endif
@@ -453,22 +456,22 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
   #endif
 
   HAL_Delay(10);
-  if ((min / threshold) == (max / threshold)) {
-    consoleLog("Input is ignored");               // MIN and MAX are close, disable input
+  if ((min / threshold) == (max / threshold) || (mid / threshold) == (max / threshold)) {
     type = 0;
+    consoleLog("Input is ignored");               // (MIN and MAX) OR (MID and MAX) are close, disable input
   } else {
     if ((min / threshold) == (mid / threshold)){
-      consoleLog("Input is a normal pot");        // MIN and MID are close, it's a normal pot
       type = 1;
-    } else {      
+      consoleLog("Input is a normal pot");        // MIN and MID are close, it's a normal pot
+    } else {
+      type = 2;
       consoleLog("Input is a mid-resting pot");   // it's a mid resting pot
-      type = 2; 
     }
     HAL_Delay(10);
     #ifdef CONTROL_ADC
-    if ((min - ADC_PROTECT_THRESH) > 0 && (max + ADC_PROTECT_THRESH) < 4095) {
+    if ((min + INPUT_MARGIN - ADC_PROTECT_THRESH) > 0 && (max - INPUT_MARGIN + ADC_PROTECT_THRESH) < 4095) {
       consoleLog(" and protected");
-      shortBeep(2); // Indicate protection by a beep
+      longBeep(2); // Indicate protection by a beep
     }
     #endif
   }
@@ -494,11 +497,11 @@ void adcCalibLim(void) {
     return;
   }
 
-  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)  
+  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   consoleLog("Input calibration started...\n");
 
   readInput();
-  // Inititalization: MIN = a high value, MAX = a low value  
+  // Inititalization: MIN = a high value, MAX = a low value
   int32_t  input1_fixdt = input1 << 16;
   int32_t  input2_fixdt = input2 << 16;
   int16_t  INPUT1_MIN_temp = MAX_int16_T;
@@ -524,37 +527,39 @@ void adcCalibLim(void) {
     HAL_Delay(5);
   }
 
-  #ifdef CONTROL_ADC
-  int16_t input_margin = 100;
-  #else
-  int16_t input_margin = 0;
-  #endif
-  
-  INPUT1_MIN_CAL = INPUT1_MIN_temp + input_margin;
-  INPUT1_MID_CAL = INPUT1_MID_temp;
-  INPUT1_MAX_CAL = INPUT1_MAX_temp - input_margin;
-  INPUT1_TYP_CAL = checkInputType(INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL);
+  INPUT1_TYP_CAL = checkInputType(INPUT1_MIN_temp, INPUT1_MID_temp, INPUT1_MAX_temp);
+  if (INPUT1_TYP_CAL == INPUT1_TYPE || INPUT1_TYPE == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
+    INPUT1_MIN_CAL = INPUT1_MIN_temp + INPUT_MARGIN;
+    INPUT1_MID_CAL = INPUT1_MID_temp;
+    INPUT1_MAX_CAL = INPUT1_MAX_temp - INPUT_MARGIN;
+    consoleLog("Input1 OK\n");    HAL_Delay(10);
+  } else {
+    INPUT1_TYP_CAL = 0; // Disable input
+    consoleLog("Input1 Fail\n");  HAL_Delay(10);
+  }
 
-  INPUT2_MIN_CAL = INPUT2_MIN_temp + input_margin;
-  INPUT2_MID_CAL = INPUT2_MID_temp;
-  INPUT2_MAX_CAL = INPUT2_MAX_temp - input_margin;
-  INPUT2_TYP_CAL = checkInputType(INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL);
-  
-  inp_cal_valid = 1;  // Mark calibration to be saved in Flash at shutdown
-  consoleLog("Saved limits\n");
-  HAL_Delay(10);
+  INPUT2_TYP_CAL = checkInputType(INPUT2_MIN_temp, INPUT2_MID_temp, INPUT2_MAX_temp);
+  if (INPUT2_TYP_CAL == INPUT2_TYPE || INPUT2_TYPE == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
+    INPUT2_MIN_CAL = INPUT2_MIN_temp + INPUT_MARGIN;
+    INPUT2_MID_CAL = INPUT2_MID_temp;
+    INPUT2_MAX_CAL = INPUT2_MAX_temp - INPUT_MARGIN;
+    consoleLog("Input2 OK\n");    HAL_Delay(10);
+  } else {
+    INPUT2_TYP_CAL = 0; // Disable input
+    consoleLog("Input2 Fail\n");  HAL_Delay(10);
+  }
+
+  inp_cal_valid = 1;    // Mark calibration to be saved in Flash at shutdown
+  consoleLog("Limits: "); HAL_Delay(10);
   setScopeChannel(0, (int16_t)INPUT1_TYP_CAL);
   setScopeChannel(1, (int16_t)INPUT1_MIN_CAL);
   setScopeChannel(2, (int16_t)INPUT1_MID_CAL);
   setScopeChannel(3, (int16_t)INPUT1_MAX_CAL);
-  setScopeChannel(4, (int16_t)INPUT2_TYP_CAL);  
+  setScopeChannel(4, (int16_t)INPUT2_TYP_CAL);
   setScopeChannel(5, (int16_t)INPUT2_MIN_CAL);
   setScopeChannel(6, (int16_t)INPUT2_MID_CAL);
-  setScopeChannel(7, (int16_t)INPUT2_MAX_CAL);  
+  setScopeChannel(7, (int16_t)INPUT2_MAX_CAL);
   consoleScope();
-  HAL_Delay(20);
-  consoleLog("OK\n");
-  
   #endif
 }
  /*
@@ -584,7 +589,7 @@ void updateCurSpdLim(void) {
     readInput();
     filtLowPass32(input1, FILTER, &input1_fixdt);
     filtLowPass32(input2, FILTER, &input2_fixdt);
-    HAL_Delay(5);      
+    HAL_Delay(5);
   }
   // Calculate scaling factors
   cur_factor = CLAMP((input1_fixdt - ((int16_t)INPUT1_MIN_CAL << 16)) / ((int16_t)INPUT1_MAX_CAL - (int16_t)INPUT1_MIN_CAL), 6553, 65535);    // ADC1, MIN_cur(10%) = 1.5 A 
@@ -602,8 +607,7 @@ void updateCurSpdLim(void) {
     cur_spd_valid  += 2;  // Mark update to be saved in Flash at shutdown
   }
   
-  consoleLog("Saved limits\n");
-  HAL_Delay(10);
+  consoleLog("Limits: "); HAL_Delay(10);
   setScopeChannel(0, (int16_t)cur_spd_valid);     // 0 = No limit changed, 1 = Current limit changed, 2 = Speed limit changed, 3 = Both limits changed
   setScopeChannel(1, (int16_t)input1_fixdt);
   setScopeChannel(2, (int16_t)cur_factor);
@@ -611,10 +615,8 @@ void updateCurSpdLim(void) {
   setScopeChannel(4, (int16_t)0);
   setScopeChannel(5, (int16_t)input2_fixdt);
   setScopeChannel(6, (int16_t)spd_factor);
-  setScopeChannel(7, (int16_t)rtP_Left.n_max);    
+  setScopeChannel(7, (int16_t)rtP_Left.n_max);
   consoleScope();
-  HAL_Delay(20);
-  consoleLog("OK\n");
 
   #endif
 }
