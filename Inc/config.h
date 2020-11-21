@@ -243,26 +243,37 @@
 // ################################# VARIANT_ADC SETTINGS ############################
 #ifdef VARIANT_ADC
 /* CONTROL VIA TWO POTENTIOMETERS
- * ADC-calibration to cover the full poti-range:
- * Connect potis to left sensor board cable (0 to 3.3V) (do NOT use the red 15V wire in the cable!). see <How to calibrate>.
- * Turn the potis to minimum position, write value 1 to ADC1_MIN and value 2 to ADC2_MIN
- * Turn the potis to maximum position, write value 1 to ADC1_MAX and value 2 to ADC2_MAX
- * For middle resting potis: Let the potis in the middle resting position, write value 1 to ADC1_MID and value 2 to ADC2_MID
- * Make, flash and test it.
+ * Connect potis to left sensor board cable (0 to 3.3V) (do NOT use the red 15V wire!)
+ *
+ * Auto-calibration of the ADC Limit to finds the Minimum, Maximum, and Middle for the ADC input
+ * Procedure:
+ * - press the power button for more than 5 sec and release after the beep sound
+ * - move the potentiometers freely to the min and max limits repeatedly
+ * - release potentiometers to the resting postion
+ * - press the power button to confirm or wait for the 20 sec timeout
+ * The Values will be saved to flash. Values are persistent if you flash with platformio. To erase them, make a full chip erase.
+ *
+ * After calibration you can optionally write the values to the following defines
+ * Procedure:
+ * - connect gnd, rx and tx of a usb-uart converter in 3.3V mode to the right sensor board cable (do NOT use the red 15V wire!)
+ * - readout values using a serial terminal in 38400 boud
+ * - turn the potis to minimum position, write value 1 to INPUT1_MIN and value 2 to INPUT2_MIN
+ * - turn the potis to maximum position, write value 1 to INPUT1_MAX and value 2 to INPUT2_MAX
+ * - for middle resting potis: Let the potis in the middle resting position, write value 1 to INPUT1_MID and value 2 to INPUT2_MID
 */
   #define CONTROL_ADC                     // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   #define ADC_PROTECT_TIMEOUT   100       // ADC Protection: number of wrong / missing input commands before safety state is taken
   #define ADC_PROTECT_THRESH    200       // ADC Protection threshold below/above the MIN/MAX ADC values
   #define INPUT1_TYPE           3         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT1_MIN            0         // min ADC1-value while poti at minimum-position (0 - 4095)
-  #define INPUT1_MID            0         // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
-  #define INPUT1_MAX            4095      // max ADC1-value while poti at maximum-position (0 - 4095)
+  #define INPUT1_MIN            0         // min ADC1-value while poti at min-position (0 - 4095)
+  #define INPUT1_MID            0         // mid ADC1-value while poti at mid-position (INPUT1_MIN - INPUT1_MAX)
+  #define INPUT1_MAX            4095      // max ADC1-value while poti at max-position (0 - 4095)
   #define INPUT1_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
   #define INPUT2_TYPE           3         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT2_MIN            0         // min ADC2-value while poti at minimum-position (0 - 4095)
-  #define INPUT2_MID            0         // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
-  #define INPUT2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
+  #define INPUT2_MIN            0         // min ADC2-value while poti at min-position (0 - 4095)
+  #define INPUT2_MID            0         // mid ADC2-value while poti at mid-position (INPUT2_MIN - INPUT2_MAX)
+  #define INPUT2_MAX            4095      // max ADC2-value while poti at max-position (0 - 4095)
   #define INPUT2_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!

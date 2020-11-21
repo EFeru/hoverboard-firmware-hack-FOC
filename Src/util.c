@@ -491,6 +491,7 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
  * - move the potentiometers freely to the min and max limits repeatedly
  * - release potentiometers to the resting postion
  * - press the power button to confirm or wait for the 20 sec timeout
+ * The Values will be saved to flash. Values are persistent if you flash with platformio. To erase them, make a full chip erase.
  */
 void adcCalibLim(void) {
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
