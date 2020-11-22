@@ -24,7 +24,6 @@
 #include "defines.h"
 #include "setup.h"
 #include "config.h"
-#include "comms.h"
 #include "eeprom.h"
 #include "util.h"
 #include "BLDC_controller.h"
@@ -458,26 +457,26 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
   HAL_Delay(10);
   if ((min / threshold) == (max / threshold) || (mid / threshold) == (max / threshold) || min > max || mid > max) {
     type = 0;
-    consoleLog("Input is ignored");               // (MIN and MAX) OR (MID and MAX) are close, disable input
+    printf("# Input is ignored");               // (MIN and MAX) OR (MID and MAX) are close, disable input
   } else {
     if ((min / threshold) == (mid / threshold)){
       type = 1;
-      consoleLog("Input is a normal pot");        // MIN and MID are close, it's a normal pot
+      printf("# Input is a normal pot");        // MIN and MID are close, it's a normal pot
     } else {
       type = 2;
-      consoleLog("Input is a mid-resting pot");   // it's a mid resting pot
+      printf("# Input is a mid-resting pot");   // it's a mid resting pot
     }
     HAL_Delay(10);
     #ifdef CONTROL_ADC
     if ((min + INPUT_MARGIN - ADC_PROTECT_THRESH) > 0 && (max - INPUT_MARGIN + ADC_PROTECT_THRESH) < 4095) {
-      consoleLog(" and protected");
+      printf(" and protected");
       longBeep(2); // Indicate protection by a beep
     }
     #endif
   }
 
   HAL_Delay(10);
-  consoleLog("\n");
+  printf("\n");
   HAL_Delay(10);
   
   return type;
@@ -499,7 +498,10 @@ void adcCalibLim(void) {
   }
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-  consoleLog("Input calibration started...\n");
+  printf("# Input calibration started...\n");
+  printf("# move the potentiometers freely to the min and max limits repeatedly\n");
+  printf("# release potentiometers to the resting postion\n");
+  printf("# press the power button to confirm or wait for the 20 sec timeout\n");
 
   readInput();
   // Inititalization: MIN = a high value, MAX = a low value
@@ -533,10 +535,10 @@ void adcCalibLim(void) {
     INPUT1_MIN_CAL = INPUT1_MIN_temp + INPUT_MARGIN;
     INPUT1_MID_CAL = INPUT1_MID_temp;
     INPUT1_MAX_CAL = INPUT1_MAX_temp - INPUT_MARGIN;
-    consoleLog("Input1 OK\n");    HAL_Delay(10);
+    printf("# Input1 OK\n");    HAL_Delay(10);
   } else {
     INPUT1_TYP_CAL = 0; // Disable input
-    consoleLog("Input1 Fail\n");  HAL_Delay(10);
+    printf("# Input1 Fail\n");  HAL_Delay(10);
   }
 
   INPUT2_TYP_CAL = checkInputType(INPUT2_MIN_temp, INPUT2_MID_temp, INPUT2_MAX_temp);
@@ -544,23 +546,14 @@ void adcCalibLim(void) {
     INPUT2_MIN_CAL = INPUT2_MIN_temp + INPUT_MARGIN;
     INPUT2_MID_CAL = INPUT2_MID_temp;
     INPUT2_MAX_CAL = INPUT2_MAX_temp - INPUT_MARGIN;
-    consoleLog("Input2 OK\n");    HAL_Delay(10);
+    printf("# Input2 OK\n");    HAL_Delay(10);
   } else {
     INPUT2_TYP_CAL = 0; // Disable input
-    consoleLog("Input2 Fail\n");  HAL_Delay(10);
+    printf("# Input2 Fail\n");  HAL_Delay(10);
   }
-
   inp_cal_valid = 1;    // Mark calibration to be saved in Flash at shutdown
-  consoleLog("Limits: "); HAL_Delay(10);
-  setScopeChannel(0, (int16_t)INPUT1_TYP_CAL);
-  setScopeChannel(1, (int16_t)INPUT1_MIN_CAL);
-  setScopeChannel(2, (int16_t)INPUT1_MID_CAL);
-  setScopeChannel(3, (int16_t)INPUT1_MAX_CAL);
-  setScopeChannel(4, (int16_t)INPUT2_TYP_CAL);
-  setScopeChannel(5, (int16_t)INPUT2_MIN_CAL);
-  setScopeChannel(6, (int16_t)INPUT2_MID_CAL);
-  setScopeChannel(7, (int16_t)INPUT2_MAX_CAL);
-  consoleScope();
+  printf("# Limits: INPUT1_TYP_CAL:%i INPUT1_MIN_CAL:%i INPUT1_MID_CAL:%i INPUT1_MAX_CAL:%i INPUT2_TYP_CAL:%i INPUT2_MIN_CAL:%i INPUT2_MID_CAL:%i INPUT2_MAX_CAL:%i\n",
+                    INPUT1_TYP_CAL,   INPUT1_MIN_CAL,   INPUT1_MID_CAL,   INPUT1_MAX_CAL,   INPUT2_TYP_CAL,   INPUT2_MIN_CAL,   INPUT2_MID_CAL,   INPUT2_MAX_CAL);  
   #endif
 }
  /*
@@ -576,7 +569,9 @@ void updateCurSpdLim(void) {
   }
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-  consoleLog("Torque and Speed limits update started...\n");
+  printf("# Torque and Speed limits update started...\n");
+  printf("# move and hold the pots to a desired limit position for Current and Speed\n");
+  printf("# press the power button to confirm or wait for the 10 sec timeout\n");
 
   int32_t  input1_fixdt = input1 << 16;
   int32_t  input2_fixdt = input2 << 16;  
@@ -608,17 +603,9 @@ void updateCurSpdLim(void) {
     cur_spd_valid  += 2;  // Mark update to be saved in Flash at shutdown
   }
   
-  consoleLog("Limits: "); HAL_Delay(10);
-  setScopeChannel(0, (int16_t)cur_spd_valid);     // 0 = No limit changed, 1 = Current limit changed, 2 = Speed limit changed, 3 = Both limits changed
-  setScopeChannel(1, (int16_t)input1_fixdt);
-  setScopeChannel(2, (int16_t)cur_factor);
-  setScopeChannel(3, (int16_t)rtP_Left.i_max);
-  setScopeChannel(4, (int16_t)0);
-  setScopeChannel(5, (int16_t)input2_fixdt);
-  setScopeChannel(6, (int16_t)spd_factor);
-  setScopeChannel(7, (int16_t)rtP_Left.n_max);
-  consoleScope();
-
+  // cur_spd_valid: 0 = No limit changed, 1 = Current limit changed, 2 = Speed limit changed, 3 = Both limits changed
+  printf("# Limits: cur_spd_valid:%i input1_fixdt:%li cur_factor:%i rtP_Left.i_max:%i input2_fixdt:%li spd_factor:%i rtP_Left.n_max:%i\n",
+                    cur_spd_valid,   input1_fixdt,    cur_factor,   rtP_Left.i_max,   input2_fixdt,    spd_factor,   rtP_Left.n_max);
   #endif
 }
 
@@ -752,8 +739,8 @@ void cruiseControl(uint8_t button) {
 void poweroff(void) {
 	buzzerPattern = 0;
 	enable = 0;
-	consoleLog("-- Motors disabled --\r\n");
-	for (int i = 0; i < 8; i++) {
+	printf("# -- Motors disabled --\n");
+  for (int i = 0; i < 8; i++) {
 		buzzerFreq = (uint8_t)i;
 		HAL_Delay(100);
 	}
@@ -1107,7 +1094,7 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len)
 {
   for (; len > 0; len--, userCommand++) {
     if (*userCommand != '\n' && *userCommand != '\r') {   // Do not accept 'new line' and 'carriage return' commands
-      consoleLog("-- Command received --\r\n");
+      printf("# -- Command received --\n");
       // handle_input(*userCommand);                      // -> Create this function to handle the user commands
     }
   }

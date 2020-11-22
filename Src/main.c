@@ -26,7 +26,6 @@
 #include "setup.h"
 #include "config.h"
 #include "util.h"
-#include "comms.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 
@@ -51,6 +50,8 @@ extern volatile adc_buf_t adc_buffer;
 
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+
+volatile uint8_t uart_buf[200];
 
 // Matlab defines - from auto-code generation
 //---------------
@@ -191,6 +192,10 @@ int main(void) {
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 
+  printf("\n# hoverboard-firmware-hack-FOC\n");
+  printf("# GCC Version: %s\n",__VERSION__);
+  printf("# Build Date: %s\n\n",__DATE__);
+
   int16_t speedL     = 0, speedR     = 0;
   int16_t lastSpeedL = 0, lastSpeedR = 0;
 
@@ -212,7 +217,7 @@ int main(void) {
         shortBeep(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
         enable = 1;                       // enable motors
-        consoleLog("-- Motors enabled --\r\n");
+        printf("# -- Motors enabled --\n");
       }
 
       // ####### VARIANT_HOVERCAR ####### 
@@ -410,15 +415,16 @@ int main(void) {
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
-        setScopeChannel(0, (int16_t)input1);                    // 1: INPUT1
-        setScopeChannel(1, (int16_t)input2);                    // 2: INPUT2
-        setScopeChannel(2, (int16_t)speedR);                    // 3: output command: [-1000, 1000]
-        setScopeChannel(3, (int16_t)speedL);                    // 4: output command: [-1000, 1000]
-        setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
-        setScopeChannel(5, (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC)); // 6: for verifying battery voltage calibration
-        setScopeChannel(6, (int16_t)board_temp_adcFilt);        // 7: for board temperature calibration
-        setScopeChannel(7, (int16_t)board_temp_deg_c);          // 8: for verifying board temperature calibration
-        consoleScope();
+        printf("1:%i 2:%i 3:%i 4:%i 5:%i 6:%i 7:%i 8:%i\r\n",
+          input1,                    // 1: INPUT1
+          input2,                    // 2: INPUT2
+          speedR,                    // 3: output command: [-1000, 1000]
+          speedL,                    // 4: output command: [-1000, 1000]
+          adc_buffer.batt1,          // 5: for battery voltage calibration
+          batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC, // 6: for verifying battery voltage calibration
+          board_temp_adcFilt,        // 7: for board temperature calibration
+          board_temp_deg_c);         // 8: for verifying board temperature calibration
+          printf("# Battery empty: %4.2fV: power off\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       }
     #endif
 
@@ -459,21 +465,31 @@ int main(void) {
 
     // ####### BEEP AND EMERGENCY POWEROFF #######
     if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
+      if (board_temp_deg_c >= TEMP_POWEROFF) printf("# Error: STM32 overtemp: %4.1f°C: power off\n", board_temp_deg_c / 10.0);
+      if (batVoltage < BAT_DEAD) printf("# Battery empty: %4.2fV: power off\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       poweroff();
     } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {     // disable motors and beep in case of Motor error - fast beep
       enable        = 0;
+      if (rtY_Left.z_errCode) printf("# Warning: rtY_Left.z_errCode: %i\n", rtY_Left.z_errCode);
+      if (rtY_Right.z_errCode) printf("# Warning: rtY_Right.z_errCode: %i\n", rtY_Right.z_errCode);
       buzzerFreq    = 8;
       buzzerPattern = 1;
     } else if (timeoutFlagADC || timeoutFlagSerial || timeoutCnt > TIMEOUT) { // beep in case of ADC timeout, Serial timeout or General timeout - fast beep      
+      if (timeoutFlagADC) printf("# Warning: ADC timeout\n");
+      if (timeoutFlagSerial) printf("# Warning: Serial timeout\n");
+      if (timeoutCnt > TIMEOUT) printf("# Warning: General timeout\n");
       buzzerFreq    = 24;
       buzzerPattern = 1;
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {  // beep if mainboard gets hot
+      printf("# Warning: STM32 is getting hot: %4.1f°C\n", board_temp_deg_c / 10.0);
       buzzerFreq    = 4;
       buzzerPattern = 1;
     } else if (BAT_LVL1_ENABLE && batVoltage < BAT_LVL1) {      // low bat 1: fast beep
+      printf("# Warning: Battery is getting empty 1: %4.2fV\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       buzzerFreq    = 5;
       buzzerPattern = 6;
     } else if (BAT_LVL2_ENABLE && batVoltage < BAT_LVL2) {      // low bat 2: slow beep
+      printf("# Warning: Battery is getting empty 2: %4.2fV\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       buzzerFreq    = 5;
       buzzerPattern = 42;
     } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) {  // backward beep
@@ -494,6 +510,7 @@ int main(void) {
       inactivity_timeout_counter++;
     }
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
+      printf("# inactivity timeout: power off\n");
       poweroff();
     }
 
