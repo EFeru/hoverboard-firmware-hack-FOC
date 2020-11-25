@@ -7,15 +7,40 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
  - reduced noise and vibrations 	
  - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
- 
+
+
+Table of Contents
+=======================
+
+* [Hardware](#hardware)
+* [FOC Firmware](#foc-firmware)
+* [Example Variants ](#example-variants)
+* [Flashing](#flashing)
+* [Troubleshooting](#troubleshooting)
+* [Projects and Links](#projects-and-links)
+* [Contributions](#contributions)
+
 #### For the hoverboard sideboard firmware, see the following repositories:
  - [hoverboard-sideboard-hack-GD](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-GD)
  - [hoverboard-sideboard-hack-STM](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-STM)
  
 #### For the FOC controller design, see the following repository:
  - [bldc-motor-control-FOC](https://github.com/EmanuelFeru/bldc-motor-control-FOC)
- 
- 
+
+<table>
+  <tr>
+    <td><a href="https://youtu.be/IgHCcj0NgWQ" title="Hovercar" rel="noopener"><img src="/docs/pictures/videos_preview/hovercar_intro.png"></a></td>
+    <td><a href="https://youtu.be/gtyqtc37r10" title="Cruise Control functionality" rel="noopener"><img src="/docs/pictures/videos_preview/cruise_control.png"></a></td>
+    <td><a href="https://youtu.be/jadD0M1VBoc" title="Hovercar pedal functionality" rel="noopener"><img src="/docs/pictures/videos_preview/hovercar_pedals.png"></a></td>
+  </tr>
+  <tr>
+    <td><a href="https://youtu.be/V-_L2w10wZk" title="Commutation vs. FOC (variable speed)" rel="noopener"><img src="/docs/pictures/videos_preview/com_foc_const.png"></a></td>
+    <td><a href="https://youtu.be/UnlbMrCkjnE" title="Commutation vs. FOC (constant speed)" rel="noopener"><img src="/docs/pictures/videos_preview/com_foc_var.png"></a></td>    
+    <td><a href="https://youtu.be/tVj_lpsRirA" title="Reliable Serial Communication" rel="noopener"><img src="/docs/pictures/videos_preview/serial_com.png"></a></td>
+  </tr>
+</table>
+
+
 ---
 ## Hardware
  
@@ -81,17 +106,6 @@ Each motor is constantly monitored for errors. These errors are:
 - **Error 004**: Motor NOT able to spin (Possible causes: motor phase disconnected, MOSFET defective, operational Amplifier defective, motor blocked)
 
 The error codes above are reported for each motor in the variables **rtY_Left.z_errCode** and **rtY_Right.z_errCode** for Left motor (long wired motor) and Right motor (short wired motor), respectively. In case of error, the motor power is reduced to 0, while an audible (fast beep) can be heard to notify the user.
-
-
-### Demo Videos
-
-[►Video: HOVERCAR](https://www.youtube.com/watch?v=IgHCcj0NgWQ&t=)
-
-[►Video: Commutation vs Advanced control (constant speed)](https://drive.google.com/open?id=1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD)
-
-[►Video: Commutation vs Advanced control (variable speed)](https://drive.google.com/open?id=1rrQ4k5VLhhAWXQzDSCar_SmEdsbM-hq2)
-
-[►Video: Reliable Serial Communication demo](https://drive.google.com/open?id=1mUM-p7SE6gmyTH7zhDHy5DUyczXvmy5d)
 
 
 ---
