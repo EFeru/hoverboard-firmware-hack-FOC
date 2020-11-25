@@ -27,6 +27,7 @@ Table of Contents
 #### For the FOC controller design, see the following repository:
  - [bldc-motor-control-FOC](https://github.com/EmanuelFeru/bldc-motor-control-FOC)
 
+#### Videos:
 <table>
   <tr>
     <td><a href="https://youtu.be/IgHCcj0NgWQ" title="Hovercar" rel="noopener"><img src="/docs/pictures/videos_preview/hovercar_intro.png"></a></td>
