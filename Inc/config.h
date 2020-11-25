@@ -414,8 +414,8 @@
 
   #undef  USART3_BAUD
   #define USART3_BAUD        115200
-  #define CONTROL_SERIAL_USART3       // left sensor board cable, disable if ADC or PPM is used!
-  #define FEEDBACK_SERIAL_USART3      // left sensor board cable, disable if ADC or PPM is used!
+  #define CONTROL_SERIAL_USART3       // right sensor board cable, disable if ADC or PPM is used!
+  #define FEEDBACK_SERIAL_USART3      // right sensor board cable, disable if ADC or PPM is used!
   #ifdef CONTROL_SERIAL_USART3
     #define DEBUG_SERIAL_USART2       // left sensor cable debug
   #else
