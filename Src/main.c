@@ -424,7 +424,6 @@ int main(void) {
           batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC, // 6: for verifying battery voltage calibration
           board_temp_adcFilt,        // 7: for board temperature calibration
           board_temp_deg_c);         // 8: for verifying board temperature calibration
-          printf("# Battery empty: %4.2fV: power off\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       }
     #endif
 
@@ -470,26 +469,26 @@ int main(void) {
       poweroff();
     } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {     // disable motors and beep in case of Motor error - fast beep
       enable        = 0;
-      if (rtY_Left.z_errCode) printf("# Warning: rtY_Left.z_errCode: %i\n", rtY_Left.z_errCode);
-      if (rtY_Right.z_errCode) printf("# Warning: rtY_Right.z_errCode: %i\n", rtY_Right.z_errCode);
+      if (rtY_Left.z_errCode && main_loop_counter % 50 == 0) printf("# Warning: rtY_Left.z_errCode: %i\n", rtY_Left.z_errCode);
+      if (rtY_Right.z_errCode && main_loop_counter % 50 == 0) printf("# Warning: rtY_Right.z_errCode: %i\n", rtY_Right.z_errCode);
       buzzerFreq    = 8;
       buzzerPattern = 1;
     } else if (timeoutFlagADC || timeoutFlagSerial || timeoutCnt > TIMEOUT) { // beep in case of ADC timeout, Serial timeout or General timeout - fast beep      
-      if (timeoutFlagADC) printf("# Warning: ADC timeout\n");
-      if (timeoutFlagSerial) printf("# Warning: Serial timeout\n");
-      if (timeoutCnt > TIMEOUT) printf("# Warning: General timeout\n");
+      if (timeoutFlagADC && main_loop_counter % 50 == 0) printf("# Warning: ADC timeout\n");
+      if (timeoutFlagSerial && main_loop_counter % 50 == 0) printf("# Warning: Serial timeout\n");
+      if (timeoutCnt > TIMEOUT && main_loop_counter % 50 == 0) printf("# Warning: General timeout\n");
       buzzerFreq    = 24;
       buzzerPattern = 1;
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {  // beep if mainboard gets hot
-      printf("# Warning: STM32 is getting hot: %4.1f°C\n", board_temp_deg_c / 10.0);
+      if (main_loop_counter % 50 == 0) printf("# Warning: STM32 is getting hot: %4.1f°C\n", board_temp_deg_c / 10.0);
       buzzerFreq    = 4;
       buzzerPattern = 1;
     } else if (BAT_LVL1_ENABLE && batVoltage < BAT_LVL1) {      // low bat 1: fast beep
-      printf("# Warning: Battery is getting empty 1: %4.2fV\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
+      if (main_loop_counter % 50 == 0) printf("# Warning: Battery is getting empty 1: %4.2fV\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       buzzerFreq    = 5;
       buzzerPattern = 6;
     } else if (BAT_LVL2_ENABLE && batVoltage < BAT_LVL2) {      // low bat 2: slow beep
-      printf("# Warning: Battery is getting empty 2: %4.2fV\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
+      if (main_loop_counter % 50 == 0) printf("# Warning: Battery is getting empty 2: %4.2fV\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       buzzerFreq    = 5;
       buzzerPattern = 42;
     } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) {  // backward beep
