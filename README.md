@@ -16,6 +16,7 @@ Table of Contents
 * [FOC Firmware](#foc-firmware)
 * [Example Variants ](#example-variants)
 * [Flashing](#flashing)
+* [Diagnostics](#diagnostics)
 * [Troubleshooting](#troubleshooting)
 * [Projects and Links](#projects-and-links)
 * [Contributions](#contributions)
@@ -98,15 +99,6 @@ In all FOC control modes, the controller features maximum motor speed and maximu
  - The parameters are represented in Fixed-point data type for a more efficient code execution
  - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EmanuelFeru/FixedPointViewer) tool
  - The controller parameters are given in [this table](https://github.com/EmanuelFeru/bldc-motor-control-FOC/blob/master/02_Figures/paramTable.png)
-
-
-### Diagnostics
-Each motor is constantly monitored for errors. These errors are:
-- **Error 001**: Hall sensor not connected
-- **Error 002**: Hall sensor short circuit
-- **Error 004**: Motor NOT able to spin (Possible causes: motor phase disconnected, MOSFET defective, operational Amplifier defective, motor blocked)
-
-The error codes above are reported for each motor in the variables **rtY_Left.z_errCode** and **rtY_Right.z_errCode** for Left motor (long wired motor) and Right motor (short wired motor), respectively. In case of error, the motor power is reduced to 0, while an audible (fast beep) can be heard to notify the user.
 
 
 ---
@@ -207,6 +199,20 @@ platformio run -e VARIANT_####
 platformio run –target upload -e VARIANT_####
 ```
 If you have set default_envs in [platformio.ini](/platformio.ini) you can ommit -e parameter
+
+
+---
+## Diagnostics
+The errors reported by the board are in the form of audible beeps:
+- **1 beep  (low pitch)**: Motor error (see [possible causes](https://github.com/EmanuelFeru/bldc-motor-control-FOC#diagnostics))
+- **2 beeps (low pitch)**: ADC timeout
+- **3 beeps (low pitch)**: Serial communication timeout
+- **4 beeps (low pitch)**: General timeout (PPM, PWM, Nunchuck)
+- **5 beeps (low pitch)**: Mainboard temperature warning
+- **1 beep fast (medium pitch)**: Low battery voltage < 35V
+- **1 beep slow (medium pitch)**: Low battery voltage < 36V
+- **1 beep fast (high pitch)**: Backward spinning motors
+
 
 ---
 ## Troubleshooting

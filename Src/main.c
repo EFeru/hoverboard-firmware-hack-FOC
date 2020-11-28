@@ -74,9 +74,6 @@ extern uint8_t timeoutFlagSerial;       // Timeout Flag for Rx Serial command: 0
 extern volatile int pwml;               // global variable for pwm left. -1000 to 1000
 extern volatile int pwmr;               // global variable for pwm right. -1000 to 1000
 
-extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
-extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
-
 extern uint8_t enable;                  // global variable for motor enable
 
 extern int16_t batVoltage;              // global variable for battery voltage
@@ -114,7 +111,7 @@ typedef struct{
   int16_t   speedL_meas;
   int16_t   batVoltage;
   int16_t   boardTemp;
-  uint16_t 	cmdLed;
+  uint16_t  cmdLed;
   uint16_t  checksum;
 } SerialFeedback;
 static SerialFeedback Feedback;
@@ -180,13 +177,13 @@ int main(void) {
   MX_ADC1_Init();
   MX_ADC2_Init();
   BLDC_Init();        // BLDC Controller Init
+
+  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);   // Activate Latch
   Input_Lim_Init();   // Input Limitations Init
   Input_Init();       // Input Init
 
-  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);
-
   HAL_ADC_Start(&hadc1);
-  HAL_ADC_Start(&hadc2);  
+  HAL_ADC_Start(&hadc2);
 
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
@@ -208,8 +205,8 @@ int main(void) {
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
       if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
-        shortBeep(6);                     // make 2 beeps indicating the motor enable
-        shortBeep(4); HAL_Delay(100);
+        beepShort(6);                     // make 2 beeps indicating the motor enable
+        beepShort(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
         enable = 1;                       // enable motors
         consoleLog("-- Motors enabled --\r\n");
@@ -348,7 +345,7 @@ int main(void) {
 
       if ((distance / 1345.0) - setDistance > 0.5 && (lastDistance / 1345.0) - setDistance > 0.5) { // Error, robot too far away!
         enable = 0;
-        longBeep(5);
+        beepLong(5);
         #ifdef SUPPORT_LCD
           LCD_ClearDisplay(&lcd);
           HAL_Delay(5);
@@ -460,29 +457,26 @@ int main(void) {
     // ####### BEEP AND EMERGENCY POWEROFF #######
     if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
       poweroff();
-    } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {     // disable motors and beep in case of Motor error - fast beep
-      enable        = 0;
-      buzzerFreq    = 8;
-      buzzerPattern = 1;
-    } else if (timeoutFlagADC || timeoutFlagSerial || timeoutCnt > TIMEOUT) { // beep in case of ADC timeout, Serial timeout or General timeout - fast beep      
-      buzzerFreq    = 24;
-      buzzerPattern = 1;
-    } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {  // beep if mainboard gets hot
-      buzzerFreq    = 4;
-      buzzerPattern = 1;
-    } else if (BAT_LVL1_ENABLE && batVoltage < BAT_LVL1) {      // low bat 1: fast beep
-      buzzerFreq    = 5;
-      buzzerPattern = 6;
-    } else if (BAT_LVL2_ENABLE && batVoltage < BAT_LVL2) {      // low bat 2: slow beep
-      buzzerFreq    = 5;
-      buzzerPattern = 42;
-    } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) {  // backward beep
-      buzzerFreq    = 5;
-      buzzerPattern = 1;
+    } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): Motor error, disable motors
+      enable = 0;
+      beepCount(1, 24, 1);
+    } else if (timeoutFlagADC) {                                                                      // 2 beeps (low pitch): ADC timeout
+      beepCount(2, 24, 1);
+    } else if (timeoutFlagSerial) {                                                                   // 3 beeps (low pitch): Serial timeout
+      beepCount(3, 24, 1);
+    } else if (timeoutCnt > TIMEOUT) {                                                                // 4 beeps (low pitch): General timeout (PPM, PWM, Nunchuck)
+      beepCount(4, 24, 1);
+    } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {                             // 5 beeps (low pitch): Mainboard temperature warning
+      beepCount(5, 24, 1);
+    } else if (BAT_LVL1_ENABLE && batVoltage < BAT_LVL1) {                                            // 1 beep fast (medium pitch): Low bat 1
+      beepCount(0, 10, 6);
+    } else if (BAT_LVL2_ENABLE && batVoltage < BAT_LVL2) {                                            // 1 beep slow (medium pitch): Low bat 2
+      beepCount(0, 10, 30);
+    } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) { // 1 beep fast (high pitch): Backward spinning motors
+      beepCount(0, 5, 1);
       backwardDrive = 1;
     } else {  // do not beep
-      buzzerFreq    = 0;
-      buzzerPattern = 0;
+      beepCount(0, 0, 0);
       backwardDrive = 0;
     }
 
