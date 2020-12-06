@@ -16,8 +16,8 @@ Table of Contents
 * [FOC Firmware](#foc-firmware)
 * [Example Variants ](#example-variants)
 * [Flashing](#flashing)
-* [Diagnostics](#diagnostics)
 * [Troubleshooting](#troubleshooting)
+* [Diagnostics](#diagnostics)
 * [Projects and Links](#projects-and-links)
 * [Contributions](#contributions)
 
@@ -202,19 +202,6 @@ If you have set default_envs in [platformio.ini](/platformio.ini) you can ommit 
 
 
 ---
-## Diagnostics
-The errors reported by the board are in the form of audible beeps:
-- **1 beep  (low pitch)**: Motor error (see [possible causes](https://github.com/EmanuelFeru/bldc-motor-control-FOC#diagnostics))
-- **2 beeps (low pitch)**: ADC timeout
-- **3 beeps (low pitch)**: Serial communication timeout
-- **4 beeps (low pitch)**: General timeout (PPM, PWM, Nunchuck)
-- **5 beeps (low pitch)**: Mainboard temperature warning
-- **1 beep slow (medium pitch)**: Low battery voltage < 36V
-- **1 beep fast (medium pitch)**: Low battery voltage < 35V
-- **1 beep fast (high pitch)**: Backward spinning motors
-
-
----
 ## Troubleshooting
 First, check that power is connected and voltage is >36V while flashing.
 If the board draws more than 100mA in idle, it's probably broken.
@@ -231,9 +218,24 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 
 
 ---
+## Diagnostics
+The errors reported by the board are in the form of audible beeps:
+- **1 beep  (low pitch)**: Motor error (see [possible causes](https://github.com/EmanuelFeru/bldc-motor-control-FOC#diagnostics))
+- **2 beeps (low pitch)**: ADC timeout
+- **3 beeps (low pitch)**: Serial communication timeout
+- **4 beeps (low pitch)**: General timeout (PPM, PWM, Nunchuck)
+- **5 beeps (low pitch)**: Mainboard temperature warning
+- **1 beep slow (medium pitch)**: Low battery voltage < 36V
+- **1 beep fast (medium pitch)**: Low battery voltage < 35V
+- **1 beep fast (high pitch)**: Backward spinning motors
+
+For a more detailed troubleshooting connect an [FTDI Serial adapter](https://s.click.aliexpress.com/e/_AqPOBr) to the DEBUG_SERIAL cable (Left or Right) and monitor the output data using the [Hoverboard Web Serial Control](https://candas1.github.io/Hoverboard-Web-Serial-Control/) tool developed by [Candas](https://github.com/Candas1/).
+
+---
 ## Projects and Links
 
 - **Original firmware:** [https://github.com/NiklasFauth/hoverboard-firmware-hack](https://github.com/NiklasFauth/hoverboard-firmware-hack)
+- **[Candas](https://github.com/Candas1/) Hoverboard Web Serial Control:** [https://candas1.github.io/Hoverboard-Web-Serial-Control/](https://candas1.github.io/Hoverboard-Web-Serial-Control/)
 - **[RoboDurden's](https://github.com/RoboDurden) online compiler:** [https://pionierland.de/hoverhack/](https://pionierland.de/hoverhack/) 
 - **Hoverboard hack for AT32F403RCT6 mainboards:** [https://github.com/cloidnerux/hoverboard-firmware-hack](https://github.com/cloidnerux/hoverboard-firmware-hack)
 - **Hoverboard hack for split mainboards:** [https://github.com/flo199213/Hoverboard-Firmware-Hack-Gen2](https://github.com/flo199213/Hoverboard-Firmware-Hack-Gen2)
