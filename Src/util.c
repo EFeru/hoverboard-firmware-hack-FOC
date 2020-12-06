@@ -370,26 +370,29 @@ void UART_DisableRxErrors(UART_HandleTypeDef *huart)
 /* =========================== General Functions =========================== */
 
 void poweronMelody(void) {
-  for (int i = 8; i >= 0; i--) {
-    buzzerFreq = (uint8_t)i;
-    HAL_Delay(100);
-  }
-  buzzerFreq = 0;
+    buzzerCount = 0;  // prevent interraction with beep counter
+    for (int i = 8; i >= 0; i--) {
+      buzzerFreq = (uint8_t)i;
+      HAL_Delay(100);
+    }
+    buzzerFreq = 0;
 }
 
 void beepCount(uint8_t cnt, uint8_t freq, uint8_t pattern) {
-  buzzerCount   = cnt;
-  buzzerFreq    = freq;
-  buzzerPattern = pattern;
+    buzzerCount   = cnt;
+    buzzerFreq    = freq;
+    buzzerPattern = pattern;
 }
 
 void beepLong(uint8_t freq) {
+    buzzerCount = 0;  // prevent interraction with beep counter
     buzzerFreq = freq;
     HAL_Delay(500);
     buzzerFreq = 0;
 }
 
 void beepShort(uint8_t freq) {
+    buzzerCount = 0;  // prevent interraction with beep counter
     buzzerFreq = freq;
     HAL_Delay(100);
     buzzerFreq = 0;
@@ -758,6 +761,7 @@ void cruiseControl(uint8_t button) {
 void poweroff(void) {
   enable = 0;
   consoleLog("-- Motors disabled --\r\n");
+  buzzerCount = 0;  // prevent interraction with beep counter
   buzzerPattern = 0;
   for (int i = 0; i < 8; i++) {
     buzzerFreq = (uint8_t)i;
