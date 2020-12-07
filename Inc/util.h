@@ -45,12 +45,13 @@
 #endif
 #if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
     typedef struct{
-      uint16_t	start;
-      int16_t  	roll;
-      int16_t  	pitch;
-      int16_t  	yaw;
-      uint16_t  sensors;
-      uint16_t 	checksum;
+      uint16_t  start;
+      int16_t   pitch;      // Angle
+      int16_t   dPitch;     // Angle derivative
+      int16_t   cmd1;       // RC Channel 1
+      int16_t   cmd2;       // RC Channel 2
+      uint16_t  sensors;    // RC Switches and Optical sideboard sensors
+      uint16_t  checksum;
     } SerialSideboard;
 #endif
 
