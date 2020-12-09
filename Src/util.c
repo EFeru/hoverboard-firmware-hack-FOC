@@ -18,6 +18,7 @@
 */
 
 // Includes
+#include <stdio.h>
 #include <stdlib.h> // for abs()
 #include <string.h>
 #include "stm32f1xx_hal.h"
@@ -467,14 +468,14 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
   HAL_Delay(10);
   if ((min / threshold) == (max / threshold) || (mid / threshold) == (max / threshold) || min > max || mid > max) {
     type = 0;
-    printf("# Input is ignored");               // (MIN and MAX) OR (MID and MAX) are close, disable input
+    printf("Input is ignored");               // (MIN and MAX) OR (MID and MAX) are close, disable input
   } else {
     if ((min / threshold) == (mid / threshold)){
       type = 1;
-      printf("# Input is a normal pot");        // MIN and MID are close, it's a normal pot
+      printf("Input is a normal pot");        // MIN and MID are close, it's a normal pot
     } else {
       type = 2;
-      printf("# Input is a mid-resting pot");   // it's a mid resting pot
+      printf("Input is a mid-resting pot");   // it's a mid resting pot
     }
     HAL_Delay(10);
     #ifdef CONTROL_ADC
@@ -486,7 +487,7 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
   }
 
   HAL_Delay(10);
-  printf("\n");
+  printf("\r\n");
   HAL_Delay(10);
   
   return type;
@@ -542,10 +543,10 @@ void adcCalibLim(void) {
     INPUT1_MIN_CAL = INPUT1_MIN_temp + INPUT_MARGIN;
     INPUT1_MID_CAL = INPUT1_MID_temp;
     INPUT1_MAX_CAL = INPUT1_MAX_temp - INPUT_MARGIN;
-    printf("# Input1 OK\r\n");    HAL_Delay(10);
+    printf("Input1 OK\r\n");    HAL_Delay(10);
   } else {
     INPUT1_TYP_CAL = 0; // Disable input
-    printf("# Input1 Fail\r\n");  HAL_Delay(10);
+    printf("Input1 Fail\r\n");  HAL_Delay(10);
   }
 
   INPUT2_TYP_CAL = checkInputType(INPUT2_MIN_temp, INPUT2_MID_temp, INPUT2_MAX_temp);
@@ -553,14 +554,15 @@ void adcCalibLim(void) {
     INPUT2_MIN_CAL = INPUT2_MIN_temp + INPUT_MARGIN;
     INPUT2_MID_CAL = INPUT2_MID_temp;
     INPUT2_MAX_CAL = INPUT2_MAX_temp - INPUT_MARGIN;
-    printf("# Input2 OK\r\n");    HAL_Delay(10);
+    printf("Input2 OK\r\n");    HAL_Delay(10);
   } else {
     INPUT2_TYP_CAL = 0; // Disable input
-    printf("# Input2 Fail\r\n");  HAL_Delay(10);
+    printf("Input2 Fail\r\n");  HAL_Delay(10);
   }
   inp_cal_valid = 1;    // Mark calibration to be saved in Flash at shutdown
-  printf("# Limits: INPUT1_TYP_CAL:%i INPUT1_MIN_CAL:%i INPUT1_MID_CAL:%i INPUT1_MAX_CAL:%i INPUT2_TYP_CAL:%i INPUT2_MIN_CAL:%i INPUT2_MID_CAL:%i INPUT2_MAX_CAL:%i\n",
-                    INPUT1_TYP_CAL,   INPUT1_MIN_CAL,   INPUT1_MID_CAL,   INPUT1_MAX_CAL,   INPUT2_TYP_CAL,   INPUT2_MIN_CAL,   INPUT2_MID_CAL,   INPUT2_MAX_CAL);  
+  printf("Limits Input1: TYP:%i MIN:%i MID:%i MAX:%i\r\nLimits Input2: TYP:%i MIN:%i MID:%i MAX:%i\r\n",
+          INPUT1_TYP_CAL, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL,
+          INPUT2_TYP_CAL, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL);
   #endif
 }
  /*
@@ -607,10 +609,10 @@ void updateCurSpdLim(void) {
     rtP_Left.n_max = rtP_Right.n_max  = (int16_t)((N_MOT_MAX * spd_factor) >> 12);                 // fixdt(0,16,16) to fixdt(1,16,4)
     cur_spd_valid  += 2;  // Mark update to be saved in Flash at shutdown
   }
-  
+
   // cur_spd_valid: 0 = No limit changed, 1 = Current limit changed, 2 = Speed limit changed, 3 = Both limits changed
-  printf("# Limits: cur_spd_valid:%i input1_fixdt:%li cur_factor:%i rtP_Left.i_max:%i input2_fixdt:%li spd_factor:%i rtP_Left.n_max:%i\n",
-                    cur_spd_valid,   input1_fixdt,    cur_factor,   rtP_Left.i_max,   input2_fixdt,    spd_factor,   rtP_Left.n_max);
+  printf("Limits (%i)\r\nCurrent: fixdt:%li factor%i i_max:%i \r\nSpeed: fixdt:%li factor:%i n_max:%i\r\n",
+          cur_spd_valid, input1_fixdt, cur_factor, rtP_Left.i_max, input2_fixdt, spd_factor, rtP_Left.n_max);
   #endif
 }
 
@@ -1100,7 +1102,7 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len)
 {
   for (; len > 0; len--, userCommand++) {
     if (*userCommand != '\n' && *userCommand != '\r') {   // Do not accept 'new line' and 'carriage return' commands
-      printf("# -- Command received --\n");
+      printf("Command = %c\r\n", *userCommand);
       // handle_input(*userCommand);                      // -> Create this function to handle the user commands
     }
   }

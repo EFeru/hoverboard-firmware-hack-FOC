@@ -34,6 +34,7 @@
 #endif
 #define TIMEOUT                20     // number of wrong / missing input commands before emergency off
 #define A2BIT_CONV             50     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
+// #define PRINTF_FLOAT_SUPPORT          // [-] Uncomment this for printf to support float on Serial Debug. It will increase code size! Better to avoid it!
 
 // ADC conversion time definitions
 #define ADC_CONV_TIME_1C5       (14)  //Total ADC clock cycles / conversion = (  1.5+12.5)
@@ -256,7 +257,7 @@
  * After calibration you can optionally write the values to the following defines
  * Procedure:
  * - connect gnd, rx and tx of a usb-uart converter in 3.3V mode to the right sensor board cable (do NOT use the red 15V wire!)
- * - readout values using a serial terminal in 38400 boud
+ * - readout values using a serial terminal in 115200 baud rate
  * - turn the potis to minimum position, write value 1 to INPUT1_MIN and value 2 to INPUT2_MIN
  * - turn the potis to maximum position, write value 1 to INPUT1_MAX and value 2 to INPUT2_MAX
  * - for middle resting potis: Let the potis in the middle resting position, write value 1 to INPUT1_MID and value 2 to INPUT2_MID
