@@ -7,15 +7,42 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
  - reduced noise and vibrations 	
  - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
- 
+
+
+Table of Contents
+=======================
+
+* [Hardware](#hardware)
+* [FOC Firmware](#foc-firmware)
+* [Example Variants ](#example-variants)
+* [Flashing](#flashing)
+* [Troubleshooting](#troubleshooting)
+* [Diagnostics](#diagnostics)
+* [Projects and Links](#projects-and-links)
+* [Contributions](#contributions)
+
 #### For the hoverboard sideboard firmware, see the following repositories:
  - [hoverboard-sideboard-hack-GD](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-GD)
  - [hoverboard-sideboard-hack-STM](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-STM)
  
 #### For the FOC controller design, see the following repository:
  - [bldc-motor-control-FOC](https://github.com/EmanuelFeru/bldc-motor-control-FOC)
- 
- 
+
+#### Videos:
+<table>
+  <tr>
+    <td><a href="https://youtu.be/IgHCcj0NgWQ" title="Hovercar" rel="noopener"><img src="/docs/pictures/videos_preview/hovercar_intro.png"></a></td>
+    <td><a href="https://youtu.be/gtyqtc37r10" title="Cruise Control functionality" rel="noopener"><img src="/docs/pictures/videos_preview/cruise_control.png"></a></td>
+    <td><a href="https://youtu.be/jadD0M1VBoc" title="Hovercar pedal functionality" rel="noopener"><img src="/docs/pictures/videos_preview/hovercar_pedals.png"></a></td>
+  </tr>
+  <tr>
+    <td><a href="https://youtu.be/UnlbMrCkjnE" title="Commutation vs. FOC (constant speed)" rel="noopener"><img src="/docs/pictures/videos_preview/com_foc_const.png"></a></td> 
+    <td><a href="https://youtu.be/V-_L2w10wZk" title="Commutation vs. FOC (variable speed)" rel="noopener"><img src="/docs/pictures/videos_preview/com_foc_var.png"></a></td>       
+    <td><a href="https://youtu.be/tVj_lpsRirA" title="Reliable Serial Communication" rel="noopener"><img src="/docs/pictures/videos_preview/serial_com.png"></a></td>
+  </tr>
+</table>
+
+
 ---
 ## Hardware
  
@@ -74,39 +101,19 @@ In all FOC control modes, the controller features maximum motor speed and maximu
  - The controller parameters are given in [this table](https://github.com/EmanuelFeru/bldc-motor-control-FOC/blob/master/02_Figures/paramTable.png)
 
 
-### Diagnostics
-Each motor is constantly monitored for errors. These errors are:
-- **Error 001**: Hall sensor not connected
-- **Error 002**: Hall sensor short circuit
-- **Error 004**: Motor NOT able to spin (Possible causes: motor phase disconnected, MOSFET defective, operational Amplifier defective, motor blocked)
-
-The error codes above are reported for each motor in the variables **rtY_Left.z_errCode** and **rtY_Right.z_errCode** for Left motor (long wired motor) and Right motor (short wired motor), respectively. In case of error, the motor power is reduced to 0, while an audible (fast beep) can be heard to notify the user.
-
-
-### Demo Videos
-
-[►Video: HOVERCAR](https://www.youtube.com/watch?v=IgHCcj0NgWQ&t=)
-
-[►Video: Commutation vs Advanced control (constant speed)](https://drive.google.com/open?id=1vC_kEkp2LE2lAaMCJcmK4z2m3jrPUoBD)
-
-[►Video: Commutation vs Advanced control (variable speed)](https://drive.google.com/open?id=1rrQ4k5VLhhAWXQzDSCar_SmEdsbM-hq2)
-
-[►Video: Reliable Serial Communication demo](https://drive.google.com/open?id=1mUM-p7SE6gmyTH7zhDHy5DUyczXvmy5d)
-
-
 ---
 ## Example Variants 
 
 This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
-- **VARIANT_ADC**: In this variant the motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
-- **VARIANT_USART**: In this variant the motors are controlled via serial protocol (e.g. on USART3 right sensor cable, the short wired cable). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/Arduino/hoverserial) as an example sketch.
+- **VARIANT_ADC**: The motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
+- **VARIANT_USART**: The motors are controlled via serial protocol (e.g. on USART3 right sensor cable, the short wired cable). The commands can be sent from an Arduino. Check out the [hoverserial.ino](/Arduino/hoverserial) as an example sketch.
 - **VARIANT_NUNCHUK**: Wii Nunchuk offers one hand control for throttle, braking and steering. This was one of the first input device used for electric armchairs or bottle crates.
-- **VARIANT_PPM**: This is when you want to use an RC remote control with PPM Sum signal.
-- **VARIANT_PWM**: This is when you want to use an RC remote control with PWM signal.
-- **VARIANT_IBUS**: This is when you want to use an RC remote control with Flysky IBUS protocol connected to the Left sensor cable.
-- **VARIANT_HOVERCAR**: In this variant the motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill. See [HOVERCAR video](https://www.youtube.com/watch?v=IgHCcj0NgWQ&t=).
-- **VARIANT_HOVERBOARD**: In this variant the mainboard reads the sideboards data. The sideboards need to be flashed with the hacked version. Only balancing controller is still to be implemented.
-- **VARIANT_TRANSPOTTER**: This build is for transpotter which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
+- **VARIANT_PPM**: RC remote control with PPM Sum signal.
+- **VARIANT_PWM**: RC remote control with PWM signal.
+- **VARIANT_IBUS**: RC remote control with Flysky iBUS protocol connected to the Left sensor cable.
+- **VARIANT_HOVERCAR**: The motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill. See [HOVERCAR video](https://www.youtube.com/watch?v=IgHCcj0NgWQ&t=).
+- **VARIANT_HOVERBOARD**: The mainboard reads the two sideboards data. The sideboards need to be flashed with the hacked version. The balancing controller is **not** yet implemented.
+- **VARIANT_TRANSPOTTER**: This is for transpotter build, which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
 - **VARIANT_SKATEBOARD**: This is for skateboard build, controlled using an RC remote with PWM signal connected to the right sensor cable.
 
 Of course the firmware can be further customized for other needs or projects.
@@ -193,6 +200,7 @@ platformio run –target upload -e VARIANT_####
 ```
 If you have set default_envs in [platformio.ini](/platformio.ini) you can ommit -e parameter
 
+
 ---
 ## Troubleshooting
 First, check that power is connected and voltage is >36V while flashing.
@@ -210,9 +218,24 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 
 
 ---
+## Diagnostics
+The errors reported by the board are in the form of audible beeps:
+- **1 beep  (low pitch)**: Motor error (see [possible causes](https://github.com/EmanuelFeru/bldc-motor-control-FOC#diagnostics))
+- **2 beeps (low pitch)**: ADC timeout
+- **3 beeps (low pitch)**: Serial communication timeout
+- **4 beeps (low pitch)**: General timeout (PPM, PWM, Nunchuck)
+- **5 beeps (low pitch)**: Mainboard temperature warning
+- **1 beep slow (medium pitch)**: Low battery voltage < 36V
+- **1 beep fast (medium pitch)**: Low battery voltage < 35V
+- **1 beep fast (high pitch)**: Backward spinning motors
+
+For a more detailed troubleshooting connect an [FTDI Serial adapter](https://s.click.aliexpress.com/e/_AqPOBr) or a [Bluetooth module](https://s.click.aliexpress.com/e/_A4gkMD) to the DEBUG_SERIAL cable (Left or Right) and monitor the output data using the [Hoverboard Web Serial Control](https://candas1.github.io/Hoverboard-Web-Serial-Control/) tool developed by [Candas](https://github.com/Candas1/).
+
+---
 ## Projects and Links
 
 - **Original firmware:** [https://github.com/NiklasFauth/hoverboard-firmware-hack](https://github.com/NiklasFauth/hoverboard-firmware-hack)
+- **[Candas](https://github.com/Candas1/) Hoverboard Web Serial Control:** [https://candas1.github.io/Hoverboard-Web-Serial-Control/](https://candas1.github.io/Hoverboard-Web-Serial-Control/)
 - **[RoboDurden's](https://github.com/RoboDurden) online compiler:** [https://pionierland.de/hoverhack/](https://pionierland.de/hoverhack/) 
 - **Hoverboard hack for AT32F403RCT6 mainboards:** [https://github.com/cloidnerux/hoverboard-firmware-hack](https://github.com/cloidnerux/hoverboard-firmware-hack)
 - **Hoverboard hack for split mainboards:** [https://github.com/flo199213/Hoverboard-Firmware-Hack-Gen2](https://github.com/flo199213/Hoverboard-Firmware-Hack-Gen2)

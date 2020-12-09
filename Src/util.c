@@ -45,6 +45,7 @@ extern UART_HandleTypeDef huart3;
 
 extern int16_t batVoltage;
 extern uint8_t backwardDrive;
+extern uint8_t buzzerCount;             // global variable for the buzzer counts. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 
@@ -368,35 +369,44 @@ void UART_DisableRxErrors(UART_HandleTypeDef *huart)
 /* =========================== General Functions =========================== */
 
 void poweronMelody(void) {
-	for (int i = 8; i >= 0; i--) {
-		buzzerFreq = (uint8_t)i;
-		HAL_Delay(100);
-	}
-	buzzerFreq = 0;
+    buzzerCount = 0;  // prevent interraction with beep counter
+    for (int i = 8; i >= 0; i--) {
+      buzzerFreq = (uint8_t)i;
+      HAL_Delay(100);
+    }
+    buzzerFreq = 0;
 }
 
-void shortBeep(uint8_t freq) {
+void beepCount(uint8_t cnt, uint8_t freq, uint8_t pattern) {
+    buzzerCount   = cnt;
+    buzzerFreq    = freq;
+    buzzerPattern = pattern;
+}
+
+void beepLong(uint8_t freq) {
+    buzzerCount = 0;  // prevent interraction with beep counter
+    buzzerFreq = freq;
+    HAL_Delay(500);
+    buzzerFreq = 0;
+}
+
+void beepShort(uint8_t freq) {
+    buzzerCount = 0;  // prevent interraction with beep counter
     buzzerFreq = freq;
     HAL_Delay(100);
     buzzerFreq = 0;
 }
 
-void shortBeepMany(uint8_t cnt, int8_t dir) {
+void beepShortMany(uint8_t cnt, int8_t dir) {
     if (dir >= 0) {   // increasing tone
       for(uint8_t i = 2*cnt; i >= 2; i=i-2) {
-        shortBeep(i + 3);
+        beepShort(i + 3);
       }
     } else {          // decreasing tone
       for(uint8_t i = 2; i <= 2*cnt; i=i+2) {
-        shortBeep(i + 3);
+        beepShort(i + 3);
       }
     }
-}
-
-void longBeep(uint8_t freq) {
-    buzzerFreq = freq;
-    HAL_Delay(500);
-    buzzerFreq = 0;
 }
 
 void calcAvgSpeed(void) {
@@ -470,7 +480,7 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
     #ifdef CONTROL_ADC
     if ((min + INPUT_MARGIN - ADC_PROTECT_THRESH) > 0 && (max - INPUT_MARGIN + ADC_PROTECT_THRESH) < 4095) {
       printf(" and protected");
-      longBeep(2); // Indicate protection by a beep
+      beepLong(2); // Indicate protection by a beep
     }
     #endif
   }
@@ -498,10 +508,7 @@ void adcCalibLim(void) {
   }
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-  printf("# Input calibration started...\n");
-  printf("# move the potentiometers freely to the min and max limits repeatedly\n");
-  printf("# release potentiometers to the resting postion\n");
-  printf("# press the power button to confirm or wait for the 20 sec timeout\n");
+  printf("Input calibration started...\r\n");
 
   readInput();
   // Inititalization: MIN = a high value, MAX = a low value
@@ -535,10 +542,10 @@ void adcCalibLim(void) {
     INPUT1_MIN_CAL = INPUT1_MIN_temp + INPUT_MARGIN;
     INPUT1_MID_CAL = INPUT1_MID_temp;
     INPUT1_MAX_CAL = INPUT1_MAX_temp - INPUT_MARGIN;
-    printf("# Input1 OK\n");    HAL_Delay(10);
+    printf("# Input1 OK\r\n");    HAL_Delay(10);
   } else {
     INPUT1_TYP_CAL = 0; // Disable input
-    printf("# Input1 Fail\n");  HAL_Delay(10);
+    printf("# Input1 Fail\r\n");  HAL_Delay(10);
   }
 
   INPUT2_TYP_CAL = checkInputType(INPUT2_MIN_temp, INPUT2_MID_temp, INPUT2_MAX_temp);
@@ -546,10 +553,10 @@ void adcCalibLim(void) {
     INPUT2_MIN_CAL = INPUT2_MIN_temp + INPUT_MARGIN;
     INPUT2_MID_CAL = INPUT2_MID_temp;
     INPUT2_MAX_CAL = INPUT2_MAX_temp - INPUT_MARGIN;
-    printf("# Input2 OK\n");    HAL_Delay(10);
+    printf("# Input2 OK\r\n");    HAL_Delay(10);
   } else {
     INPUT2_TYP_CAL = 0; // Disable input
-    printf("# Input2 Fail\n");  HAL_Delay(10);
+    printf("# Input2 Fail\r\n");  HAL_Delay(10);
   }
   inp_cal_valid = 1;    // Mark calibration to be saved in Flash at shutdown
   printf("# Limits: INPUT1_TYP_CAL:%i INPUT1_MIN_CAL:%i INPUT1_MID_CAL:%i INPUT1_MAX_CAL:%i INPUT2_TYP_CAL:%i INPUT2_MIN_CAL:%i INPUT2_MID_CAL:%i INPUT2_MAX_CAL:%i\n",
@@ -569,9 +576,7 @@ void updateCurSpdLim(void) {
   }
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-  printf("# Torque and Speed limits update started...\n");
-  printf("# move and hold the pots to a desired limit position for Current and Speed\n");
-  printf("# press the power button to confirm or wait for the 10 sec timeout\n");
+  printf("Torque and Speed limits update started...\r\n");
 
   int32_t  input1_fixdt = input1 << 16;
   int32_t  input2_fixdt = input2 << 16;  
@@ -737,16 +742,17 @@ void cruiseControl(uint8_t button) {
 /* =========================== Poweroff Functions =========================== */
 
 void poweroff(void) {
-	buzzerPattern = 0;
-	enable = 0;
-	printf("# -- Motors disabled --\n");
+  enable = 0;
+  printf("-- Motors disabled --\r\n");
+  buzzerCount = 0;  // prevent interraction with beep counter
+  buzzerPattern = 0;
   for (int i = 0; i < 8; i++) {
-		buzzerFreq = (uint8_t)i;
-		HAL_Delay(100);
-	}
+    buzzerFreq = (uint8_t)i;
+    HAL_Delay(100);
+  }
   saveConfig();
-	HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_RESET);
-	while(1) {}
+  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_RESET);
+  while(1) {}
 }
 
 
@@ -757,19 +763,19 @@ void poweroffPressCheck(void) {
       uint16_t cnt_press = 0;
       while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
         HAL_Delay(10);
-        if (cnt_press++ == 5 * 100) { shortBeep(5); }
+        if (cnt_press++ == 5 * 100) { beepShort(5); }
       }
       if (cnt_press >= 5 * 100) {                         // Check if press is more than 5 sec
         HAL_Delay(1000);
         if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {  // Double press: Adjust Max Current, Max Speed
           while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
-          longBeep(8);
+          beepLong(8);
           updateCurSpdLim();
-          shortBeep(5);
+          beepShort(5);
         } else {                                          // Long press: Calibrate ADC Limits
-          longBeep(16); 
+          beepLong(16); 
           adcCalibLim();
-          shortBeep(5);
+          beepShort(5);
         }
       } else {                                            // Short press: power off
         poweroff();
@@ -779,11 +785,11 @@ void poweroffPressCheck(void) {
     if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
       enable = 0;
       while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
-      shortBeep(5);
+      beepShort(5);
       HAL_Delay(300);
       if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
         while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
-        longBeep(5);
+        beepLong(5);
         HAL_Delay(350);
         poweroff();
       } else {
@@ -791,7 +797,7 @@ void poweroffPressCheck(void) {
         if (setDistance > 2.6) {
           setDistance = 0.5;
         }
-        shortBeep(setDistance / 0.25);
+        beepShort(setDistance / 0.25);
         saveValue = setDistance * 1000;
         saveValue_valid = 1;
       }
@@ -847,7 +853,7 @@ void readInput(void) {
 
     #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
         // Handle received data validity, timeout and fix out-of-sync if necessary
-      #ifdef CONTROL_IBUS    
+      #ifdef CONTROL_IBUS
         for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
           ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
         }
@@ -1161,7 +1167,7 @@ void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sid
 {
   uint16_t checksum;
   if (Sideboard_in->start == SERIAL_START_FRAME) {
-    checksum = (uint16_t)(Sideboard_in->start ^ Sideboard_in->roll ^ Sideboard_in->pitch ^ Sideboard_in->yaw ^ Sideboard_in->sensors);
+    checksum = (uint16_t)(Sideboard_in->start ^ Sideboard_in->pitch ^ Sideboard_in->dPitch ^ Sideboard_in->cmd1 ^ Sideboard_in->cmd2 ^ Sideboard_in->sensors);
     if (Sideboard_in->checksum == checksum) {
       *Sideboard_out = *Sideboard_in;
       if (usart_idx == 2) {             // Sideboard USART2
@@ -1295,7 +1301,7 @@ void sideboardSensors(uint8_t sensors) {
           rtP_Right.z_ctrlTypSel = COM_CTRL;
           break;    
       }
-      shortBeepMany(sensor1_index + 1, 1);
+      beepShortMany(sensor1_index + 1, 1);
     }
 
     // Field Weakening: use Sensor2 as push button
@@ -1320,7 +1326,7 @@ void sideboardSensors(uint8_t sensors) {
             Input_Lim_Init();
             break; 
         }
-        shortBeepMany(sensor2_index + 1, 1);            
+        beepShortMany(sensor2_index + 1, 1);            
       }
     #endif  // CRUISE_CONTROL_SUPPORT
   #endif

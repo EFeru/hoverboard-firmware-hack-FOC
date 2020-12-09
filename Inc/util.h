@@ -26,31 +26,32 @@
 
 // Rx Structures USART
 #if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
-  #ifdef CONTROL_IBUS    
+  #ifdef CONTROL_IBUS
     typedef struct{
       uint8_t  start;
       uint8_t  type; 
       uint8_t  channels[IBUS_NUM_CHANNELS*2];
       uint8_t  checksuml;
-      uint8_t  checksumh;    
+      uint8_t  checksumh;
     } SerialCommand;
   #else
     typedef struct{
-      uint16_t  start; 
+      uint16_t  start;
       int16_t   steer;
       int16_t   speed;
-      uint16_t  checksum;    
+      uint16_t  checksum;
     } SerialCommand;
   #endif
 #endif
 #if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
     typedef struct{
-      uint16_t	start;
-      int16_t  	roll;
-      int16_t  	pitch;
-      int16_t  	yaw;
-      uint16_t  sensors;
-      uint16_t 	checksum;
+      uint16_t  start;
+      int16_t   pitch;      // Angle
+      int16_t   dPitch;     // Angle derivative
+      int16_t   cmd1;       // RC Channel 1
+      int16_t   cmd2;       // RC Channel 2
+      uint16_t  sensors;    // RC Switches and Optical sideboard sensors
+      uint16_t  checksum;
     } SerialSideboard;
 #endif
 
@@ -62,9 +63,10 @@ void UART_DisableRxErrors(UART_HandleTypeDef *huart);
 
 // General Functions
 void poweronMelody(void);
-void shortBeep(uint8_t freq);
-void shortBeepMany(uint8_t cnt, int8_t dir);
-void longBeep(uint8_t freq);
+void beepCount(uint8_t cnt, uint8_t freq, uint8_t pattern);
+void beepLong(uint8_t freq);
+void beepShort(uint8_t freq);
+void beepShortMany(uint8_t cnt, int8_t dir);
 void calcAvgSpeed(void);
 int  addDeadBand(int16_t u, int16_t type, int16_t deadBand, int16_t in_min, int16_t in_mid, int16_t in_max, int16_t out_min, int16_t out_max);
 int  checkInputType(int16_t min, int16_t mid, int16_t max);
@@ -105,10 +107,10 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t
 
 // Multiple Tap Function
 typedef struct {
-  uint32_t 	t_timePrev;
-  uint8_t 	z_pulseCntPrev;
-  uint8_t 	b_hysteresis;
-  uint8_t 	b_multipleTap;
+  uint32_t  t_timePrev;
+  uint8_t   z_pulseCntPrev;
+  uint8_t   b_hysteresis;
+  uint8_t   b_multipleTap;
 } MultipleTap;
 void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x);
 
