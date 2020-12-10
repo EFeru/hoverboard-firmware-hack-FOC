@@ -18,13 +18,13 @@
 */
 
 // Includes
+#include <stdio.h>
 #include <stdlib.h> // for abs()
 #include <string.h>
 #include "stm32f1xx_hal.h"
 #include "defines.h"
 #include "setup.h"
 #include "config.h"
-#include "comms.h"
 #include "eeprom.h"
 #include "util.h"
 #include "BLDC_controller.h"
@@ -133,13 +133,13 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
   static uint8_t  cur_spd_valid  = 0;
   static uint8_t  inp_cal_valid  = 0;
   static uint16_t INPUT1_TYP_CAL = INPUT1_TYPE; 
-  static uint16_t INPUT1_MIN_CAL = INPUT1_MIN;
-  static uint16_t INPUT1_MID_CAL = INPUT1_MID;
-  static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
+  static  int16_t INPUT1_MIN_CAL = INPUT1_MIN;
+  static  int16_t INPUT1_MID_CAL = INPUT1_MID;
+  static  int16_t INPUT1_MAX_CAL = INPUT1_MAX;
   static uint16_t INPUT2_TYP_CAL = INPUT2_TYPE;
-  static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
-  static uint16_t INPUT2_MID_CAL = INPUT2_MID;
-  static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
+  static  int16_t INPUT2_MIN_CAL = INPUT2_MIN;
+  static  int16_t INPUT2_MID_CAL = INPUT2_MID;
+  static  int16_t INPUT2_MAX_CAL = INPUT2_MAX;
 #endif
 
 #if defined(CONTROL_ADC)
@@ -197,6 +197,34 @@ static uint8_t brakePressed;
 static uint8_t cruiseCtrlAcv = 0;
 static uint8_t standstillAcv = 0;
 #endif
+
+/* =========================== Retargeting printf =========================== */
+/* retarget the C library printf function to the USART */
+#if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+  #ifdef __GNUC__
+    #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+  #else
+    #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+  #endif
+  PUTCHAR_PROTOTYPE {
+    #if defined(DEBUG_SERIAL_USART2)
+      HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 1000);
+    #elif defined(DEBUG_SERIAL_USART3)
+      HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 1000);
+    #endif
+    return ch;
+  }
+  
+  #ifdef __GNUC__
+    int _write(int file, char *data, int len) {
+      int i;
+      for (i = 0; i < len; i++) { __io_putchar( *data++ );}
+      return len;
+    }
+  #endif
+#endif
+
+
 
 /* =========================== Initialization Functions =========================== */
 
@@ -280,13 +308,13 @@ void Input_Init(void) {
     EE_ReadVariable(VirtAddVarTab[0], &writeCheck);
     if (writeCheck == FLASH_WRITE_KEY) {
       EE_ReadVariable(VirtAddVarTab[1] , &INPUT1_TYP_CAL);
-      EE_ReadVariable(VirtAddVarTab[2] , &INPUT1_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[3] , &INPUT1_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[4] , &INPUT1_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[2] , (uint16_t *)(intptr_t)INPUT1_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[3] , (uint16_t *)(intptr_t)INPUT1_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[4] , (uint16_t *)(intptr_t)INPUT1_MAX_CAL);
       EE_ReadVariable(VirtAddVarTab[5] , &INPUT2_TYP_CAL);
-      EE_ReadVariable(VirtAddVarTab[6] , &INPUT2_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[7] , &INPUT2_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[8] , &INPUT2_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[6] , (uint16_t *)(intptr_t)INPUT2_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[7] , (uint16_t *)(intptr_t)INPUT2_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[8] , (uint16_t *)(intptr_t)INPUT2_MAX_CAL);
       EE_ReadVariable(VirtAddVarTab[9] , &i_max);
       EE_ReadVariable(VirtAddVarTab[10], &n_max);
       rtP_Left.i_max  = i_max;
@@ -465,31 +493,34 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
   int16_t threshold = 200;
   #endif
 
-  HAL_Delay(10);
   if ((min / threshold) == (max / threshold) || (mid / threshold) == (max / threshold) || min > max || mid > max) {
     type = 0;
-    consoleLog("Input is ignored");               // (MIN and MAX) OR (MID and MAX) are close, disable input
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("ignored");                // (MIN and MAX) OR (MID and MAX) are close, disable input
+    #endif
   } else {
     if ((min / threshold) == (mid / threshold)){
       type = 1;
-      consoleLog("Input is a normal pot");        // MIN and MID are close, it's a normal pot
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+      printf("a normal pot");        // MIN and MID are close, it's a normal pot
+      #endif
     } else {
       type = 2;
-      consoleLog("Input is a mid-resting pot");   // it's a mid resting pot
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+      printf("a mid-resting pot");   // it's a mid resting pot
+      #endif
     }
-    HAL_Delay(10);
+
     #ifdef CONTROL_ADC
     if ((min + INPUT_MARGIN - ADC_PROTECT_THRESH) > 0 && (max - INPUT_MARGIN + ADC_PROTECT_THRESH) < 4095) {
-      consoleLog(" and protected");
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+      printf(" AND protected");
+      #endif
       beepLong(2); // Indicate protection by a beep
     }
     #endif
   }
 
-  HAL_Delay(10);
-  consoleLog("\r\n");
-  HAL_Delay(10);
-  
   return type;
 }
 
@@ -501,6 +532,7 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
  * - move the potentiometers freely to the min and max limits repeatedly
  * - release potentiometers to the resting postion
  * - press the power button to confirm or wait for the 20 sec timeout
+ * The Values will be saved to flash. Values are persistent if you flash with platformio. To erase them, make a full chip erase.
  */
 void adcCalibLim(void) {
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
@@ -508,7 +540,10 @@ void adcCalibLim(void) {
   }
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-  consoleLog("Input calibration started...\r\n");
+
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+  printf("Input calibration started...\r\n");
+  #endif
 
   readInput();
   // Inititalization: MIN = a high value, MAX = a low value
@@ -537,39 +572,47 @@ void adcCalibLim(void) {
     HAL_Delay(5);
   }
 
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+  printf("Input1 is ");
+  #endif
   INPUT1_TYP_CAL = checkInputType(INPUT1_MIN_temp, INPUT1_MID_temp, INPUT1_MAX_temp);
   if (INPUT1_TYP_CAL == INPUT1_TYPE || INPUT1_TYPE == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
     INPUT1_MIN_CAL = INPUT1_MIN_temp + INPUT_MARGIN;
     INPUT1_MID_CAL = INPUT1_MID_temp;
     INPUT1_MAX_CAL = INPUT1_MAX_temp - INPUT_MARGIN;
-    consoleLog("Input1 OK\r\n");    HAL_Delay(10);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("..OK\r\n");
+    #endif
   } else {
     INPUT1_TYP_CAL = 0; // Disable input
-    consoleLog("Input1 Fail\r\n");  HAL_Delay(10);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("..NOK\r\n");
+    #endif
   }
 
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+  printf("Input2 is ");
+  #endif
   INPUT2_TYP_CAL = checkInputType(INPUT2_MIN_temp, INPUT2_MID_temp, INPUT2_MAX_temp);
   if (INPUT2_TYP_CAL == INPUT2_TYPE || INPUT2_TYPE == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
     INPUT2_MIN_CAL = INPUT2_MIN_temp + INPUT_MARGIN;
     INPUT2_MID_CAL = INPUT2_MID_temp;
     INPUT2_MAX_CAL = INPUT2_MAX_temp - INPUT_MARGIN;
-    consoleLog("Input2 OK\r\n");    HAL_Delay(10);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("..OK\r\n");
+    #endif
   } else {
     INPUT2_TYP_CAL = 0; // Disable input
-    consoleLog("Input2 Fail\r\n");  HAL_Delay(10);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("..NOK\r\n");
+    #endif
   }
-
   inp_cal_valid = 1;    // Mark calibration to be saved in Flash at shutdown
-  consoleLog("Limits: "); HAL_Delay(10);
-  setScopeChannel(0, (int16_t)INPUT1_TYP_CAL);
-  setScopeChannel(1, (int16_t)INPUT1_MIN_CAL);
-  setScopeChannel(2, (int16_t)INPUT1_MID_CAL);
-  setScopeChannel(3, (int16_t)INPUT1_MAX_CAL);
-  setScopeChannel(4, (int16_t)INPUT2_TYP_CAL);
-  setScopeChannel(5, (int16_t)INPUT2_MIN_CAL);
-  setScopeChannel(6, (int16_t)INPUT2_MID_CAL);
-  setScopeChannel(7, (int16_t)INPUT2_MAX_CAL);
-  consoleScope();
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+  printf("Limits Input1: TYP:%i MIN:%i MID:%i MAX:%i\r\nLimits Input2: TYP:%i MIN:%i MID:%i MAX:%i\r\n",
+          INPUT1_TYP_CAL, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL,
+          INPUT2_TYP_CAL, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL);
+  #endif
   #endif
 }
  /*
@@ -585,7 +628,10 @@ void updateCurSpdLim(void) {
   }
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-  consoleLog("Torque and Speed limits update started...\r\n");
+
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+  printf("Torque and Speed limits update started...\r\n");
+  #endif
 
   int32_t  input1_fixdt = input1 << 16;
   int32_t  input2_fixdt = input2 << 16;  
@@ -616,18 +662,12 @@ void updateCurSpdLim(void) {
     rtP_Left.n_max = rtP_Right.n_max  = (int16_t)((N_MOT_MAX * spd_factor) >> 12);                 // fixdt(0,16,16) to fixdt(1,16,4)
     cur_spd_valid  += 2;  // Mark update to be saved in Flash at shutdown
   }
-  
-  consoleLog("Limits: "); HAL_Delay(10);
-  setScopeChannel(0, (int16_t)cur_spd_valid);     // 0 = No limit changed, 1 = Current limit changed, 2 = Speed limit changed, 3 = Both limits changed
-  setScopeChannel(1, (int16_t)input1_fixdt);
-  setScopeChannel(2, (int16_t)cur_factor);
-  setScopeChannel(3, (int16_t)rtP_Left.i_max);
-  setScopeChannel(4, (int16_t)0);
-  setScopeChannel(5, (int16_t)input2_fixdt);
-  setScopeChannel(6, (int16_t)spd_factor);
-  setScopeChannel(7, (int16_t)rtP_Left.n_max);
-  consoleScope();
 
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+  // cur_spd_valid: 0 = No limit changed, 1 = Current limit changed, 2 = Speed limit changed, 3 = Both limits changed
+  printf("Limits (%i)\r\nCurrent: fixdt:%li factor%i i_max:%i \r\nSpeed: fixdt:%li factor:%i n_max:%i\r\n",
+          cur_spd_valid, input1_fixdt, cur_factor, rtP_Left.i_max, input2_fixdt, spd_factor, rtP_Left.n_max);
+  #endif
   #endif
 }
 
@@ -760,7 +800,9 @@ void cruiseControl(uint8_t button) {
 
 void poweroff(void) {
   enable = 0;
-  consoleLog("-- Motors disabled --\r\n");
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+  printf("-- Motors disabled --\r\n");
+  #endif
   buzzerCount = 0;  // prevent interraction with beep counter
   buzzerPattern = 0;
   for (int i = 0; i < 8; i++) {
@@ -1117,7 +1159,7 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len)
 {
   for (; len > 0; len--, userCommand++) {
     if (*userCommand != '\n' && *userCommand != '\r') {   // Do not accept 'new line' and 'carriage return' commands
-      consoleLog("-- Command received --\r\n");
+      printf("Command = %c\r\n", *userCommand);
       // handle_input(*userCommand);                      // -> Create this function to handle the user commands
     }
   }

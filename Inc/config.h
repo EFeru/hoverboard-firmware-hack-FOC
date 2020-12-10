@@ -34,6 +34,7 @@
 #endif
 #define TIMEOUT                20     // number of wrong / missing input commands before emergency off
 #define A2BIT_CONV             50     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
+// #define PRINTF_FLOAT_SUPPORT          // [-] Uncomment this for printf to support float on Serial Debug. It will increase code size! Better to avoid it!
 
 // ADC conversion time definitions
 #define ADC_CONV_TIME_1C5       (14)  //Total ADC clock cycles / conversion = (  1.5+12.5)
@@ -123,7 +124,7 @@
     - button1 and button2: digital input values. 0 or 1
     - adc_buffer.l_tx2 and adc_buffer.l_rx2: unfiltered ADC values (you do not need them). 0 to 4095
    Outputs:
-    - speedR and speedL: normal driving INPUT_MIN to INPUT_MAX
+    - cmdL and cmdR: normal driving INPUT_MIN to INPUT_MAX
 */
 #define COM_CTRL        0               // [-] Commutation Control Type
 #define SIN_CTRL        1               // [-] Sinusoidal Control Type
@@ -204,38 +205,30 @@
  * Be careful not to use the red wire of the cable. 15v will destroy everything.
  * If you are using VARIANT_NUNCHUK, disable it temporarily.
  * enable DEBUG_SERIAL_USART3 or DEBUG_SERIAL_USART2
- * and DEBUG_SERIAL_ASCII use asearial terminal.
  *
  *
  * DEBUG_SERIAL_ASCII output is:
- * // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
+ * // "in1:345 in2:1337 cmdL:0 cmdR:0 BatADC:0 BatV:0 TempADC:0 Temp:0\r\n"
  *
- * 1:   (int16_t)input1);                                                   raw input1: ADC1, UART, PWM, PPM, iBUS
- * 2:   (int16_t)input2);                                                   raw input2: ADC2, UART, PWM, PPM, iBUS
- * 3:   (int16_t)speedR);                                                   output command: [-1000, 1000]
- * 4:   (int16_t)speedL);                                                   output command: [-1000, 1000]
- * 5:   (int16_t)adc_buffer.batt1);                                         Battery adc-value measured by mainboard
- * 6:   (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC));    Battery calibrated voltage multiplied by 100 for verifying battery voltage calibration
- * 7:   (int16_t)board_temp_adcFilt);                                       for board temperature calibration
- * 8:   (int16_t)board_temp_deg_c);                                         Temperature in celcius for verifying board temperature calibration
+ * in1:     (int16_t)input1);                                                   raw input1: ADC1, UART, PWM, PPM, iBUS
+ * in2:     (int16_t)input2);                                                   raw input2: ADC2, UART, PWM, PPM, iBUS
+ * cmdL:    (int16_t)speedL);                                                   output command: [-1000, 1000]
+ * cmdR:    (int16_t)speedR);                                                   output command: [-1000, 1000]
+ * BatADC:  (int16_t)adc_buffer.batt1);                                         Battery adc-value measured by mainboard
+ * BatV:    (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC));    Battery calibrated voltage multiplied by 100 for verifying battery voltage calibration
+ * TempADC: (int16_t)board_temp_adcFilt);                                       for board temperature calibration
+ * Temp:    (int16_t)board_temp_deg_c);                                         Temperature in celcius for verifying board temperature calibration
  *
 */
 
 // #define DEBUG_SERIAL_USART2          // left sensor board cable, disable if ADC or PPM is used!
-#if defined(VARIANT_ADC)
-  #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-#endif
-
-#ifndef VARIANT_TRANSPOTTER
-  //#define DEBUG_SERIAL_SERVOTERM
-  #define DEBUG_SERIAL_ASCII
-#endif
+// #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 // ########################### END OF DEBUG SERIAL ############################
 
 
 
 // ############################### DEBUG LCD ###############################
-//#define DEBUG_I2C_LCD             // standard 16x2 or larger text-lcd via i2c-converter on right sensor board cable
+// #define DEBUG_I2C_LCD                // standard 16x2 or larger text-lcd via i2c-converter on right sensor board cable
 // ########################### END OF DEBUG LCD ############################
 
 
@@ -243,27 +236,40 @@
 // ################################# VARIANT_ADC SETTINGS ############################
 #ifdef VARIANT_ADC
 /* CONTROL VIA TWO POTENTIOMETERS
- * ADC-calibration to cover the full poti-range:
- * Connect potis to left sensor board cable (0 to 3.3V) (do NOT use the red 15V wire in the cable!). see <How to calibrate>.
- * Turn the potis to minimum position, write value 1 to ADC1_MIN and value 2 to ADC2_MIN
- * Turn the potis to maximum position, write value 1 to ADC1_MAX and value 2 to ADC2_MAX
- * For middle resting potis: Let the potis in the middle resting position, write value 1 to ADC1_MID and value 2 to ADC2_MID
- * Make, flash and test it.
+ * Connect potis to left sensor board cable (0 to 3.3V) (do NOT use the red 15V wire!)
+ *
+ * Auto-calibration of the ADC Limit to finds the Minimum, Maximum, and Middle for the ADC input
+ * Procedure:
+ * - press the power button for more than 5 sec and release after the beep sound
+ * - move the potentiometers freely to the min and max limits repeatedly
+ * - release potentiometers to the resting postion
+ * - press the power button to confirm or wait for the 20 sec timeout
+ * The Values will be saved to flash. Values are persistent if you flash with platformio. To erase them, make a full chip erase.
+ *
+ * After calibration you can optionally write the values to the following defines
+ * Procedure:
+ * - connect gnd, rx and tx of a usb-uart converter in 3.3V mode to the right sensor board cable (do NOT use the red 15V wire!)
+ * - readout values using a serial terminal in 115200 baud rate
+ * - turn the potis to minimum position, write value 1 to INPUT1_MIN and value 2 to INPUT2_MIN
+ * - turn the potis to maximum position, write value 1 to INPUT1_MAX and value 2 to INPUT2_MAX
+ * - for middle resting potis: Let the potis in the middle resting position, write value 1 to INPUT1_MID and value 2 to INPUT2_MID
 */
   #define CONTROL_ADC                     // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
   #define ADC_PROTECT_TIMEOUT   100       // ADC Protection: number of wrong / missing input commands before safety state is taken
   #define ADC_PROTECT_THRESH    200       // ADC Protection threshold below/above the MIN/MAX ADC values
   #define INPUT1_TYPE           3         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT1_MIN            0         // min ADC1-value while poti at minimum-position (0 - 4095)
-  #define INPUT1_MID            0         // mid ADC1-value while poti at minimum-position (ADC1_MIN - ADC1_MAX)
-  #define INPUT1_MAX            4095      // max ADC1-value while poti at maximum-position (0 - 4095)
+  #define INPUT1_MIN            0         // min ADC1-value while poti at min-position (0 - 4095)
+  #define INPUT1_MID            0         // mid ADC1-value while poti at mid-position (INPUT1_MIN - INPUT1_MAX)
+  #define INPUT1_MAX            4095      // max ADC1-value while poti at max-position (0 - 4095)
   #define INPUT1_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
   #define INPUT2_TYPE           3         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT2_MIN            0         // min ADC2-value while poti at minimum-position (0 - 4095)
-  #define INPUT2_MID            0         // mid ADC2-value while poti at minimum-position (ADC2_MIN - ADC2_MAX)
-  #define INPUT2_MAX            4095      // max ADC2-value while poti at maximum-position (0 - 4095)
+  #define INPUT2_MIN            0         // min ADC2-value while poti at min-position (0 - 4095)
+  #define INPUT2_MID            0         // mid ADC2-value while poti at mid-position (INPUT2_MIN - INPUT2_MAX)
+  #define INPUT2_MAX            4095      // max ADC2-value while poti at max-position (0 - 4095)
   #define INPUT2_DEADBAND       0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+
+  #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
   // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
@@ -281,13 +287,13 @@
   #define CONTROL_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
   #define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
   // Min / Max values of each channel (use DEBUG to determine these values)
-  #define INPUT1_TYPE        1       // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
+  #define INPUT1_TYPE        3       // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
   #define INPUT1_MIN        -1000    // (-1000 - 0)
   #define INPUT1_MID         0
   #define INPUT1_MAX         1000    // (0 - 1000)
   #define INPUT1_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
-  #define INPUT2_TYPE        1       // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
+  #define INPUT2_TYPE        3       // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
   #define INPUT2_MIN        -1000    // (-1000 - 0)
   #define INPUT2_MID         0
   #define INPUT2_MAX         1000    // (0 - 1000)

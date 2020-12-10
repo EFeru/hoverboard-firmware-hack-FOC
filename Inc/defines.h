@@ -183,6 +183,10 @@
 #define ARRAY_LEN(x) (uint32_t)(sizeof(x) / sizeof(*(x)))
 #define MAP(x, in_min, in_max, out_min, out_max) (((((x) - (in_min)) * ((out_max) - (out_min))) / ((in_max) - (in_min))) + (out_min))
 
+#if defined(PRINTF_FLOAT_SUPPORT) && (defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)) && defined(__GNUC__)
+    asm(".global _printf_float");     // this is the magic trick for printf to support float. Warning: It will increase code considerably! Better to avoid!
+#endif
+
 
 typedef struct {
   uint16_t dcr; 

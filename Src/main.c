@@ -20,13 +20,13 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
 #include <stdlib.h> // for abs()
 #include "stm32f1xx_hal.h"
 #include "defines.h"
 #include "setup.h"
 #include "config.h"
 #include "util.h"
-#include "comms.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 
@@ -51,6 +51,8 @@ extern volatile adc_buf_t adc_buffer;
 
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+
+volatile uint8_t uart_buf[200];
 
 // Matlab defines - from auto-code generation
 //---------------
@@ -188,8 +190,8 @@ int main(void) {
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 
-  int16_t speedL     = 0, speedR     = 0;
-  int16_t lastSpeedL = 0, lastSpeedR = 0;
+  int16_t cmdL     = 0, cmdR     = 0;
+  int16_t lastCmdL = 0, lastCmdR = 0;
 
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
@@ -209,7 +211,9 @@ int main(void) {
         beepShort(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
         enable = 1;                       // enable motors
-        consoleLog("-- Motors enabled --\r\n");
+        #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+        printf("-- Motors enabled --\r\n");
+        #endif
       }
 
       // ####### VARIANT_HOVERCAR ####### 
@@ -273,21 +277,21 @@ int main(void) {
       #endif
 
       // ####### MIXER #######
-      // speedR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
-      // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
-      mixerFcn(speed << 4, steer << 4, &speedR, &speedL);   // This function implements the equations above
+      // cmdR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
+      // cmdL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
+      mixerFcn(speed << 4, steer << 4, &cmdR, &cmdL);   // This function implements the equations above
 
       // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
-      if ((speedL > lastSpeedL-100 && speedL < lastSpeedL+100) && (speedR > lastSpeedR-100 && speedR < lastSpeedR+100)) {
+      if ((cmdL > lastCmdL-100 && cmdL < lastCmdL+100) && (cmdR > lastCmdR-100 && cmdR < lastCmdR+100)) {
         #ifdef INVERT_R_DIRECTION
-          pwmr = speedR;
+          pwmr = cmdR;
         #else
-          pwmr = -speedR;
+          pwmr = -cmdR;
         #endif
         #ifdef INVERT_L_DIRECTION
-          pwml = -speedL;
+          pwml = -cmdL;
         #else
-          pwml = speedL;
+          pwml = cmdL;
         #endif
       }
     #endif
@@ -298,22 +302,22 @@ int main(void) {
       distanceErr = distance - (int)(setDistance * 1345);
 
       if (nunchuk_connected == 0) {
-        speedL = speedL * 0.8f + (CLAMP(distanceErr + (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
-        speedR = speedR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
-        if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50)) {
+        cmdL = cmdL * 0.8f + (CLAMP(distanceErr + (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
+        cmdR = cmdR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
+        if ((cmdL < lastCmdL + 50 && cmdL > lastCmdL - 50) && (cmdR < lastCmdR + 50 && cmdR > lastCmdR - 50)) {
           if (distanceErr > 0) {
             enable = 1;
           }
           if (distanceErr > -300) {
             #ifdef INVERT_R_DIRECTION
-              pwmr = speedR;
+              pwmr = cmdR;
             #else
-              pwmr = -speedR;
+              pwmr = -cmdR;
             #endif
             #ifdef INVERT_L_DIRECTION
-              pwml = -speedL;
+              pwml = -cmdL;
             #else
-              pwml = speedL;
+              pwml = cmdL;
             #endif
 
             if (checkRemote) {
@@ -407,15 +411,15 @@ int main(void) {
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
-        setScopeChannel(0, (int16_t)input1);                    // 1: INPUT1
-        setScopeChannel(1, (int16_t)input2);                    // 2: INPUT2
-        setScopeChannel(2, (int16_t)speedR);                    // 3: output command: [-1000, 1000]
-        setScopeChannel(3, (int16_t)speedL);                    // 4: output command: [-1000, 1000]
-        setScopeChannel(4, (int16_t)adc_buffer.batt1);          // 5: for battery voltage calibration
-        setScopeChannel(5, (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC)); // 6: for verifying battery voltage calibration
-        setScopeChannel(6, (int16_t)board_temp_adcFilt);        // 7: for board temperature calibration
-        setScopeChannel(7, (int16_t)board_temp_deg_c);          // 8: for verifying board temperature calibration
-        consoleScope();
+        printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i\r\n",
+          input1,                   // 1: INPUT1
+          input2,                   // 2: INPUT2
+          cmdL,                     // 3: output command: [-1000, 1000]
+          cmdR,                     // 4: output command: [-1000, 1000]
+          adc_buffer.batt1,         // 5: for battery voltage calibration
+          batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC, // 6: for verifying battery voltage calibration
+          board_temp_adcFilt,       // 7: for board temperature calibration
+          board_temp_deg_c);        // 8: for verifying board temperature calibration
       }
     #endif
 
@@ -482,7 +486,7 @@ int main(void) {
 
 
     // ####### INACTIVITY TIMEOUT #######
-    if (abs(speedL) > 50 || abs(speedR) > 50) {
+    if (abs(cmdL) > 50 || abs(cmdR) > 50) {
       inactivity_timeout_counter = 0;
     } else {
       inactivity_timeout_counter++;
@@ -493,8 +497,8 @@ int main(void) {
 
     // HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
     // Update main loop states
-    lastSpeedL = speedL;
-    lastSpeedR = speedR;
+    lastCmdL = cmdL;
+    lastCmdR = cmdR;
     main_loop_counter++;
     timeoutCnt++;
   }
