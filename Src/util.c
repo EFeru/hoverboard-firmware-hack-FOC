@@ -133,13 +133,13 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
   static uint8_t  cur_spd_valid  = 0;
   static uint8_t  inp_cal_valid  = 0;
   static uint16_t INPUT1_TYP_CAL = INPUT1_TYPE; 
-  static  int16_t INPUT1_MIN_CAL = INPUT1_MIN;
-  static  int16_t INPUT1_MID_CAL = INPUT1_MID;
-  static  int16_t INPUT1_MAX_CAL = INPUT1_MAX;
+  static uint16_t INPUT1_MIN_CAL = INPUT1_MIN;
+  static uint16_t INPUT1_MID_CAL = INPUT1_MID;
+  static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
   static uint16_t INPUT2_TYP_CAL = INPUT2_TYPE;
-  static  int16_t INPUT2_MIN_CAL = INPUT2_MIN;
-  static  int16_t INPUT2_MID_CAL = INPUT2_MID;
-  static  int16_t INPUT2_MAX_CAL = INPUT2_MAX;
+  static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
+  static uint16_t INPUT2_MID_CAL = INPUT2_MID;
+  static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
 #endif
 
 #if defined(CONTROL_ADC)
@@ -308,13 +308,13 @@ void Input_Init(void) {
     EE_ReadVariable(VirtAddVarTab[0], &writeCheck);
     if (writeCheck == FLASH_WRITE_KEY) {
       EE_ReadVariable(VirtAddVarTab[1] , &INPUT1_TYP_CAL);
-      EE_ReadVariable(VirtAddVarTab[2] , (uint16_t *)(intptr_t)INPUT1_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[3] , (uint16_t *)(intptr_t)INPUT1_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[4] , (uint16_t *)(intptr_t)INPUT1_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[2] , &INPUT1_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[3] , &INPUT1_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[4] , &INPUT1_MAX_CAL);
       EE_ReadVariable(VirtAddVarTab[5] , &INPUT2_TYP_CAL);
-      EE_ReadVariable(VirtAddVarTab[6] , (uint16_t *)(intptr_t)INPUT2_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[7] , (uint16_t *)(intptr_t)INPUT2_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[8] , (uint16_t *)(intptr_t)INPUT2_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[6] , &INPUT2_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[7] , &INPUT2_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[8] , &INPUT2_MAX_CAL);
       EE_ReadVariable(VirtAddVarTab[9] , &i_max);
       EE_ReadVariable(VirtAddVarTab[10], &n_max);
       rtP_Left.i_max  = i_max;
