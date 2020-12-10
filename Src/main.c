@@ -27,7 +27,6 @@
 #include "setup.h"
 #include "config.h"
 #include "util.h"
-#include "comms.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 
@@ -191,8 +190,8 @@ int main(void) {
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 
-  int16_t speedL     = 0, speedR     = 0;
-  int16_t lastSpeedL = 0, lastSpeedR = 0;
+  int16_t cmdL     = 0, cmdR     = 0;
+  int16_t lastCmdL = 0, lastCmdR = 0;
 
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
@@ -212,7 +211,9 @@ int main(void) {
         beepShort(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
         enable = 1;                       // enable motors
+        #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
         printf("-- Motors enabled --\r\n");
+        #endif
       }
 
       // ####### VARIANT_HOVERCAR ####### 
@@ -276,21 +277,21 @@ int main(void) {
       #endif
 
       // ####### MIXER #######
-      // speedR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
-      // speedL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
-      mixerFcn(speed << 4, steer << 4, &speedR, &speedL);   // This function implements the equations above
+      // cmdR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
+      // cmdL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
+      mixerFcn(speed << 4, steer << 4, &cmdR, &cmdL);   // This function implements the equations above
 
       // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
-      if ((speedL > lastSpeedL-100 && speedL < lastSpeedL+100) && (speedR > lastSpeedR-100 && speedR < lastSpeedR+100)) {
+      if ((cmdL > lastCmdL-100 && cmdL < lastCmdL+100) && (cmdR > lastCmdR-100 && cmdR < lastCmdR+100)) {
         #ifdef INVERT_R_DIRECTION
-          pwmr = speedR;
+          pwmr = cmdR;
         #else
-          pwmr = -speedR;
+          pwmr = -cmdR;
         #endif
         #ifdef INVERT_L_DIRECTION
-          pwml = -speedL;
+          pwml = -cmdL;
         #else
-          pwml = speedL;
+          pwml = cmdL;
         #endif
       }
     #endif
@@ -301,22 +302,22 @@ int main(void) {
       distanceErr = distance - (int)(setDistance * 1345);
 
       if (nunchuk_connected == 0) {
-        speedL = speedL * 0.8f + (CLAMP(distanceErr + (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
-        speedR = speedR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
-        if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50)) {
+        cmdL = cmdL * 0.8f + (CLAMP(distanceErr + (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
+        cmdR = cmdR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
+        if ((cmdL < lastCmdL + 50 && cmdL > lastCmdL - 50) && (cmdR < lastCmdR + 50 && cmdR > lastCmdR - 50)) {
           if (distanceErr > 0) {
             enable = 1;
           }
           if (distanceErr > -300) {
             #ifdef INVERT_R_DIRECTION
-              pwmr = speedR;
+              pwmr = cmdR;
             #else
-              pwmr = -speedR;
+              pwmr = -cmdR;
             #endif
             #ifdef INVERT_L_DIRECTION
-              pwml = -speedL;
+              pwml = -cmdL;
             #else
-              pwml = speedL;
+              pwml = cmdL;
             #endif
 
             if (checkRemote) {
@@ -410,15 +411,15 @@ int main(void) {
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
-        printf("in1:%i in2:%i spdL:%i spdR:%i adcBat:%i BatV:%i adcTemp:%i Temp:%i\r\n",
-          input1,                    // 1: INPUT1
-          input2,                    // 2: INPUT2
-          speedL,                    // 3: output command: [-1000, 1000]
-          speedR,                    // 4: output command: [-1000, 1000]
-          adc_buffer.batt1,          // 5: for battery voltage calibration
+        printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i\r\n",
+          input1,                   // 1: INPUT1
+          input2,                   // 2: INPUT2
+          cmdL,                     // 3: output command: [-1000, 1000]
+          cmdR,                     // 4: output command: [-1000, 1000]
+          adc_buffer.batt1,         // 5: for battery voltage calibration
           batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC, // 6: for verifying battery voltage calibration
-          board_temp_adcFilt,        // 7: for board temperature calibration
-          board_temp_deg_c);         // 8: for verifying board temperature calibration
+          board_temp_adcFilt,       // 7: for board temperature calibration
+          board_temp_deg_c);        // 8: for verifying board temperature calibration
       }
     #endif
 
@@ -463,25 +464,18 @@ int main(void) {
     } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): Motor error, disable motors
       enable = 0;
       beepCount(1, 24, 1);
-      printf("#ErrL: %i ErrR: %i\r\n", rtY_Left.z_errCode, rtY_Right.z_errCode);
     } else if (timeoutFlagADC) {                                                                      // 2 beeps (low pitch): ADC timeout
       beepCount(2, 24, 1);
-      printf("#ADC timeout\r\n");
     } else if (timeoutFlagSerial) {                                                                   // 3 beeps (low pitch): Serial timeout
       beepCount(3, 24, 1);
-      printf("#Serial timeout\r\n");
     } else if (timeoutCnt > TIMEOUT) {                                                                // 4 beeps (low pitch): General timeout (PPM, PWM, Nunchuck)
       beepCount(4, 24, 1);
-      printf("#General timeout\r\n");
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {                             // 5 beeps (low pitch): Mainboard temperature warning
       beepCount(5, 24, 1);
-      printf("#STM32 hot: %i\r\n", board_temp_deg_c);
     } else if (BAT_LVL1_ENABLE && batVoltage < BAT_LVL1) {                                            // 1 beep fast (medium pitch): Low bat 1
       beepCount(0, 10, 6);
-      printf("#Battery empty: %i\r\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
     } else if (BAT_LVL2_ENABLE && batVoltage < BAT_LVL2) {                                            // 1 beep slow (medium pitch): Low bat 2
       beepCount(0, 10, 30);
-      printf("#Battery empty: %i\r\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
     } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) { // 1 beep fast (high pitch): Backward spinning motors
       beepCount(0, 5, 1);
       backwardDrive = 1;
@@ -492,7 +486,7 @@ int main(void) {
 
 
     // ####### INACTIVITY TIMEOUT #######
-    if (abs(speedL) > 50 || abs(speedR) > 50) {
+    if (abs(cmdL) > 50 || abs(cmdR) > 50) {
       inactivity_timeout_counter = 0;
     } else {
       inactivity_timeout_counter++;
@@ -503,8 +497,8 @@ int main(void) {
 
     // HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
     // Update main loop states
-    lastSpeedL = speedL;
-    lastSpeedR = speedR;
+    lastCmdL = cmdL;
+    lastCmdR = cmdR;
     main_loop_counter++;
     timeoutCnt++;
   }

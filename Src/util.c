@@ -133,13 +133,13 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
   static uint8_t  cur_spd_valid  = 0;
   static uint8_t  inp_cal_valid  = 0;
   static uint16_t INPUT1_TYP_CAL = INPUT1_TYPE; 
-  static uint16_t INPUT1_MIN_CAL = INPUT1_MIN;
-  static uint16_t INPUT1_MID_CAL = INPUT1_MID;
-  static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
+  static  int16_t INPUT1_MIN_CAL = INPUT1_MIN;
+  static  int16_t INPUT1_MID_CAL = INPUT1_MID;
+  static  int16_t INPUT1_MAX_CAL = INPUT1_MAX;
   static uint16_t INPUT2_TYP_CAL = INPUT2_TYPE;
-  static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
-  static uint16_t INPUT2_MID_CAL = INPUT2_MID;
-  static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
+  static  int16_t INPUT2_MIN_CAL = INPUT2_MIN;
+  static  int16_t INPUT2_MID_CAL = INPUT2_MID;
+  static  int16_t INPUT2_MAX_CAL = INPUT2_MAX;
 #endif
 
 #if defined(CONTROL_ADC)
@@ -197,6 +197,34 @@ static uint8_t brakePressed;
 static uint8_t cruiseCtrlAcv = 0;
 static uint8_t standstillAcv = 0;
 #endif
+
+/* =========================== Retargeting printf =========================== */
+/* retarget the C library printf function to the USART */
+#if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    #ifdef __GNUC__
+      #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+    #else
+      #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+    #endif
+    PUTCHAR_PROTOTYPE {
+      #if defined(DEBUG_SERIAL_USART2)
+        HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 1000);
+      #elif defined(DEBUG_SERIAL_USART3)
+        HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 1000);
+      #endif
+      return ch;
+    }
+    
+    #ifdef __GNUC__
+      int _write(int file, char *data, int len) {
+        int i;
+        for (i = 0; i < len; i++) { __io_putchar( *data++ );}
+        return len;
+      }
+    #endif
+#endif
+
+
 
 /* =========================== Initialization Functions =========================== */
 
@@ -280,13 +308,13 @@ void Input_Init(void) {
     EE_ReadVariable(VirtAddVarTab[0], &writeCheck);
     if (writeCheck == FLASH_WRITE_KEY) {
       EE_ReadVariable(VirtAddVarTab[1] , &INPUT1_TYP_CAL);
-      EE_ReadVariable(VirtAddVarTab[2] , &INPUT1_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[3] , &INPUT1_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[4] , &INPUT1_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[2] , (uint16_t *)(intptr_t)INPUT1_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[3] , (uint16_t *)(intptr_t)INPUT1_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[4] , (uint16_t *)(intptr_t)INPUT1_MAX_CAL);
       EE_ReadVariable(VirtAddVarTab[5] , &INPUT2_TYP_CAL);
-      EE_ReadVariable(VirtAddVarTab[6] , &INPUT2_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[7] , &INPUT2_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[8] , &INPUT2_MAX_CAL);
+      EE_ReadVariable(VirtAddVarTab[6] , (uint16_t *)(intptr_t)INPUT2_MIN_CAL);
+      EE_ReadVariable(VirtAddVarTab[7] , (uint16_t *)(intptr_t)INPUT2_MID_CAL);
+      EE_ReadVariable(VirtAddVarTab[8] , (uint16_t *)(intptr_t)INPUT2_MAX_CAL);
       EE_ReadVariable(VirtAddVarTab[9] , &i_max);
       EE_ReadVariable(VirtAddVarTab[10], &n_max);
       rtP_Left.i_max  = i_max;
@@ -465,31 +493,34 @@ int checkInputType(int16_t min, int16_t mid, int16_t max){
   int16_t threshold = 200;
   #endif
 
-  HAL_Delay(10);
   if ((min / threshold) == (max / threshold) || (mid / threshold) == (max / threshold) || min > max || mid > max) {
     type = 0;
-    printf("Input is ignored");               // (MIN and MAX) OR (MID and MAX) are close, disable input
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("ignored");                // (MIN and MAX) OR (MID and MAX) are close, disable input
+    #endif
   } else {
     if ((min / threshold) == (mid / threshold)){
       type = 1;
-      printf("Input is a normal pot");        // MIN and MID are close, it's a normal pot
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+      printf("a normal pot");        // MIN and MID are close, it's a normal pot
+      #endif
     } else {
       type = 2;
-      printf("Input is a mid-resting pot");   // it's a mid resting pot
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+      printf("a mid-resting pot");   // it's a mid resting pot
+      #endif
     }
-    HAL_Delay(10);
+
     #ifdef CONTROL_ADC
     if ((min + INPUT_MARGIN - ADC_PROTECT_THRESH) > 0 && (max - INPUT_MARGIN + ADC_PROTECT_THRESH) < 4095) {
-      printf(" and protected");
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+      printf(" AND protected");
+      #endif
       beepLong(2); // Indicate protection by a beep
     }
     #endif
   }
 
-  HAL_Delay(10);
-  printf("\r\n");
-  HAL_Delay(10);
-  
   return type;
 }
 
@@ -509,7 +540,10 @@ void adcCalibLim(void) {
   }
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   printf("Input calibration started...\r\n");
+  #endif
 
   readInput();
   // Inititalization: MIN = a high value, MAX = a low value
@@ -538,31 +572,43 @@ void adcCalibLim(void) {
     HAL_Delay(5);
   }
 
+  printf("Input1 is ");
   INPUT1_TYP_CAL = checkInputType(INPUT1_MIN_temp, INPUT1_MID_temp, INPUT1_MAX_temp);
   if (INPUT1_TYP_CAL == INPUT1_TYPE || INPUT1_TYPE == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
     INPUT1_MIN_CAL = INPUT1_MIN_temp + INPUT_MARGIN;
     INPUT1_MID_CAL = INPUT1_MID_temp;
     INPUT1_MAX_CAL = INPUT1_MAX_temp - INPUT_MARGIN;
-    printf("Input1 OK\r\n");    HAL_Delay(10);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("..OK\r\n");
+    #endif
   } else {
     INPUT1_TYP_CAL = 0; // Disable input
-    printf("Input1 Fail\r\n");  HAL_Delay(10);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("..NOK\r\n");
+    #endif
   }
 
+  printf("Input2 is ");
   INPUT2_TYP_CAL = checkInputType(INPUT2_MIN_temp, INPUT2_MID_temp, INPUT2_MAX_temp);
   if (INPUT2_TYP_CAL == INPUT2_TYPE || INPUT2_TYPE == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
     INPUT2_MIN_CAL = INPUT2_MIN_temp + INPUT_MARGIN;
     INPUT2_MID_CAL = INPUT2_MID_temp;
     INPUT2_MAX_CAL = INPUT2_MAX_temp - INPUT_MARGIN;
-    printf("Input2 OK\r\n");    HAL_Delay(10);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("..OK\r\n");
+    #endif
   } else {
     INPUT2_TYP_CAL = 0; // Disable input
-    printf("Input2 Fail\r\n");  HAL_Delay(10);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("..NOK\r\n");
+    #endif
   }
   inp_cal_valid = 1;    // Mark calibration to be saved in Flash at shutdown
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   printf("Limits Input1: TYP:%i MIN:%i MID:%i MAX:%i\r\nLimits Input2: TYP:%i MIN:%i MID:%i MAX:%i\r\n",
           INPUT1_TYP_CAL, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL,
           INPUT2_TYP_CAL, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL);
+  #endif
   #endif
 }
  /*
@@ -578,7 +624,10 @@ void updateCurSpdLim(void) {
   }
 
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   printf("Torque and Speed limits update started...\r\n");
+  #endif
 
   int32_t  input1_fixdt = input1 << 16;
   int32_t  input2_fixdt = input2 << 16;  
@@ -610,9 +659,11 @@ void updateCurSpdLim(void) {
     cur_spd_valid  += 2;  // Mark update to be saved in Flash at shutdown
   }
 
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   // cur_spd_valid: 0 = No limit changed, 1 = Current limit changed, 2 = Speed limit changed, 3 = Both limits changed
   printf("Limits (%i)\r\nCurrent: fixdt:%li factor%i i_max:%i \r\nSpeed: fixdt:%li factor:%i n_max:%i\r\n",
           cur_spd_valid, input1_fixdt, cur_factor, rtP_Left.i_max, input2_fixdt, spd_factor, rtP_Left.n_max);
+  #endif
   #endif
 }
 
@@ -745,7 +796,9 @@ void cruiseControl(uint8_t button) {
 
 void poweroff(void) {
   enable = 0;
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   printf("-- Motors disabled --\r\n");
+  #endif
   buzzerCount = 0;  // prevent interraction with beep counter
   buzzerPattern = 0;
   for (int i = 0; i < 8; i++) {
