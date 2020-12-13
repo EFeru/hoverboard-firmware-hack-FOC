@@ -62,10 +62,8 @@ extern ExtY rtY_Left;                   /* External outputs */
 extern ExtY rtY_Right;                  /* External outputs */
 //---------------
 
-extern int16_t cmd1;                    // normalized input value. -1000 to 1000
-extern int16_t cmd2;                    // normalized input value. -1000 to 1000
-extern int16_t input1;                  // Non normalized input value
-extern int16_t input2;                  // Non normalized input value
+extern InputStruct input1;              // input structure
+extern InputStruct input2;              // input structure
 
 extern int16_t speedAvg;                // Average measured speed
 extern int16_t speedAvgAbs;             // Average measured speed in absolute
@@ -190,8 +188,8 @@ int main(void) {
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 
-  int16_t cmdL     = 0, cmdR     = 0;
-  int16_t lastCmdL = 0, lastCmdR = 0;
+  int16_t cmdL      = 0, cmdR      = 0;
+  int16_t cmdL_prev = 0, cmdR_prev = 0;
 
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
@@ -199,14 +197,14 @@ int main(void) {
 
 
   while(1) {
-    HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
+    HAL_Delay(DELAY_IN_MAIN_LOOP);        // delay in ms
 
-    readCommand();                        // Read Command: cmd1, cmd2
+    readCommand();                        // Read Command: input1.cmd, input2.cmd
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-      if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
+      if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (input1.cmd > -50 && input1.cmd < 50) && (input2.cmd > -50 && input2.cmd < 50)){
         beepShort(6);                     // make 2 beeps indicating the motor enable
         beepShort(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
@@ -216,7 +214,7 @@ int main(void) {
         #endif
       }
 
-      // ####### VARIANT_HOVERCAR ####### 
+      // ####### VARIANT_HOVERCAR #######
       #if defined(VARIANT_HOVERCAR) || defined(VARIANT_SKATEBOARD) || defined(ELECTRIC_BRAKE_ENABLE)
         uint16_t speedBlend;                                        // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50); // speedBlend [0,1] is within [10 rpm, 60rpm]
@@ -226,42 +224,42 @@ int main(void) {
         standstillHold();                                           // Apply Standstill Hold functionality. Only available and makes sense for VOLTAGE or TORQUE Mode
       #endif
 
-      #ifdef VARIANT_HOVERCAR        
+      #ifdef VARIANT_HOVERCAR
         if (speedAvgAbs < 60) {                                     // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
-          multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBrake);   // Brake pedal in this case is "cmd1" variable
+          multipleTapDet(input1.cmd, HAL_GetTick(), &MultipleTapBrake); // Brake pedal in this case is "input1" variable
         }
-        
-        if (cmd1 > 30) {                                            // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving
-          cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);          
+
+        if (input1.cmd > 30) {                                      // If Brake pedal (input1) is pressed, bring to 0 also the Throttle pedal (input2) to avoid "Double pedal" driving
+          input2.cmd = (int16_t)((input2.cmd * speedBlend) >> 15);
           cruiseControl((uint8_t)rtP_Left.b_cruiseCtrlEna);         // Cruise control deactivated by Brake pedal if it was active
         }
       #endif
 
-      #ifdef ELECTRIC_BRAKE_ENABLE        
+      #ifdef ELECTRIC_BRAKE_ENABLE
         electricBrake(speedBlend, MultipleTapBrake.b_multipleTap);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
       #endif
 
-      #ifdef VARIANT_HOVERCAR        
+      #ifdef VARIANT_HOVERCAR
         if (speedAvg > 0) {                                         // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
-          cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
+          input1.cmd = (int16_t)((-input1.cmd * speedBlend) >> 15);
         } else {
-          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);
+          input1.cmd = (int16_t)(( input1.cmd * speedBlend) >> 15);
         }
       #endif
 
       #ifdef VARIANT_SKATEBOARD
-        if (cmd2 < 0) {                                           // When Throttle is negative, it acts as brake. This condition is to make sure it goes to 0 as we reach standstill (to avoid Reverse driving) 
-          if (speedAvg > 0) {                                     // Make sure the braking is opposite to the direction of motion
-            cmd2 = (int16_t)(( cmd2 * speedBlend) >> 15);
+        if (input2.cmd < 0) {                                       // When Throttle is negative, it acts as brake. This condition is to make sure it goes to 0 as we reach standstill (to avoid Reverse driving) 
+          if (speedAvg > 0) {                                       // Make sure the braking is opposite to the direction of motion
+            input2.cmd  = (int16_t)(( input2.cmd * speedBlend) >> 15);
           } else {
-            cmd2 = (int16_t)((-cmd2 * speedBlend) >> 15);
+            input2.cmd  = (int16_t)((-input2.cmd * speedBlend) >> 15);
           }
         }
       #endif
 
       // ####### LOW-PASS FILTER #######
-      rateLimiter16(cmd1, RATE, &steerRateFixdt);
-      rateLimiter16(cmd2, RATE, &speedRateFixdt);
+      rateLimiter16(input1.cmd , RATE, &steerRateFixdt);
+      rateLimiter16(input2.cmd , RATE, &speedRateFixdt);
       filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
@@ -277,12 +275,12 @@ int main(void) {
       #endif
 
       // ####### MIXER #######
-      // cmdR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
-      // cmdL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
+      // cmdR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MAX);
+      // cmdL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MAX);
       mixerFcn(speed << 4, steer << 4, &cmdR, &cmdL);   // This function implements the equations above
 
       // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
-      if ((cmdL > lastCmdL-100 && cmdL < lastCmdL+100) && (cmdR > lastCmdR-100 && cmdR < lastCmdR+100)) {
+      if ((cmdL > cmdL_prev-100 && cmdL < cmdL_prev+100) && (cmdR > cmdR_prev-100 && cmdR < cmdR_prev+100)) {
         #ifdef INVERT_R_DIRECTION
           pwmr = cmdR;
         #else
@@ -297,14 +295,14 @@ int main(void) {
     #endif
 
     #ifdef VARIANT_TRANSPOTTER
-      distance    = CLAMP(cmd1 - 180, 0, 4095);
-      steering    = (cmd2 - 2048) / 2048.0;
+      distance    = CLAMP(input1.cmd - 180, 0, 4095);
+      steering    = (input2.cmd - 2048) / 2048.0;
       distanceErr = distance - (int)(setDistance * 1345);
 
       if (nunchuk_connected == 0) {
         cmdL = cmdL * 0.8f + (CLAMP(distanceErr + (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
         cmdR = cmdR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
-        if ((cmdL < lastCmdL + 50 && cmdL > lastCmdL - 50) && (cmdR < lastCmdR + 50 && cmdR > lastCmdR - 50)) {
+        if ((cmdL < cmdL_prev + 50 && cmdL > cmdL_prev - 50) && (cmdR < cmdR_prev + 50 && cmdR > cmdR_prev - 50)) {
           if (distanceErr > 0) {
             enable = 1;
           }
@@ -412,8 +410,8 @@ int main(void) {
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
         printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i\r\n",
-          input1,                   // 1: INPUT1
-          input2,                   // 2: INPUT2
+          input1.raw,               // 1: INPUT1
+          input2.raw,               // 2: INPUT2
           cmdL,                     // 3: output command: [-1000, 1000]
           cmdR,                     // 4: output command: [-1000, 1000]
           adc_buffer.batt1,         // 5: for battery voltage calibration
@@ -427,8 +425,8 @@ int main(void) {
     #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
       if (main_loop_counter % 2 == 0) {    // Send data periodically every 10 ms
         Feedback.start	        = (uint16_t)SERIAL_START_FRAME;
-        Feedback.cmd1           = (int16_t)cmd1;
-        Feedback.cmd2           = (int16_t)cmd2;
+        Feedback.cmd1           = (int16_t)input1.cmd;
+        Feedback.cmd2           = (int16_t)input2.cmd;
         Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
         Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
         Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
@@ -436,22 +434,22 @@ int main(void) {
 
         #if defined(FEEDBACK_SERIAL_USART2)
           if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
-            Feedback.cmdLed         = (uint16_t)sideboard_leds_L;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
-                                               ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+            Feedback.cmdLed     = (uint16_t)sideboard_leds_L;
+            Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                           ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
             HAL_UART_Transmit_DMA(&huart2, (uint8_t *)&Feedback, sizeof(Feedback));
           }
         #endif
         #if defined(FEEDBACK_SERIAL_USART3)
           if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-            Feedback.cmdLed         = (uint16_t)sideboard_leds_R;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
-                                               ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+            Feedback.cmdLed     = (uint16_t)sideboard_leds_R;
+            Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                           ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
             HAL_UART_Transmit_DMA(&huart3, (uint8_t *)&Feedback, sizeof(Feedback));
           }
-        #endif            
+        #endif
       }
     #endif
 
@@ -497,8 +495,8 @@ int main(void) {
 
     // HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
     // Update main loop states
-    lastCmdL = cmdL;
-    lastCmdR = cmdR;
+    cmdL_prev = cmdL;
+    cmdR_prev = cmdR;
     main_loop_counter++;
     timeoutCnt++;
   }

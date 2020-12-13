@@ -120,7 +120,7 @@
  * 3. If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
 
    Inputs:
-    - cmd1 and cmd2: analog normalized input values. INPUT_MIN to INPUT_MAX
+    - input1.cmd and input2.cmd: analog normalized input values. INPUT_MIN to INPUT_MAX
     - button1 and button2: digital input values. 0 or 1
     - adc_buffer.l_tx2 and adc_buffer.l_rx2: unfiltered ADC values (you do not need them). 0 to 4095
    Outputs:
@@ -212,8 +212,8 @@
  *
  * in1:     (int16_t)input1);                                                   raw input1: ADC1, UART, PWM, PPM, iBUS
  * in2:     (int16_t)input2);                                                   raw input2: ADC2, UART, PWM, PPM, iBUS
- * cmdL:    (int16_t)speedL);                                                   output command: [-1000, 1000]
- * cmdR:    (int16_t)speedR);                                                   output command: [-1000, 1000]
+ * cmdL:    (int16_t)cmdL);                                                     output command: [-1000, 1000]
+ * cmdR:    (int16_t)cmdR);                                                     output command: [-1000, 1000]
  * BatADC:  (int16_t)adc_buffer.batt1);                                         Battery adc-value measured by mainboard
  * BatV:    (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC));    Battery calibrated voltage multiplied by 100 for verifying battery voltage calibration
  * TempADC: (int16_t)board_temp_adcFilt);                                       for board temperature calibration
