@@ -10,7 +10,7 @@ TIM_HandleTypeDef TimHandle;
 TIM_HandleTypeDef TimHandle2;
 uint8_t  ppm_count = 0;
 uint8_t  pwm_count = 0;
-uint32_t timeoutCntGen = 0;
+uint32_t timeoutCntGen = TIMEOUT;
 uint8_t  timeoutFlgGen = 0;
 uint8_t  nunchuk_data[6] = {0};
 

@@ -88,7 +88,7 @@ ExtU     rtU_Right;                     /* External inputs */
 ExtY     rtY_Right;                     /* External outputs */
 //---------------
 
-uint8_t  inIdx;
+uint8_t  inIdx = 0;
 #if defined(PRI_INPUT1) && defined(PRI_INPUT2) && defined(AUX_INPUT1) && defined(AUX_INPUT2)
 InputStruct input1[INPUTS_NR] = { {0, 0, 0, PRI_INPUT1}, {0, 0, 0, AUX_INPUT1} };
 InputStruct input2[INPUTS_NR] = { {0, 0, 0, PRI_INPUT2}, {0, 0, 0, AUX_INPUT2} };
@@ -141,16 +141,16 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
 #endif
 
 #if defined(CONTROL_ADC)
-static uint16_t timeoutCntADC   = 0;             // Timeout counter for ADC Protection
+static uint16_t timeoutCntADC = ADC_PROTECT_TIMEOUT;  // Timeout counter for ADC Protection
 #endif
 
 #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-static uint8_t  rx_buffer_L[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
+static uint8_t  rx_buffer_L[SERIAL_BUFFER_SIZE];      // USART Rx DMA circular buffer
 static uint32_t rx_buffer_L_len = ARRAY_LEN(rx_buffer_L);
 #endif
 #if defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-static uint16_t timeoutCntSerial_L = 0;         // Timeout counter for Rx Serial command
-static uint8_t  timeoutFlgSerial_L = 0;         // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+static uint16_t timeoutCntSerial_L = SERIAL_TIMEOUT;  // Timeout counter for Rx Serial command
+static uint8_t  timeoutFlgSerial_L = 0;               // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 #endif
 #if defined(SIDEBOARD_SERIAL_USART2)
 SerialSideboard Sideboard_L;
@@ -159,12 +159,12 @@ static uint32_t Sideboard_L_len = sizeof(Sideboard_L);
 #endif
 
 #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-static uint8_t  rx_buffer_R[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
+static uint8_t  rx_buffer_R[SERIAL_BUFFER_SIZE];      // USART Rx DMA circular buffer
 static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
 #endif
 #if defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-static uint16_t timeoutCntSerial_R = 0;         // Timeout counter for Rx Serial command
-static uint8_t  timeoutFlgSerial_R = 0;         // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+static uint16_t timeoutCntSerial_R = SERIAL_TIMEOUT;  // Timeout counter for Rx Serial command
+static uint8_t  timeoutFlgSerial_R = 0;               // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 #endif
 #if defined(SIDEBOARD_SERIAL_USART3)
 SerialSideboard Sideboard_R;
@@ -482,6 +482,7 @@ void calcAvgSpeed(void) {
  * The Values will be saved to flash. Values are persistent if you flash with platformio. To erase them, make a full chip erase.
  */
 void adcCalibLim(void) {
+  calcAvgSpeed();
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
   }
@@ -578,6 +579,7 @@ void adcCalibLim(void) {
  * - press the power button to confirm or wait for the 10 sec timeout
  */
 void updateCurSpdLim(void) {
+  calcAvgSpeed();
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
   }
@@ -924,10 +926,8 @@ void handleTimeout(void) {
       if (timeoutCntSerial_L++ >= SERIAL_TIMEOUT) {     // Timeout qualification
         timeoutFlgSerial_L = 1;                         // Timeout detected
         timeoutCntSerial_L = SERIAL_TIMEOUT;            // Limit timout counter value
-        #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART2) && (SIDEBOARD_SERIAL_USART2 == 1) // Switch to Primary input in case of Timeout on Auxiliary input
-          inIdx = !SIDEBOARD_SERIAL_USART2;
-        #elif defined(DUAL_INPUTS) && (CONTROL_SERIAL_USART2 == 1)
-          inIdx = !CONTROL_SERIAL_USART2;
+        #if defined(DUAL_INPUTS) && ((defined(CONTROL_SERIAL_USART2) && CONTROL_SERIAL_USART2 == 1) || (defined(SIDEBOARD_SERIAL_USART2) && SIDEBOARD_SERIAL_USART2 == 1))
+          inIdx = 0;                                    // Switch to Primary input in case of Timeout on Auxiliary input
         #endif
       } else {                                          // No Timeout
         #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART2)
@@ -936,8 +936,8 @@ void handleTimeout(void) {
           } else {
             inIdx = !SIDEBOARD_SERIAL_USART2;
           }
-        #elif defined(DUAL_INPUTS) && (CONTROL_SERIAL_USART2 == 1)
-          inIdx = CONTROL_SERIAL_USART2;
+        #elif defined(DUAL_INPUTS) && (defined(CONTROL_SERIAL_USART2) && CONTROL_SERIAL_USART2 == 1)
+          inIdx = 1;                                    // Switch to Auxiliary input in case of NO Timeout on Auxiliary input
         #endif
       }
       #if (defined(CONTROL_SERIAL_USART2) && CONTROL_SERIAL_USART2 == 0) || (defined(SIDEBOARD_SERIAL_USART2) && SIDEBOARD_SERIAL_USART2 == 0 && !defined(VARIANT_HOVERBOARD))
@@ -949,10 +949,8 @@ void handleTimeout(void) {
       if (timeoutCntSerial_R++ >= SERIAL_TIMEOUT) {     // Timeout qualification
         timeoutFlgSerial_R = 1;                         // Timeout detected
         timeoutCntSerial_R = SERIAL_TIMEOUT;            // Limit timout counter value
-        #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART3) && (SIDEBOARD_SERIAL_USART3 == 1) // Switch to Primary input in case of Timeout on Auxiliary input
-          inIdx = !SIDEBOARD_SERIAL_USART3;
-        #elif defined(DUAL_INPUTS) && (CONTROL_SERIAL_USART3 == 1)
-          inIdx = !CONTROL_SERIAL_USART3;
+        #if defined(DUAL_INPUTS) && ((defined(CONTROL_SERIAL_USART3) && CONTROL_SERIAL_USART3 == 1) || (defined(SIDEBOARD_SERIAL_USART3) && SIDEBOARD_SERIAL_USART3 == 1))
+          inIdx = 0;                                    // Switch to Primary input in case of Timeout on Auxiliary input
         #endif
       } else {                                          // No Timeout
         #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART3)
@@ -961,8 +959,8 @@ void handleTimeout(void) {
           } else {
             inIdx = !SIDEBOARD_SERIAL_USART3;
           }
-        #elif defined(DUAL_INPUTS) && (CONTROL_SERIAL_USART3 == 1)
-          inIdx = CONTROL_SERIAL_USART3;
+        #elif defined(DUAL_INPUTS) && (defined(CONTROL_SERIAL_USART3) && CONTROL_SERIAL_USART3 == 1)
+          inIdx = 1;                                    // Switch to Auxiliary input in case of NO Timeout on Auxiliary input
         #endif
       }
       #if (defined(CONTROL_SERIAL_USART3) && CONTROL_SERIAL_USART3 == 0) || (defined(SIDEBOARD_SERIAL_USART3) && SIDEBOARD_SERIAL_USART3 == 0 && !defined(VARIANT_HOVERBOARD))
@@ -976,31 +974,21 @@ void handleTimeout(void) {
 
     #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK) || defined(VARIANT_TRANSPOTTER) || \
         defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT) || defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-      if (timeoutCntGen++ >= TIMEOUT) {     // Timeout qualification
+      if (timeoutCntGen++ >= TIMEOUT) {                 // Timeout qualification
         #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK) || defined(VARIANT_TRANSPOTTER) || \
             (defined(CONTROL_PPM_LEFT) && CONTROL_PPM_LEFT == 0) || (defined(CONTROL_PPM_RIGHT) && CONTROL_PPM_RIGHT == 0) || \
             (defined(CONTROL_PWM_LEFT) && CONTROL_PWM_LEFT == 0) || (defined(CONTROL_PWM_RIGHT) && CONTROL_PWM_RIGHT == 0)
-          timeoutFlgGen = 1;                // Report Timeout only on the Primary Input
+          timeoutFlgGen = 1;                            // Report Timeout only on the Primary Input
           timeoutCntGen = TIMEOUT;
         #endif
-        #if   defined(DUAL_INPUTS) && defined(CONTROL_PPM_LEFT)
-          inIdx = !CONTROL_PPM_LEFT;
-        #elif defined(DUAL_INPUTS) && defined(CONTROL_PPM_RIGHT)
-          inIdx = !CONTROL_PPM_RIGHT;
-        #elif defined(DUAL_INPUTS) && defined(CONTROL_PWM_LEFT)
-          inIdx = !CONTROL_PWM_LEFT;
-        #elif defined(DUAL_INPUTS) && defined(CONTROL_PWM_RIGHT)
-          inIdx = !CONTROL_PWM_RIGHT;
+        #if defined(DUAL_INPUTS) && ((defined(CONTROL_PPM_LEFT)  && CONTROL_PPM_LEFT == 1) || (defined(CONTROL_PPM_RIGHT) && CONTROL_PPM_RIGHT == 1) || \
+                                     (defined(CONTROL_PWM_LEFT)  && CONTROL_PWM_LEFT == 1) || (defined(CONTROL_PWM_RIGHT) && CONTROL_PWM_RIGHT == 1))
+          inIdx = 0;                                    // Switch to Primary input in case of Timeout on Auxiliary input
         #endif
       } else {
-        #if   defined(DUAL_INPUTS) && defined(CONTROL_PPM_LEFT)
-          inIdx = CONTROL_PPM_LEFT;
-        #elif defined(DUAL_INPUTS) && defined(CONTROL_PPM_RIGHT)
-          inIdx = CONTROL_PPM_RIGHT;
-        #elif defined(DUAL_INPUTS) && defined(CONTROL_PWM_LEFT)
-          inIdx = CONTROL_PWM_LEFT;
-        #elif defined(DUAL_INPUTS) && defined(CONTROL_PWM_RIGHT)
-          inIdx = CONTROL_PWM_RIGHT;
+        #if defined(DUAL_INPUTS) && ((defined(CONTROL_PPM_LEFT)  && CONTROL_PPM_LEFT == 1) || (defined(CONTROL_PPM_RIGHT) && CONTROL_PPM_RIGHT == 1) || \
+                                     (defined(CONTROL_PWM_LEFT)  && CONTROL_PWM_LEFT == 1) || (defined(CONTROL_PWM_RIGHT) && CONTROL_PWM_RIGHT == 1))
+          inIdx = 1;                                    // Switch to Auxiliary input in case of NO Timeout on Auxiliary input
         #endif
       }
     #endif
