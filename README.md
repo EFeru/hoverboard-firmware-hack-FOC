@@ -127,7 +127,7 @@ The firmware supports the input to be provided from two different sources connec
 | ADC<sup>(0)</sup> | UART<sup>(1)</sup> | VARIANT_ADC |
 | ADC<sup>(0)</sup> | {PPM,PWM,iBUS}<sup>(1)</sup> | VARIANT_{PPM,PWM,IBUS} |
 | ADC<sup>(0)</sup> | Sideboard<sup></sup><sup>(1*)</sup> | VARIANT_HOVERCAR |
-| UART<sup>(0)</sup> | Sideboard<sup>(1)</sup> | VARIANT_UART |
+| UART<sup>(0)</sup> | Sideboard<sup>(1*)</sup> | VARIANT_UART |
 | UART<sup>(1)</sup> | Nunchuk<sup>(0)</sup> | VARIANT_NUNCHUK |
 
 <sup>(0)</sup> Primary input: this input is used when the Auxilliary input is not available or not connected.<br/>
@@ -136,7 +136,7 @@ The firmware supports the input to be provided from two different sources connec
 With slight modifications in config.h, other dual-inputs combinations can be realized as:
 | Left | Right | Possibility |
 | --- | --- | --- |
-| Sideboard<sup>(1)</sup> | UART<sup>(0)</sup> | VARIANT_UART |
+| Sideboard<sup>(1*)</sup> | UART<sup>(0)</sup> | VARIANT_UART |
 | UART<sup>(0)</sup> | {PPM,PWM,iBUS}<sup>(1)</sup> | VARIANT_{PPM,PWM,IBUS} |
 | {PPM,PWM,iBUS}<sup>(1)</sup> | Nunchuk<sup>(0)</sup> | VARIANT_{PPM,PWM,IBUS} |
 
