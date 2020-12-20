@@ -137,7 +137,7 @@ With slight modifications in config.h, other dual-inputs combinations can be rea
 | Left | Right | Possibility |
 | --- | --- | --- |
 | Sideboard<sup>(1)</sup> | UART<sup>(0)</sup> | VARIANT_UART |
-| {PPM,PWM,iBUS}<sup>(1)</sup> | UART<sup>(0)</sup> | VARIANT_{PPM,PWM,IBUS} |
+| UART<sup>(0)</sup> | {PPM,PWM,iBUS}<sup>(1)</sup> | VARIANT_{PPM,PWM,IBUS} |
 | {PPM,PWM,iBUS}<sup>(1)</sup> | Nunchuk<sup>(0)</sup> | VARIANT_{PPM,PWM,IBUS} |
 
 
