@@ -55,14 +55,16 @@
     } SerialSideboard;
 #endif
 
+// Input Structure
 typedef struct {
   int16_t   raw;    // raw input
-  int16_t   cmd;    // command (scaled)
-  uint8_t   typ;
-  int16_t   min;
-  int16_t   mid;
-  int16_t   max;
-  int16_t   deadband;
+  int16_t   cmd;    // command
+  uint8_t   typ;    // type
+  uint8_t   typDef; // type Defined
+  int16_t   min;    // minimum
+  int16_t   mid;    // middle
+  int16_t   max;    // maximum
+  int16_t   dband;  // deadband
 } InputStruct;
 
 // Initialization Functions
@@ -85,9 +87,10 @@ void electricBrake(uint16_t speedBlend, uint8_t reverseDir);
 void cruiseControl(uint8_t button);
 int  checkInputType(int16_t min, int16_t mid, int16_t max);
 
-// Read Functions
+// Input Functions
+void calcInputCmd(InputStruct *in, int16_t out_min, int16_t out_max);
 void readInputRaw(void);
-void readInputCmd(InputStruct *in, int16_t out_min, int16_t out_max);
+void handleTimeout(void);
 void readCommand(void);
 void usart2_rx_check(void);
 void usart3_rx_check(void);
