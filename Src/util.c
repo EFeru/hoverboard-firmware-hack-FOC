@@ -805,16 +805,16 @@ void readInputRaw(void) {
     #endif
 
     #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
-    if (inIdx == CONTROL_NUNCHUK) {
-      if (nunchuk_connected != 0) {
-        Nunchuk_Read();
+    if (nunchuk_connected) {
+      Nunchuk_Read();
+      if (inIdx == CONTROL_NUNCHUK) {
         input1[inIdx].raw = (nunchuk_data[0] - 127) * 8; // X axis 0-255
         input2[inIdx].raw = (nunchuk_data[1] - 128) * 8; // Y axis 0-255
-        #ifdef SUPPORT_BUTTONS
-          button1 = (uint8_t)nunchuk_data[5] & 1;
-          button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
-        #endif
       }
+      #ifdef SUPPORT_BUTTONS
+        button1 = (uint8_t)nunchuk_data[5] & 1;
+        button2 = (uint8_t)(nunchuk_data[5] >> 1) & 1;
+      #endif
     }
     #endif
 
