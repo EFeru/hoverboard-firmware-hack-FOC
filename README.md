@@ -14,7 +14,8 @@ Table of Contents
 
 * [Hardware](#hardware)
 * [FOC Firmware](#foc-firmware)
-* [Example Variants ](#example-variants)
+* [Example Variants](#example-variants)
+* [Dual Inputs](#dual-inputs)
 * [Flashing](#flashing)
 * [Troubleshooting](#troubleshooting)
 * [Diagnostics](#diagnostics)
@@ -76,10 +77,8 @@ In this firmware 3 control types are available:
 |FOC SPEED| +++ | +++ | + | ++ | n.a. | +++ |
 |FOC TORQUE| +++ | +++ | +++ | ++ | +++<sup>(1)</sup> | n.a<sup>(2)</sup> |
 
-<sup>(1)</sup> By enabling `ELECTRIC_BRAKE_ENABLE` in `config.h`, the freewheeling amount can be adjusted using the `ELECTRIC_BRAKE_MAX` parameter.
-
+<sup>(1)</sup> By enabling `ELECTRIC_BRAKE_ENABLE` in `config.h`, the freewheeling amount can be adjusted using the `ELECTRIC_BRAKE_MAX` parameter.<br/>
 <sup>(2)</sup> The standstill hold functionality can be forced by enabling `STANDSTILL_HOLD_ENABLE` in `config.h`. 
-
 
 In all FOC control modes, the controller features maximum motor speed and maximum motor current protection. This brings great advantages to fulfil the needs of many robotic applications while maintaining safe operation.
 
@@ -94,7 +93,7 @@ In all FOC control modes, the controller features maximum motor speed and maximu
  - If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
 
 
-### Parameters 
+### Parameters
  - All the calibratable motor parameters can be found in the 'BLDC_controller_data.c'. I provided you with an already calibrated controller, but if you feel like fine tuning it feel free to do so 
  - The parameters are represented in Fixed-point data type for a more efficient code execution
  - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EmanuelFeru/FixedPointViewer) tool
@@ -102,7 +101,7 @@ In all FOC control modes, the controller features maximum motor speed and maximu
 
 
 ---
-## Example Variants 
+## Example Variants
 
 This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
 - **VARIANT_ADC**: The motors are controlled by two potentiometers connected to the Left sensor cable (long wired)
@@ -117,6 +116,29 @@ This firmware offers currently these variants (selectable in [platformio.ini](/p
 - **VARIANT_SKATEBOARD**: This is for skateboard build, controlled using an RC remote with PWM signal connected to the right sensor cable.
 
 Of course the firmware can be further customized for other needs or projects.
+
+
+---
+## Dual Inputs
+
+The firmware supports the input to be provided from two different sources connected to the Left and Right cable, respectively. To enable dual-inputs functionality uncomment `#define DUAL_INPUTS` in config.h for the respective variant. Various dual-inputs combinations can be realized as illustrated in the following table:
+| Left | Right | Availability |
+| --- | --- | --- |
+| ADC<sup>(0)</sup> | UART<sup>(1)</sup> | VARIANT_ADC |
+| ADC<sup>(0)</sup> | {PPM,PWM,iBUS}<sup>(1)</sup> | VARIANT_{PPM,PWM,IBUS} |
+| ADC<sup>(0)</sup> | Sideboard<sup></sup><sup>(1*)</sup> | VARIANT_HOVERCAR |
+| UART<sup>(0)</sup> | Sideboard<sup>(1*)</sup> | VARIANT_UART |
+| UART<sup>(1)</sup> | Nunchuk<sup>(0)</sup> | VARIANT_NUNCHUK |
+
+<sup>(0)</sup> Primary input: this input is used when the Auxilliary input is not available or not connected.<br/>
+<sup>(1)</sup> Auxilliary input: this inputs is used when connected or enabled by a switch<sup>(*)</sup>. If the Auxilliary input is disconnected, the firmware will automatically switch to the Primary input. Timeout is reported **only** on the Primary input.
+
+With slight modifications in config.h, other dual-inputs combinations can be realized as:
+| Left | Right | Possibility |
+| --- | --- | --- |
+| Sideboard<sup>(1*)</sup> | UART<sup>(0)</sup> | VARIANT_UART |
+| UART<sup>(0)</sup> | {PPM,PWM,iBUS}<sup>(1)</sup> | VARIANT_{PPM,PWM,IBUS} |
+| {PPM,PWM,iBUS}<sup>(1)</sup> | Nunchuk<sup>(0)</sup> | VARIANT_{PPM,PWM,IBUS} |
 
 
 ---
@@ -223,7 +245,7 @@ The errors reported by the board are in the form of audible beeps:
 - **1 beep  (low pitch)**: Motor error (see [possible causes](https://github.com/EmanuelFeru/bldc-motor-control-FOC#diagnostics))
 - **2 beeps (low pitch)**: ADC timeout
 - **3 beeps (low pitch)**: Serial communication timeout
-- **4 beeps (low pitch)**: General timeout (PPM, PWM, Nunchuck)
+- **4 beeps (low pitch)**: General timeout (PPM, PWM, Nunchuk)
 - **5 beeps (low pitch)**: Mainboard temperature warning
 - **1 beep slow (medium pitch)**: Low battery voltage < 36V
 - **1 beep fast (medium pitch)**: Low battery voltage < 35V

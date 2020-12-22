@@ -8,10 +8,11 @@
 
 TIM_HandleTypeDef TimHandle;
 TIM_HandleTypeDef TimHandle2;
-uint8_t ppm_count = 0;
-uint8_t pwm_count = 0;
-uint32_t timeoutCnt = 0;
-uint8_t nunchuk_data[6] = {0};
+uint8_t  ppm_count = 0;
+uint8_t  pwm_count = 0;
+uint32_t timeoutCntGen = TIMEOUT;
+uint8_t  timeoutFlgGen = 0;
+uint8_t  nunchuk_data[6] = {0};
 
 uint8_t i2cBuffer[2];
 
@@ -34,7 +35,8 @@ void PPM_ISR_Callback(void) {
   if (rc_delay > 3000) {
     if (ppm_valid && ppm_count == PPM_NUM_CHANNELS) {
       ppm_timeout = 0;
-      timeoutCnt = 0;
+      timeoutCntGen = 0;
+      timeoutFlgGen = 0;
       memcpy(ppm_captured_value, ppm_captured_value_buffer, sizeof(ppm_captured_value));
     }
     ppm_valid = true;
@@ -122,7 +124,8 @@ void PWM_ISR_CH1_Callback(void) {
   } else {                                    // Falling Edge interrupt -> measure pulse duration
     uint16_t rc_signal = TIM2->CNT - pwm_CNT_prev_ch1;
     if (IN_RANGE(rc_signal, 900, 2100)){
-      timeoutCnt = 0;
+      timeoutCntGen = 0;
+      timeoutFlgGen = 0;
       pwm_timeout_ch1 = 0;
       pwm_captured_ch1_value = CLAMP(rc_signal, 1000, 2000) - 1000;
     }
@@ -141,7 +144,8 @@ void PWM_ISR_CH2_Callback(void) {
   } else {                                    // Falling Edge interrupt -> measure pulse duration
     uint16_t rc_signal = TIM2->CNT - pwm_CNT_prev_ch2;
     if (IN_RANGE(rc_signal, 900, 2100)){
-      timeoutCnt = 0;
+      timeoutCntGen = 0;
+      timeoutFlgGen = 0;
       pwm_timeout_ch2 = 0;
       pwm_captured_ch2_value = CLAMP(rc_signal, 1000, 2000) - 1000;
     }
@@ -237,11 +241,12 @@ void Nunchuk_Read(void) {
   HAL_I2C_Master_Transmit(&hi2c2,0xA4,(uint8_t*)i2cBuffer, 1, 10);
   HAL_Delay(3);
   if (HAL_I2C_Master_Receive(&hi2c2,0xA4,(uint8_t*)nunchuk_data, 6, 10) == HAL_OK) {
-    timeoutCnt = 0;
+    timeoutCntGen = 0;
+    timeoutFlgGen = 0;
   }
 
   #ifndef TRANSPOTTER
-    if (timeoutCnt > 3) {
+    if (timeoutCntGen > 3) {
       HAL_Delay(50);
       Nunchuk_Init();
     }

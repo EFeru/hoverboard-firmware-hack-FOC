@@ -62,16 +62,16 @@ extern ExtY rtY_Left;                   /* External outputs */
 extern ExtY rtY_Right;                  /* External outputs */
 //---------------
 
-extern int16_t cmd1;                    // normalized input value. -1000 to 1000
-extern int16_t cmd2;                    // normalized input value. -1000 to 1000
-extern int16_t input1;                  // Non normalized input value
-extern int16_t input2;                  // Non normalized input value
+extern uint8_t     inIdx;               // input index used for dual-inputs
+extern InputStruct input1[];            // input structure
+extern InputStruct input2[];            // input structure
 
 extern int16_t speedAvg;                // Average measured speed
 extern int16_t speedAvgAbs;             // Average measured speed in absolute
-extern volatile uint32_t timeoutCnt;    // Timeout counter for the General timeout (PPM, PWM, Nunchuck)
-extern uint8_t timeoutFlagADC;          // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
-extern uint8_t timeoutFlagSerial;       // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+extern volatile uint32_t timeoutCntGen; // Timeout counter for the General timeout (PPM, PWM, Nunchuk)
+extern volatile uint8_t  timeoutFlgGen; // Timeout Flag for the General timeout (PPM, PWM, Nunchuk)
+extern uint8_t timeoutFlgADC;           // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
+extern uint8_t timeoutFlgSerial;        // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
 extern volatile int pwml;               // global variable for pwm left. -1000 to 1000
 extern volatile int pwmr;               // global variable for pwm right. -1000 to 1000
@@ -190,8 +190,8 @@ int main(void) {
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 
-  int16_t cmdL     = 0, cmdR     = 0;
-  int16_t lastCmdL = 0, lastCmdR = 0;
+  int16_t cmdL      = 0, cmdR      = 0;
+  int16_t cmdL_prev = 0, cmdR_prev = 0;
 
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
@@ -199,14 +199,14 @@ int main(void) {
 
 
   while(1) {
-    HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
+    HAL_Delay(DELAY_IN_MAIN_LOOP);        // delay in ms
 
-    readCommand();                        // Read Command: cmd1, cmd2
+    readCommand();                        // Read Command: input1[inIdx].cmd, input2[inIdx].cmd
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-      if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (cmd1 > -50 && cmd1 < 50) && (cmd2 > -50 && cmd2 < 50)){
+      if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (input1[inIdx].cmd > -50 && input1[inIdx].cmd < 50) && (input2[inIdx].cmd > -50 && input2[inIdx].cmd < 50)){
         beepShort(6);                     // make 2 beeps indicating the motor enable
         beepShort(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
@@ -216,7 +216,7 @@ int main(void) {
         #endif
       }
 
-      // ####### VARIANT_HOVERCAR ####### 
+      // ####### VARIANT_HOVERCAR #######
       #if defined(VARIANT_HOVERCAR) || defined(VARIANT_SKATEBOARD) || defined(ELECTRIC_BRAKE_ENABLE)
         uint16_t speedBlend;                                        // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50); // speedBlend [0,1] is within [10 rpm, 60rpm]
@@ -226,63 +226,70 @@ int main(void) {
         standstillHold();                                           // Apply Standstill Hold functionality. Only available and makes sense for VOLTAGE or TORQUE Mode
       #endif
 
-      #ifdef VARIANT_HOVERCAR        
+      #ifdef VARIANT_HOVERCAR
+      if (inIdx == CONTROL_ADC) {                                   // Only use use implementation below if pedals are in use (ADC input)
         if (speedAvgAbs < 60) {                                     // Check if Hovercar is physically close to standstill to enable Double tap detection on Brake pedal for Reverse functionality
-          multipleTapDet(cmd1, HAL_GetTick(), &MultipleTapBrake);   // Brake pedal in this case is "cmd1" variable
+          multipleTapDet(input1[inIdx].cmd, HAL_GetTick(), &MultipleTapBrake); // Brake pedal in this case is "input1" variable
         }
-        
-        if (cmd1 > 30) {                                            // If Brake pedal (cmd1) is pressed, bring to 0 also the Throttle pedal (cmd2) to avoid "Double pedal" driving
-          cmd2 = (int16_t)((cmd2 * speedBlend) >> 15);          
+
+        if (input1[inIdx].cmd > 30) {                               // If Brake pedal (input1) is pressed, bring to 0 also the Throttle pedal (input2) to avoid "Double pedal" driving
+          input2[inIdx].cmd = (int16_t)((input2[inIdx].cmd * speedBlend) >> 15);
           cruiseControl((uint8_t)rtP_Left.b_cruiseCtrlEna);         // Cruise control deactivated by Brake pedal if it was active
         }
+      }
       #endif
 
-      #ifdef ELECTRIC_BRAKE_ENABLE        
+      #ifdef ELECTRIC_BRAKE_ENABLE
         electricBrake(speedBlend, MultipleTapBrake.b_multipleTap);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
       #endif
 
-      #ifdef VARIANT_HOVERCAR        
+      #ifdef VARIANT_HOVERCAR
+      if (inIdx == CONTROL_ADC) {                                   // Only use use implementation below if pedals are in use (ADC input)
         if (speedAvg > 0) {                                         // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal) 
-          cmd1 = (int16_t)((-cmd1 * speedBlend) >> 15);
+          input1[inIdx].cmd = (int16_t)((-input1[inIdx].cmd * speedBlend) >> 15);
         } else {
-          cmd1 = (int16_t)(( cmd1 * speedBlend) >> 15);
+          input1[inIdx].cmd = (int16_t)(( input1[inIdx].cmd * speedBlend) >> 15);
         }
+      }
       #endif
 
       #ifdef VARIANT_SKATEBOARD
-        if (cmd2 < 0) {                                           // When Throttle is negative, it acts as brake. This condition is to make sure it goes to 0 as we reach standstill (to avoid Reverse driving) 
-          if (speedAvg > 0) {                                     // Make sure the braking is opposite to the direction of motion
-            cmd2 = (int16_t)(( cmd2 * speedBlend) >> 15);
+        if (input2[inIdx].cmd < 0) {                                // When Throttle is negative, it acts as brake. This condition is to make sure it goes to 0 as we reach standstill (to avoid Reverse driving) 
+          if (speedAvg > 0) {                                       // Make sure the braking is opposite to the direction of motion
+            input2[inIdx].cmd  = (int16_t)(( input2[inIdx].cmd * speedBlend) >> 15);
           } else {
-            cmd2 = (int16_t)((-cmd2 * speedBlend) >> 15);
+            input2[inIdx].cmd  = (int16_t)((-input2[inIdx].cmd * speedBlend) >> 15);
           }
         }
       #endif
 
       // ####### LOW-PASS FILTER #######
-      rateLimiter16(cmd1, RATE, &steerRateFixdt);
-      rateLimiter16(cmd2, RATE, &speedRateFixdt);
+      rateLimiter16(input1[inIdx].cmd , RATE, &steerRateFixdt);
+      rateLimiter16(input2[inIdx].cmd , RATE, &speedRateFixdt);
       filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
       speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer
 
       // ####### VARIANT_HOVERCAR #######
-      #ifdef VARIANT_HOVERCAR        
+      #ifdef VARIANT_HOVERCAR
+      if (inIdx == CONTROL_ADC) {               // Only use use implementation below if pedals are in use (ADC input)
         if (!MultipleTapBrake.b_multipleTap) {  // Check driving direction
           speed = steer + speed;                // Forward driving: in this case steer = Brake, speed = Throttle
         } else {
           speed = steer - speed;                // Reverse driving: in this case steer = Brake, speed = Throttle
         }
+        steer = 0;                              // Do not apply steering to avoid side effects if STEER_COEFFICIENT is NOT 0
+      }
       #endif
 
       // ####### MIXER #######
-      // cmdR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
-      // cmdL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MA);
+      // cmdR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MAX);
+      // cmdL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MAX);
       mixerFcn(speed << 4, steer << 4, &cmdR, &cmdL);   // This function implements the equations above
 
       // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
-      if ((cmdL > lastCmdL-100 && cmdL < lastCmdL+100) && (cmdR > lastCmdR-100 && cmdR < lastCmdR+100)) {
+      if ((cmdL > cmdL_prev-100 && cmdL < cmdL_prev+100) && (cmdR > cmdR_prev-100 && cmdR < cmdR_prev+100)) {
         #ifdef INVERT_R_DIRECTION
           pwmr = cmdR;
         #else
@@ -297,14 +304,14 @@ int main(void) {
     #endif
 
     #ifdef VARIANT_TRANSPOTTER
-      distance    = CLAMP(cmd1 - 180, 0, 4095);
-      steering    = (cmd2 - 2048) / 2048.0;
+      distance    = CLAMP(input1[inIdx].cmd - 180, 0, 4095);
+      steering    = (input2[inIdx].cmd - 2048) / 2048.0;
       distanceErr = distance - (int)(setDistance * 1345);
 
       if (nunchuk_connected == 0) {
         cmdL = cmdL * 0.8f + (CLAMP(distanceErr + (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
         cmdR = cmdR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
-        if ((cmdL < lastCmdL + 50 && cmdL > lastCmdL - 50) && (cmdR < lastCmdR + 50 && cmdR > lastCmdR - 50)) {
+        if ((cmdL < cmdL_prev + 50 && cmdL > cmdL_prev - 50) && (cmdR < cmdR_prev + 50 && cmdR > cmdR_prev - 50)) {
           if (distanceErr > 0) {
             enable = 1;
           }
@@ -331,10 +338,11 @@ int main(void) {
             enable = 0;
           }
         }
-        timeoutCnt = 0;
+        timeoutCntGen = 0;
+        timeoutFlgGen = 0;
       }
 
-      if (timeoutCnt > TIMEOUT) {
+      if (timeoutFlgGen) {
         pwml = 0;
         pwmr = 0;
         enable = 0;
@@ -368,7 +376,8 @@ int main(void) {
               #ifdef SUPPORT_LCD
                 LCD_SetLocation(&lcd, 0, 0); LCD_WriteString(&lcd, "Nunchuk Control");
               #endif
-              timeoutCnt = 0;
+              timeoutCntGen = 0;
+              timeoutFlgGen = 0;
               HAL_Delay(1000);
               nunchuk_connected = 1;
             }
@@ -394,11 +403,11 @@ int main(void) {
     #endif
 
     // ####### SIDEBOARDS HANDLING #######
-    #if defined(SIDEBOARD_SERIAL_USART2)
+    #if defined(SIDEBOARD_SERIAL_USART2) && defined(FEEDBACK_SERIAL_USART2)
       sideboardLeds(&sideboard_leds_L);
       sideboardSensors((uint8_t)Sideboard_L.sensors);
     #endif
-    #if defined(SIDEBOARD_SERIAL_USART3)
+    #if defined(SIDEBOARD_SERIAL_USART3) && defined(FEEDBACK_SERIAL_USART3)
       sideboardLeds(&sideboard_leds_R);
       sideboardSensors((uint8_t)Sideboard_R.sensors);
     #endif
@@ -412,8 +421,8 @@ int main(void) {
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
         printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i\r\n",
-          input1,                   // 1: INPUT1
-          input2,                   // 2: INPUT2
+          input1[inIdx].raw,        // 1: INPUT1
+          input2[inIdx].raw,        // 2: INPUT2
           cmdL,                     // 3: output command: [-1000, 1000]
           cmdR,                     // 4: output command: [-1000, 1000]
           adc_buffer.batt1,         // 5: for battery voltage calibration
@@ -427,8 +436,8 @@ int main(void) {
     #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
       if (main_loop_counter % 2 == 0) {    // Send data periodically every 10 ms
         Feedback.start	        = (uint16_t)SERIAL_START_FRAME;
-        Feedback.cmd1           = (int16_t)cmd1;
-        Feedback.cmd2           = (int16_t)cmd2;
+        Feedback.cmd1           = (int16_t)input1[inIdx].cmd;
+        Feedback.cmd2           = (int16_t)input2[inIdx].cmd;
         Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
         Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
         Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
@@ -436,22 +445,22 @@ int main(void) {
 
         #if defined(FEEDBACK_SERIAL_USART2)
           if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
-            Feedback.cmdLed         = (uint16_t)sideboard_leds_L;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
-                                               ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+            Feedback.cmdLed     = (uint16_t)sideboard_leds_L;
+            Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                           ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
             HAL_UART_Transmit_DMA(&huart2, (uint8_t *)&Feedback, sizeof(Feedback));
           }
         #endif
         #if defined(FEEDBACK_SERIAL_USART3)
           if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-            Feedback.cmdLed         = (uint16_t)sideboard_leds_R;
-            Feedback.checksum       = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
-                                               ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+            Feedback.cmdLed     = (uint16_t)sideboard_leds_R;
+            Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                           ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
             HAL_UART_Transmit_DMA(&huart3, (uint8_t *)&Feedback, sizeof(Feedback));
           }
-        #endif            
+        #endif
       }
     #endif
 
@@ -464,11 +473,11 @@ int main(void) {
     } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): Motor error, disable motors
       enable = 0;
       beepCount(1, 24, 1);
-    } else if (timeoutFlagADC) {                                                                      // 2 beeps (low pitch): ADC timeout
+    } else if (timeoutFlgADC) {                                                                       // 2 beeps (low pitch): ADC timeout
       beepCount(2, 24, 1);
-    } else if (timeoutFlagSerial) {                                                                   // 3 beeps (low pitch): Serial timeout
+    } else if (timeoutFlgSerial) {                                                                    // 3 beeps (low pitch): Serial timeout
       beepCount(3, 24, 1);
-    } else if (timeoutCnt > TIMEOUT) {                                                                // 4 beeps (low pitch): General timeout (PPM, PWM, Nunchuck)
+    } else if (timeoutFlgGen) {                                                                       // 4 beeps (low pitch): General timeout (PPM, PWM, Nunchuk)
       beepCount(4, 24, 1);
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {                             // 5 beeps (low pitch): Mainboard temperature warning
       beepCount(5, 24, 1);
@@ -497,10 +506,9 @@ int main(void) {
 
     // HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
     // Update main loop states
-    lastCmdL = cmdL;
-    lastCmdR = cmdR;
+    cmdL_prev = cmdL;
+    cmdR_prev = cmdR;
     main_loop_counter++;
-    timeoutCnt++;
   }
 }
 

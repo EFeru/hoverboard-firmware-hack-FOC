@@ -55,6 +55,18 @@
     } SerialSideboard;
 #endif
 
+// Input Structure
+typedef struct {
+  int16_t   raw;    // raw input
+  int16_t   cmd;    // command
+  uint8_t   typ;    // type
+  uint8_t   typDef; // type Defined
+  int16_t   min;    // minimum
+  int16_t   mid;    // middle
+  int16_t   max;    // maximum
+  int16_t   dband;  // deadband
+} InputStruct;
+
 // Initialization Functions
 void BLDC_Init(void);
 void Input_Lim_Init(void);
@@ -68,21 +80,17 @@ void beepLong(uint8_t freq);
 void beepShort(uint8_t freq);
 void beepShortMany(uint8_t cnt, int8_t dir);
 void calcAvgSpeed(void);
-int  addDeadBand(int16_t u, int16_t type, int16_t deadBand, int16_t in_min, int16_t in_mid, int16_t in_max, int16_t out_min, int16_t out_max);
-int  checkInputType(int16_t min, int16_t mid, int16_t max);
 void adcCalibLim(void);
 void updateCurSpdLim(void);
-void saveConfig(void);
 void standstillHold(void);
 void electricBrake(uint16_t speedBlend, uint8_t reverseDir);
 void cruiseControl(uint8_t button);
+int  checkInputType(int16_t min, int16_t mid, int16_t max);
 
-// Poweroff Functions
-void poweroff(void);
-void poweroffPressCheck(void);
-
-// Read Functions
-void readInput(void);
+// Input Functions
+void calcInputCmd(InputStruct *in, int16_t out_min, int16_t out_max);
+void readInputRaw(void);
+void handleTimeout(void);
 void readCommand(void);
 void usart2_rx_check(void);
 void usart3_rx_check(void);
@@ -99,6 +107,11 @@ void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sid
 // Sideboard functions
 void sideboardLeds(uint8_t *leds);
 void sideboardSensors(uint8_t sensors);
+
+// Poweroff Functions
+void saveConfig(void);
+void poweroff(void);
+void poweroffPressCheck(void);
 
 // Filtering Functions
 void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
