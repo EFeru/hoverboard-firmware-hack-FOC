@@ -1358,25 +1358,31 @@ void sideboardLeds(uint8_t *leds) {
 void sideboardSensors(uint8_t sensors) {
   #if !defined(VARIANT_HOVERBOARD) && (defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3))
     static uint8_t sensor1_prev, sensor2_prev;
-    static uint8_t sensor1_index;                               // holds the press index number for sensor1, when used as a button
+    static uint8_t sensor1_index;                                 // holds the press index number for sensor1, when used as a button
     uint8_t sensor1_trig, sensor2_trig;
-    sensor1_trig  = (sensors & SENSOR1_SET) && !sensor1_prev;   // rising edge detection
-    sensor2_trig  = (sensors & SENSOR2_SET) && !sensor2_prev;   // rising edge detection
+    sensor1_trig  = (sensors & SENSOR1_SET) && !sensor1_prev;     // rising edge detection
+    sensor2_trig  = (sensors & SENSOR2_SET) && !sensor2_prev;     // rising edge detection
     sensor1_prev  =  sensors & SENSOR1_SET;
     sensor2_prev  =  sensors & SENSOR2_SET;
 
     // Override in case the Sideboard control is Active
     #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART2)
     if (inIdx == SIDEBOARD_SERIAL_USART2) {
-      sensor1_index = (Sideboard_L.sensors & SW3_SET) >> 11;    // SW3 on RC transmitter is used to change Control Mode
-      sensor1_trig  = sensor1_index != sensor1_prev;            // rising or falling edge detection
+      sensor1_index = 3 + ((Sideboard_L.sensors & SW2_SET) >> 9); // SW2 on RC transmitter is used to change Control Type
+      if (sensor1_index == 3) {                                   // FOC control Type
+        sensor1_index = (Sideboard_L.sensors & SW3_SET) >> 11;    // SW3 on RC transmitter is used to change Control Mode
+      }
+      sensor1_trig  = sensor1_index != sensor1_prev;              // rising or falling edge change detection
       sensor1_prev  = sensor1_index;
     }
     #endif
     #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART3)
     if (inIdx == SIDEBOARD_SERIAL_USART3) {
-      sensor1_index = (Sideboard_R.sensors & SW3_SET) >> 11;    // SW3 on RC transmitter is used to change Control Mode
-      sensor1_trig  = sensor1_index != sensor1_prev;            // rising or falling edge change detection
+      sensor1_index = 3 + ((Sideboard_R.sensors & SW2_SET) >> 9); // SW2 on RC transmitter is used to change Control Type
+      if (sensor1_index == 3) {                                   // FOC control Type
+        sensor1_index = (Sideboard_R.sensors & SW3_SET) >> 11;    // SW3 on RC transmitter is used to change Control Mode
+      }
+      sensor1_trig  = sensor1_index != sensor1_prev;              // rising or falling edge change detection
       sensor1_prev  = sensor1_index;
     }
     #endif
@@ -1385,23 +1391,22 @@ void sideboardSensors(uint8_t sensors) {
     if (sensor1_trig) {
       switch (sensor1_index) {
         case 0:     // FOC VOLTAGE
-          rtP_Left.z_ctrlTypSel  = FOC_CTRL;
-          rtP_Right.z_ctrlTypSel = FOC_CTRL;
-          ctrlModReqRaw          = VLT_MODE;
+          rtP_Left.z_ctrlTypSel = rtP_Right.z_ctrlTypSel = FOC_CTRL;
+          ctrlModReqRaw         = VLT_MODE;
           break;
         case 1:     // FOC SPEED
-          ctrlModReqRaw          = SPD_MODE;
+          rtP_Left.z_ctrlTypSel = rtP_Right.z_ctrlTypSel = FOC_CTRL;
+          ctrlModReqRaw         = SPD_MODE;
           break;
         case 2:     // FOC TORQUE
-          ctrlModReqRaw          = TRQ_MODE;
+          rtP_Left.z_ctrlTypSel = rtP_Right.z_ctrlTypSel = FOC_CTRL;
+          ctrlModReqRaw         = TRQ_MODE;
           break;
         case 3:     // SINUSOIDAL
-          rtP_Left.z_ctrlTypSel  = SIN_CTRL;
-          rtP_Right.z_ctrlTypSel = SIN_CTRL;
+          rtP_Left.z_ctrlTypSel = rtP_Right.z_ctrlTypSel = SIN_CTRL;
           break;
         case 4:     // COMMUTATION
-          rtP_Left.z_ctrlTypSel  = COM_CTRL;
-          rtP_Right.z_ctrlTypSel = COM_CTRL;
+          rtP_Left.z_ctrlTypSel = rtP_Right.z_ctrlTypSel = COM_CTRL;
           break;
       }
       beepShortMany(sensor1_index + 1, 1);
