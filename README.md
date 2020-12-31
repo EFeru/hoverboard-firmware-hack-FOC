@@ -110,7 +110,7 @@ This firmware offers currently these variants (selectable in [platformio.ini](/p
 - **VARIANT_PPM**: RC remote control with PPM Sum signal.
 - **VARIANT_PWM**: RC remote control with PWM signal.
 - **VARIANT_IBUS**: RC remote control with Flysky iBUS protocol connected to the Left sensor cable.
-- **VARIANT_HOVERCAR**: The motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill. See [HOVERCAR video](https://www.youtube.com/watch?v=IgHCcj0NgWQ&t=).
+- **VARIANT_HOVERCAR**: The motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill. See [HOVERCAR wiki](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki/Variant-HOVERCAR).
 - **VARIANT_HOVERBOARD**: The mainboard reads the two sideboards data. The sideboards need to be flashed with the hacked version. The balancing controller is **not** yet implemented.
 - **VARIANT_TRANSPOTTER**: This is for transpotter build, which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
 - **VARIANT_SKATEBOARD**: This is for skateboard build, controlled using an RC remote with PWM signal connected to the right sensor cable.
@@ -257,7 +257,7 @@ For a more detailed troubleshooting connect an [FTDI Serial adapter](https://s.c
 ## Projects and Links
 
 - **Original firmware:** [https://github.com/NiklasFauth/hoverboard-firmware-hack](https://github.com/NiklasFauth/hoverboard-firmware-hack)
-- **[Candas](https://github.com/Candas1/) Hoverboard Web Serial Control:** [https://candas1.github.io/Hoverboard-Web-Serial-Control/](https://candas1.github.io/Hoverboard-Web-Serial-Control/)
+- **[Candas](https://github.com/Candas1/) Hoverboard Web Serial Control:** [https://github.com/Candas1/Hoverboard-Web-Serial-Control](https://github.com/Candas1/Hoverboard-Web-Serial-Control)
 - **[RoboDurden's](https://github.com/RoboDurden) online compiler:** [https://pionierland.de/hoverhack/](https://pionierland.de/hoverhack/) 
 - **Hoverboard hack for AT32F403RCT6 mainboards:** [https://github.com/cloidnerux/hoverboard-firmware-hack](https://github.com/cloidnerux/hoverboard-firmware-hack)
 - **Hoverboard hack for split mainboards:** [https://github.com/flo199213/Hoverboard-Firmware-Hack-Gen2](https://github.com/flo199213/Hoverboard-Firmware-Hack-Gen2)

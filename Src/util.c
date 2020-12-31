@@ -931,7 +931,7 @@ void handleTimeout(void) {
         #endif
       } else {                                          // No Timeout
         #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART2)
-          if (Sideboard_L.sensors & SW1_SET) {          // If SW1 is set, switch to Sideboard control
+          if (Sideboard_L.sensors & SWA_SET) {          // If SWA is set, switch to Sideboard control
             inIdx = SIDEBOARD_SERIAL_USART2;
           } else {
             inIdx = !SIDEBOARD_SERIAL_USART2;
@@ -954,7 +954,7 @@ void handleTimeout(void) {
         #endif
       } else {                                          // No Timeout
         #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART3)
-          if (Sideboard_R.sensors & SW1_SET) {          // If SW1 is set, switch to Sideboard control
+          if (Sideboard_R.sensors & SWA_SET) {          // If SWA is set, switch to Sideboard control
             inIdx = SIDEBOARD_SERIAL_USART3;
           } else {
             inIdx = !SIDEBOARD_SERIAL_USART3;
@@ -1360,32 +1360,27 @@ void sideboardSensors(uint8_t sensors) {
     static uint8_t sensor1_prev, sensor2_prev;
     static uint8_t sensor1_index;                                 // holds the press index number for sensor1, when used as a button
     uint8_t sensor1_trig, sensor2_trig;
-    sensor1_trig  = (sensors & SENSOR1_SET) && !sensor1_prev;     // rising edge detection
-    sensor2_trig  = (sensors & SENSOR2_SET) && !sensor2_prev;     // rising edge detection
-    sensor1_prev  =  sensors & SENSOR1_SET;
-    sensor2_prev  =  sensors & SENSOR2_SET;
+    #if defined(SIDEBOARD_SERIAL_USART2)
+    uint8_t  sideboardIdx = SIDEBOARD_SERIAL_USART2;
+    uint16_t sideboardSns = Sideboard_L.sensors;
+    #else
+    uint8_t  sideboardIdx = SIDEBOARD_SERIAL_USART3;
+    uint16_t sideboardSns = Sideboard_R.sensors;
+    #endif
 
-    // Override in case the Sideboard control is Active
-    #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART2)
-    if (inIdx == SIDEBOARD_SERIAL_USART2) {
-      sensor1_index = 3 + ((Sideboard_L.sensors & SW2_SET) >> 9); // SW2 on RC transmitter is used to change Control Type
-      if (sensor1_index == 3) {                                   // FOC control Type
-        sensor1_index = (Sideboard_L.sensors & SW3_SET) >> 11;    // SW3 on RC transmitter is used to change Control Mode
+    if (inIdx == sideboardIdx) {                                  // Use Sideboard data
+      sensor1_index = 2 + ((sideboardSns & SWB_SET) >> 9);        // SWB on RC transmitter is used to change Control Type
+      if (sensor1_index == 2) {                                   // FOC control Type
+        sensor1_index = (sideboardSns & SWC_SET) >> 11;           // SWC on RC transmitter is used to change Control Mode
       }
       sensor1_trig  = sensor1_index != sensor1_prev;              // rising or falling edge change detection
       sensor1_prev  = sensor1_index;
+    } else {                                                      // Use Optical switches
+      sensor1_trig  = (sensors & SENSOR1_SET) && !sensor1_prev;   // rising edge detection
+      sensor2_trig  = (sensors & SENSOR2_SET) && !sensor2_prev;   // rising edge detection
+      sensor1_prev  =  sensors & SENSOR1_SET;
+      sensor2_prev  =  sensors & SENSOR2_SET;
     }
-    #endif
-    #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART3)
-    if (inIdx == SIDEBOARD_SERIAL_USART3) {
-      sensor1_index = 3 + ((Sideboard_R.sensors & SW2_SET) >> 9); // SW2 on RC transmitter is used to change Control Type
-      if (sensor1_index == 3) {                                   // FOC control Type
-        sensor1_index = (Sideboard_R.sensors & SW3_SET) >> 11;    // SW3 on RC transmitter is used to change Control Mode
-      }
-      sensor1_trig  = sensor1_index != sensor1_prev;              // rising or falling edge change detection
-      sensor1_prev  = sensor1_index;
-    }
-    #endif
 
     // Control MODE and Control Type Handling
     if (sensor1_trig) {
@@ -1422,20 +1417,11 @@ void sideboardSensors(uint8_t sensors) {
       static uint8_t  sensor2_index = 1;                          // holds the press index number for sensor2, when used as a button
 
       // Override in case the Sideboard control is Active
-      #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART2)
-      if (inIdx == SIDEBOARD_SERIAL_USART2) {
-        sensor2_index = (Sideboard_L.sensors & SW4_SET) >> 13;    // SW4 on RC transmitter is used to Activate/Deactivate Field Weakening
+      if (inIdx == sideboardIdx) {                                // Use Sideboard data
+        sensor2_index = (sideboardSns & SWD_SET) >> 13;           // SWD on RC transmitter is used to Activate/Deactivate Field Weakening
         sensor2_trig  = sensor2_index != sensor2_prev;            // rising or falling edge change detection
         sensor2_prev  = sensor2_index;
       }
-      #endif
-      #if defined(DUAL_INPUTS) && defined(SIDEBOARD_SERIAL_USART3)
-      if (inIdx == SIDEBOARD_SERIAL_USART3) {
-        sensor2_index = (Sideboard_R.sensors & SW4_SET) >> 13;    // SW4 on RC transmitter is used to Activate/Deactivate Field Weakening
-        sensor2_trig  = sensor2_index != sensor2_prev;            // rising or falling edge change detection
-        sensor2_prev  = sensor2_index;
-      }
-      #endif
 
       if (sensor2_trig) {
         switch (sensor2_index) {
