@@ -88,7 +88,8 @@ ExtU     rtU_Right;                     /* External inputs */
 ExtY     rtY_Right;                     /* External outputs */
 //---------------
 
-uint8_t  inIdx = 0;
+uint8_t         inIdx     = 0;
+static uint8_t  inIdxPrev = 0;
 #if defined(PRI_INPUT1) && defined(PRI_INPUT2) && defined(AUX_INPUT1) && defined(AUX_INPUT2)
 InputStruct input1[INPUTS_NR] = { {0, 0, 0, PRI_INPUT1}, {0, 0, 0, AUX_INPUT1} };
 InputStruct input2[INPUTS_NR] = { {0, 0, 0, PRI_INPUT2}, {0, 0, 0, AUX_INPUT2} };
@@ -993,12 +994,22 @@ void handleTimeout(void) {
       }
     #endif
 
-    if (timeoutFlgADC || timeoutFlgSerial || timeoutFlgGen) {           // In case of timeout bring the system to a Safe State
+    // In case of timeout bring the system to a Safe State
+    if (timeoutFlgADC || timeoutFlgSerial || timeoutFlgGen) {
       ctrlModReq  = OPEN_MODE;                                          // Request OPEN_MODE. This will bring the motor power to 0 in a controlled way
       input1[inIdx].cmd  = 0;
       input2[inIdx].cmd  = 0;
     } else {
       ctrlModReq  = ctrlModReqRaw;                                      // Follow the Mode request
+    }
+
+    // Beep in case of Input index change
+    if (inIdx && !inIdxPrev) {                                          // rising edge
+      beepShort(8);
+      inIdxPrev = inIdx;
+    } else if (!inIdx && inIdxPrev) {                                   // falling edge
+      beepShort(18);
+      inIdxPrev = inIdx;
     }
 }
 
@@ -1359,7 +1370,7 @@ void sideboardSensors(uint8_t sensors) {
   #if !defined(VARIANT_HOVERBOARD) && (defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3))
     static uint8_t sensor1_prev, sensor2_prev;
     static uint8_t sensor1_index;                                 // holds the press index number for sensor1, when used as a button
-    uint8_t sensor1_trig, sensor2_trig;
+    uint8_t sensor1_trig = 0, sensor2_trig = 0;
     #if defined(SIDEBOARD_SERIAL_USART2)
     uint8_t  sideboardIdx = SIDEBOARD_SERIAL_USART2;
     uint16_t sideboardSns = Sideboard_L.sensors;
