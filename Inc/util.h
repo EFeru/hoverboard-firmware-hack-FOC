@@ -127,5 +127,45 @@ typedef struct {
 } MultipleTap;
 void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x);
 
+#define SIZEP(x) ((char*)(&(x) + 1) - (char*)&(x))
+
+
+enum types {UINT8_T,UINT16_T,UINT32_T,INT8_T,INT16_T,INT32_T,INT,FLOAT};
+#define typename(x) _Generic((x), \
+    uint8_t:    UINT8_T, \
+    uint16_t:   UINT16_T, \
+    uint32_t:   UINT32_T, \
+    int8_t:     INT8_T, \
+    int16_t:    INT16_T, \
+    int32_t:    INT32_T, \
+	  int:	    	INT, \
+    float:      FLOAT)
+
+#define PARAM_SIZE(param) sizeof(param) / sizeof(parameter_entry)
+#define ADD_PARAM(value_var,value_var2) &value_var,&value_var2,typename(value_var)
+
+uint8_t setValue(uint8_t index, int32_t newValue);
+uint8_t initValue(uint8_t index);
+uint32_t getValue(uint8_t index);
+uint8_t incrValue(uint8_t index);
+uint8_t saveValue(uint8_t index);
+void dumpValues();
+
+typedef struct parameter_entry_struct parameter_entry;
+struct parameter_entry_struct {
+  const char *name;
+	void *value;
+  void *value2;
+  const uint8_t type;
+  const int32_t addr;
+	const int32_t init;
+  const int32_t min;
+	const int32_t max;
+  const uint8_t div;
+  const uint8_t fix;
+	void (*callback_function)();
+	const char *help;
+};
+
 #endif
 

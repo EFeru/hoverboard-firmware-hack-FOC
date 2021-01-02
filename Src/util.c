@@ -231,8 +231,139 @@ static uint8_t standstillAcv = 0;
   #endif
 #endif
 
+enum parameters {PCTRL_MOD_REQ,
+                 PCTRL_TYP_SEL,
+                 PI_MOT_MAX,
+                 PN_MOT_MAX,
+                 PFIELD_WEAK_ENA,
+                 PFIELD_WEAK_HI,
+                 PFIELD_WEAK_LO,
+                 PFIELD_WEAK_MAX};
+
+parameter_entry params[] = {
+  //Name              ,Value ptr                                                   ,EEPRM Addr ,Init            ,Min    ,Max    ,Div             ,Fix   ,Callback Function  ,Help text
+    {"CTRL_MOD_REQ"   ,ADD_PARAM(ctrlModReqRaw,ctrlModReqRaw)                      ,0          ,CTRL_MOD_REQ    ,0      ,3      ,0               ,0     ,NULL               ,"Ctrl mode [0] Open [1] voltage [2] Speed [3] Torque"},
+    {"CTRL_TYP_SEL"   ,ADD_PARAM(rtP_Left.z_ctrlTypSel,rtP_Right.z_ctrlTypSel)     ,0          ,CTRL_TYP_SEL    ,0      ,2      ,0               ,0     ,NULL               ,"Ctrl type [0] Commutation [1] Sinusoidal [2] FOC"},
+    {"I_MOT_MAX"      ,ADD_PARAM(rtP_Left.i_max,rtP_Right.i_max)                   ,1          ,I_MOT_MAX       ,0      ,32000  ,A2BIT_CONV      ,4     ,NULL               ,"Maximum phase current [A]"},
+    {"N_MOT_MAX"      ,ADD_PARAM(rtP_Left.n_max,rtP_Right.n_max)                   ,2          ,N_MOT_MAX       ,0      ,32000  ,0               ,4     ,NULL               ,"Maximum motor [RPM]"},
+    {"FIELD_WEAK_ENA" ,ADD_PARAM(rtP_Left.b_fieldWeakEna,rtP_Right.b_fieldWeakEna) ,0          ,FIELD_WEAK_ENA  ,0      ,1      ,0               ,0     ,NULL               ,"Enable field weakening"},
+  	{"FIELD_WEAK_HI"  ,ADD_PARAM(rtP_Left.r_fieldWeakHi,rtP_Right.r_fieldWeakHi)   ,0          ,FIELD_WEAK_HI   ,0      ,24000  ,0               ,4     ,Input_Lim_Init     ,"Field weak high [RPM]"},
+	  {"FIELD_WEAK_LO"  ,ADD_PARAM(rtP_Left.r_fieldWeakLo,rtP_Right.r_fieldWeakLo)   ,0          ,FIELD_WEAK_LO   ,0      ,16000  ,0               ,4     ,Input_Lim_Init     ,"Field weak low [RPM)"},
+	  {"FIEL_WEAK_MAX"  ,ADD_PARAM(rtP_Left.id_fieldWeakMax,rtP_Left.id_fieldWeakMax),0          ,FIELD_WEAK_MAX  ,0      ,3200   ,A2BIT_CONV      ,4     ,NULL               ,"Field weak max current [A]"},
+};
+
+uint8_t setValue(uint8_t index, int32_t newValue) {
+  int32_t value = newValue;
+  // Check divider
+  if(params[index].div){
+    value *= params[index].div;
+  } 
+  // Check Shift
+  if (params[index].fix){
+    value <<= params[index].fix;
+  } 
+
+  if (value >= params[index].min && value <= params[index].max){
+    if (*(int32_t*)params[index].value != value){ 
+      // if value is different, beep and assign value
+      beepShort(8);
+      switch (params[index].type){
+        case UINT8_T:
+          *(uint8_t*)params[index].value2 = *(uint8_t*)params[index].value = value;
+          break;
+        case UINT16_T:
+          *(uint16_t*)params[index].value2 = *(uint16_t*)params[index].value = value;
+          break;
+        case UINT32_T:
+          *(uint32_t*)params[index].value2 = *(uint32_t*)params[index].value = value;
+          break;
+        case INT8_T:
+          *(int8_t*)params[index].value2 = *(int8_t*)params[index].value = value;
+          break;
+        case INT16_T:
+          *(int16_t*)params[index].value2 = *(int16_t*)params[index].value = value;
+          break;
+        case INT32_T:
+          *(int32_t*)params[index].value2 = *(int32_t*)params[index].value = value;
+          break;
+      }
+    }
+    // Run callback function if assigned
+    if (params[index].callback_function) (*params[index].callback_function)();
+    return 1;
+  }else{
+    return 0;
+  }
+}
+
+uint8_t initValue(uint8_t index) {
+  return setValue(index,(int32_t) params[index].init); 
+}
+
+uint32_t getValue(uint8_t index) {
+  int32_t value;
+  switch (params[index].type){
+    case UINT8_T:
+      value = *(uint8_t*)params[index].value;
+      break;
+    case UINT16_T:
+      value = *(uint16_t*)params[index].value;
+      break;
+    case UINT32_T:
+      value = *(uint32_t*)params[index].value;
+      break;
+    case INT8_T:
+      value = *(int8_t*)params[index].value;
+      break;
+    case INT16_T:
+      value = *(int16_t*)params[index].value;
+      break;
+    case INT32_T:
+      value = *(int32_t*)params[index].value;
+      break;
+    default:
+      value = 0;
+  }
+
+  if(params[index].div){
+    value /= params[index].div;
+  }
+  if(params[index].fix){
+    value >>= params[index].fix;
+  }
+  return value;
+}
+
+void dumpValues(){
+  printf("* ");
+  for(int index=0;index<PARAM_SIZE(params);index++){
+    printf("%s:%li ",params[index].name,getValue(index));
+  }
+  printf("\r\n");
+}
+
+uint8_t incrValue(uint8_t index) {
+  uint32_t value = getValue(index);
+  if ( value < params[index].max){
+    return setValue(index,value + 1);
+  }else{
+    return setValue(index,(int32_t) params[index].min);
+  } 
+}
+
+uint8_t saveValue(uint8_t index) {
+  uint32_t value = getValue(index); 
+  if (params[index].addr){
+    HAL_FLASH_Unlock();
+    EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)value);    
+    HAL_FLASH_Lock();
+    return 1;
+  }
+  return 0;
+}
 
 
+ 
 /* =========================== Initialization Functions =========================== */
 
 void BLDC_Init(void) {
@@ -1197,7 +1328,7 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len)
 {
   for (; len > 0; len--, userCommand++) {
     if (*userCommand != '\n' && *userCommand != '\r') {   // Do not accept 'new line' and 'carriage return' commands
-      printf("Command = %c\r\n", *userCommand);
+      //printf("Command = %c\r\n", *userCommand);
       // handle_input(*userCommand);                      // -> Create this function to handle the user commands
     }
   }
