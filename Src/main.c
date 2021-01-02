@@ -63,6 +63,7 @@ extern ExtY rtY_Right;                  /* External outputs */
 //---------------
 
 extern uint8_t     inIdx;               // input index used for dual-inputs
+extern uint8_t     inIdx_prev;
 extern InputStruct input1[];            // input structure
 extern InputStruct input2[];            // input structure
 
@@ -505,9 +506,10 @@ int main(void) {
     }
 
     // HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
-    // Update main loop states
-    cmdL_prev = cmdL;
-    cmdR_prev = cmdR;
+    // Update states
+    inIdx_prev = inIdx;
+    cmdL_prev  = cmdL;
+    cmdR_prev  = cmdR;
     main_loop_counter++;
   }
 }

@@ -88,8 +88,8 @@ ExtU     rtU_Right;                     /* External inputs */
 ExtY     rtY_Right;                     /* External outputs */
 //---------------
 
-uint8_t         inIdx     = 0;
-static uint8_t  inIdxPrev = 0;
+uint8_t  inIdx      = 0;
+uint8_t  inIdx_prev = 0;
 #if defined(PRI_INPUT1) && defined(PRI_INPUT2) && defined(AUX_INPUT1) && defined(AUX_INPUT2)
 InputStruct input1[INPUTS_NR] = { {0, 0, 0, PRI_INPUT1}, {0, 0, 0, AUX_INPUT1} };
 InputStruct input2[INPUTS_NR] = { {0, 0, 0, PRI_INPUT2}, {0, 0, 0, AUX_INPUT2} };
@@ -1004,12 +1004,10 @@ void handleTimeout(void) {
     }
 
     // Beep in case of Input index change
-    if (inIdx && !inIdxPrev) {                                          // rising edge
+    if (inIdx && !inIdx_prev) {                                         // rising edge
       beepShort(8);
-      inIdxPrev = inIdx;
-    } else if (!inIdx && inIdxPrev) {                                   // falling edge
+    } else if (!inIdx && inIdx_prev) {                                  // falling edge
       beepShort(18);
-      inIdxPrev = inIdx;
     }
 }
 
@@ -1368,8 +1366,8 @@ void sideboardLeds(uint8_t *leds) {
  */
 void sideboardSensors(uint8_t sensors) {
   #if !defined(VARIANT_HOVERBOARD) && (defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3))
-    static uint8_t sensor1_prev, sensor2_prev;
     static uint8_t sensor1_index;                                 // holds the press index number for sensor1, when used as a button
+    static uint8_t sensor1_prev,  sensor2_prev;
     uint8_t sensor1_trig = 0, sensor2_trig = 0;
     #if defined(SIDEBOARD_SERIAL_USART2)
     uint8_t  sideboardIdx = SIDEBOARD_SERIAL_USART2;
@@ -1385,6 +1383,9 @@ void sideboardSensors(uint8_t sensors) {
         sensor1_index = (sideboardSns & SWC_SET) >> 11;           // SWC on RC transmitter is used to change Control Mode
       }
       sensor1_trig  = sensor1_index != sensor1_prev;              // rising or falling edge change detection
+      if (inIdx != inIdx_prev) {                                  // Force one update at Input idx change
+        sensor1_trig  = 1;
+      }
       sensor1_prev  = sensor1_index;
     } else {                                                      // Use Optical switches
       sensor1_trig  = (sensors & SENSOR1_SET) && !sensor1_prev;   // rising edge detection
@@ -1415,22 +1416,24 @@ void sideboardSensors(uint8_t sensors) {
           rtP_Left.z_ctrlTypSel = rtP_Right.z_ctrlTypSel = COM_CTRL;
           break;
       }
-      beepShortMany(sensor1_index + 1, 1);
+      if (inIdx == inIdx_prev) { beepShortMany(sensor1_index + 1, 1); }
       if (++sensor1_index > 4) { sensor1_index = 0; }
     }
 
-    // Field Weakening Activation/Deactivation
-    #ifdef CRUISE_CONTROL_SUPPORT
+    #ifdef CRUISE_CONTROL_SUPPORT                                 // Cruise Control Activation/Deactivation
       if (sensor2_trig) {
         cruiseControl(sensor2_trig);
       }
-    #else
+    #else                                                         // Field Weakening Activation/Deactivation
       static uint8_t  sensor2_index = 1;                          // holds the press index number for sensor2, when used as a button
 
       // Override in case the Sideboard control is Active
       if (inIdx == sideboardIdx) {                                // Use Sideboard data
         sensor2_index = (sideboardSns & SWD_SET) >> 13;           // SWD on RC transmitter is used to Activate/Deactivate Field Weakening
         sensor2_trig  = sensor2_index != sensor2_prev;            // rising or falling edge change detection
+        if (inIdx != inIdx_prev) {                                // Force one update at Input idx change
+          sensor2_trig  = 1;
+        }
         sensor2_prev  = sensor2_index;
       }
 
@@ -1447,7 +1450,7 @@ void sideboardSensors(uint8_t sensors) {
             Input_Lim_Init();
             break; 
         }
-        beepShortMany(sensor2_index + 1, 1);
+        if (inIdx == inIdx_prev) { beepShortMany(sensor2_index + 1, 1); }
         if (++sensor2_index > 1) { sensor2_index = 0; }
       }
     #endif  // CRUISE_CONTROL_SUPPORT
