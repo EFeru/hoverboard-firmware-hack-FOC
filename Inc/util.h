@@ -153,10 +153,11 @@ void dumpValues();
 
 typedef struct parameter_entry_struct parameter_entry;
 struct parameter_entry_struct {
+  const uint8_t parameter_type;
   const char *name;
-	void *value;
-  void *value2;
-  const uint8_t type;
+	void *valueL;
+  void *valueR;
+  const uint8_t variable_type;
   const int32_t addr;
 	const int32_t init;
   const int32_t min;
