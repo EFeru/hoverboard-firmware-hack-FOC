@@ -232,6 +232,7 @@ static uint8_t standstillAcv = 0;
 #endif
 
 enum paramTypes {PARAMETER,VARIABLE};
+
 // Keywords to match with param index
 enum parameters {PCTRL_MOD_REQ,
                  PCTRL_TYP_SEL,
@@ -243,7 +244,11 @@ enum parameters {PCTRL_MOD_REQ,
                  PFIELD_WEAK_MAX,
                  PPHASE_ADV_MAX,
                  VI_DC_LINK,
-                 VSPEED_AVG};
+                 VSPEED_AVG,
+                 VRATE,
+                 VSPEED_COEFFICIENT,
+                 VSTEER_COEFFICIENT,
+                 };
 
 parameter_entry params[] = {
   // Type             ,Name                 ,ValueL ptr                                                   ,ValueR                    ,EEPRM Addr ,Init              ,Min    ,Max    ,Div             ,Fix   ,Callback Function  ,Help text
