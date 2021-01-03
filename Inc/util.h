@@ -142,24 +142,24 @@ enum types {UINT8_T,UINT16_T,UINT32_T,INT8_T,INT16_T,INT32_T,INT,FLOAT};
     float:      FLOAT)
 
 #define PARAM_SIZE(param) sizeof(param) / sizeof(parameter_entry)
-#define ADD_PARAM(value_var,value_var2) &value_var,&value_var2,typename(value_var)
+#define ADD_PARAM(var) typename(var),&var
 
-uint8_t setValue(uint8_t index, int32_t newValue);
-uint8_t initValue(uint8_t index);
-uint32_t getValue(uint8_t index);
-uint8_t incrValue(uint8_t index);
-uint8_t saveValue(uint8_t index);
-void saveAllParams();
-void dumpParamValues();
-void dumpParameters();
+uint8_t setParamVal(uint8_t index, int32_t newValue);
+uint8_t initParamVal(uint8_t index);
+uint32_t getParamVal(uint8_t index);
+uint8_t incrParamVal(uint8_t index);
+uint8_t saveParamVal(uint8_t index);
+void saveAllParamVal();
+void dumpParamVal();
+void dumpParamDef();
 
 typedef struct parameter_entry_struct parameter_entry;
 struct parameter_entry_struct {
-  const uint8_t parameter_type;
+  const uint8_t type;
   const char *name;
-	void *valueL;
+	const uint8_t datatype;
+  void *valueL;
   void *valueR;
-  const uint8_t variable_type;
   const int32_t addr;
 	const int32_t init;
   const int32_t min;

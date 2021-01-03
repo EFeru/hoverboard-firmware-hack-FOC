@@ -232,6 +232,7 @@ static uint8_t standstillAcv = 0;
 #endif
 
 enum paramTypes {PARAMETER,VARIABLE};
+// Keywords to match with param index
 enum parameters {PCTRL_MOD_REQ,
                  PCTRL_TYP_SEL,
                  PI_MOT_MAX,
@@ -245,59 +246,68 @@ enum parameters {PCTRL_MOD_REQ,
                  VSPEED_AVG};
 
 parameter_entry params[] = {
-  // Type             ,Name             ,Value ptr                                                    ,EEPRM Addr ,Init            ,Min    ,Max    ,Div             ,Fix   ,Callback Function  ,Help text
-    {PARAMETER        ,"CTRL_MOD_REQ"   ,ADD_PARAM(ctrlModReqRaw,ctrlModReqRaw)                       ,0          ,CTRL_MOD_REQ    ,0      ,3      ,0               ,0     ,NULL               ,"Ctrl mode [0] Open [1] voltage [2] Speed [3] Torque"},
-    {PARAMETER        ,"CTRL_TYP_SEL"   ,ADD_PARAM(rtP_Left.z_ctrlTypSel,rtP_Right.z_ctrlTypSel)      ,0          ,CTRL_TYP_SEL    ,0      ,2      ,0               ,0     ,NULL               ,"Ctrl type [0] Commutation [1] Sinusoidal [2] FOC"},
-    {PARAMETER        ,"I_MOT_MAX"      ,ADD_PARAM(rtP_Left.i_max,rtP_Right.i_max)                    ,1          ,I_MOT_MAX       ,0      ,40     ,A2BIT_CONV      ,4     ,NULL               ,"Maximum phase current [A]"},
-    {PARAMETER        ,"N_MOT_MAX"      ,ADD_PARAM(rtP_Left.n_max,rtP_Right.n_max)                    ,2          ,N_MOT_MAX       ,0      ,2000   ,0               ,4     ,NULL               ,"Maximum motor [RPM]"},
-    {PARAMETER        ,"FIELD_WEAK_ENA" ,ADD_PARAM(rtP_Left.b_fieldWeakEna,rtP_Right.b_fieldWeakEna)  ,0          ,FIELD_WEAK_ENA  ,0      ,1      ,0               ,0     ,NULL               ,"Enable field weakening"},
-  	{PARAMETER        ,"FIELD_WEAK_HI"  ,ADD_PARAM(rtP_Left.r_fieldWeakHi,rtP_Right.r_fieldWeakHi)    ,0          ,FIELD_WEAK_HI   ,0      ,1500   ,0               ,4     ,Input_Lim_Init     ,"Field weak high [RPM]"},
-	  {PARAMETER        ,"FIELD_WEAK_LO"  ,ADD_PARAM(rtP_Left.r_fieldWeakLo,rtP_Right.r_fieldWeakLo)    ,0          ,FIELD_WEAK_LO   ,0      ,1000   ,0               ,4     ,Input_Lim_Init     ,"Field weak low [RPM)"},
-	  {PARAMETER        ,"FIEL_WEAK_MAX"  ,ADD_PARAM(rtP_Left.id_fieldWeakMax,rtP_Right.id_fieldWeakMax),0          ,FIELD_WEAK_MAX  ,0      ,20     ,A2BIT_CONV      ,4     ,NULL               ,"Field weak max current [A](only for FOC)"},
-    {PARAMETER        ,"PHASE_ADV_MAX"  ,ADD_PARAM(rtP_Left.a_phaAdvMax,rtP_Right.a_phaAdvMax)        ,0          ,PHASE_ADV_MAX   ,0      ,55     ,0               ,4     ,NULL               ,"Maximum Phase Advance angle [Deg](only for SIN)"},     
-    {VARIABLE         ,"I_DC_LINK"      ,ADD_PARAM(rtU_Left.i_DCLink,rtU_Right.i_DCLink)              ,0          ,0               ,0      ,0      ,A2BIT_CONV      ,0     ,NULL               ,"DC Link current [A]"},
-    {VARIABLE         ,"SPEED_AVG"      ,ADD_PARAM(speedAvg,speedAvg)                                 ,0          ,0               ,0      ,0      ,0               ,0     ,NULL               ,"Motor Speed Average [RPM]"},
-
+  // Type             ,Name                 ,ValueL ptr                                                   ,ValueR                    ,EEPRM Addr ,Init              ,Min    ,Max    ,Div             ,Fix   ,Callback Function  ,Help text
+    {PARAMETER        ,"CTRL_MOD_REQ"       ,ADD_PARAM(ctrlModReqRaw)                                     ,NULL                      ,0          ,CTRL_MOD_REQ      ,1      ,3      ,0               ,0     ,NULL               ,"Ctrl mode [1] voltage [2] Speed [3] Torque"},
+    {PARAMETER        ,"CTRL_TYP_SEL"       ,ADD_PARAM(rtP_Left.z_ctrlTypSel)                             ,&rtP_Right.z_ctrlTypSel   ,0          ,CTRL_TYP_SEL      ,0      ,2      ,0               ,0     ,NULL               ,"Ctrl type [0] Commutation [1] Sinusoidal [2] FOC"},
+    {PARAMETER        ,"I_MOT_MAX"          ,ADD_PARAM(rtP_Left.i_max)                                    ,&rtP_Right.i_max          ,1          ,I_MOT_MAX         ,0      ,40     ,A2BIT_CONV      ,4     ,NULL               ,"Maximum phase current [A]"},
+    {PARAMETER        ,"N_MOT_MAX"          ,ADD_PARAM(rtP_Left.n_max)                                    ,&rtP_Right.n_max          ,2          ,N_MOT_MAX         ,0      ,2000   ,0               ,4     ,NULL               ,"Maximum motor [RPM]"},
+    {PARAMETER        ,"FIELD_WEAK_ENA"     ,ADD_PARAM(rtP_Left.b_fieldWeakEna)                           ,&rtP_Right.b_fieldWeakEna ,0          ,FIELD_WEAK_ENA    ,0      ,1      ,0               ,0     ,NULL               ,"Enable field weakening"},
+  	{PARAMETER        ,"FIELD_WEAK_HI"      ,ADD_PARAM(rtP_Left.r_fieldWeakHi)                            ,&rtP_Right.r_fieldWeakHi  ,0          ,FIELD_WEAK_HI     ,0      ,1500   ,0               ,4     ,Input_Lim_Init     ,"Field weak high [RPM]"},
+	  {PARAMETER        ,"FIELD_WEAK_LO"      ,ADD_PARAM(rtP_Left.r_fieldWeakLo)                            ,&rtP_Right.r_fieldWeakLo  ,0          ,FIELD_WEAK_LO     ,0      ,1000   ,0               ,4     ,Input_Lim_Init     ,"Field weak low [RPM)"},
+	  {PARAMETER        ,"FIEL_WEAK_MAX"      ,ADD_PARAM(rtP_Left.id_fieldWeakMax)                          ,&rtP_Right.id_fieldWeakMax,0          ,FIELD_WEAK_MAX    ,0      ,20     ,A2BIT_CONV      ,4     ,NULL               ,"Field weak max current [A](only for FOC)"},
+    {PARAMETER        ,"PHASE_ADV_MAX"      ,ADD_PARAM(rtP_Left.a_phaAdvMax)                              ,&rtP_Right.a_phaAdvMax    ,0          ,PHASE_ADV_MAX     ,0      ,55     ,0               ,4     ,NULL               ,"Maximum Phase Advance angle [Deg](only for SIN)"},     
+    {VARIABLE         ,"I_DC_LINK"          ,ADD_PARAM(rtU_Left.i_DCLink)                                 ,&rtU_Right.i_DCLink       ,0          ,0                 ,0      ,0      ,A2BIT_CONV      ,0     ,NULL               ,"DC Link current [A]"},
+    {VARIABLE         ,"SPEED_AVG"          ,ADD_PARAM(speedAvg)                                          ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0     ,NULL               ,"Motor Speed Average [RPM]"},
+    {VARIABLE         ,"RATE"               ,0 , NULL                                                  ,NULL                      ,0          ,RATE              ,0      ,0      ,0               ,4     ,NULL               ,"Rate"},
+    {VARIABLE         ,"SPEED_COEFFICIENT"  ,0 , NULL                                                  ,NULL                      ,0          ,SPEED_COEFFICIENT ,0      ,0      ,0               ,4     ,NULL               ,"Speed Coefficient"},
+    {VARIABLE         ,"STEER_COEFFICIENT"  ,0 , NULL                                                  ,NULL                      ,0          ,STEER_COEFFICIENT ,0      ,0      ,0               ,4     ,NULL               ,"Steer Coefficient"},
 };
 
-uint8_t setParam(uint8_t index, int32_t newValue) {
+uint8_t setParamVal(uint8_t index, int32_t newValue) {
   // Only Parameters can be set
-  if (params[index].parameter_type == VARIABLE) return 0;
+  if (params[index].type == VARIABLE) return 0;
   
   int32_t value = newValue;
   // check mean and max before conversion to internal values
   if (value >= params[index].min && value <= params[index].max){
   
-    // Check divider
+    // Multiply to translate to internal format
     if(params[index].div){
       value *= params[index].div;
     } 
-    // Check Shift
+
+    // Shift to translate to internal format
     if (params[index].fix){
       value <<= params[index].fix;
     }
   
     if (*(int32_t*)params[index].valueL != value){ 
-      // if value is different, beep and assign new value
+      // if value is different, beep, cast and assign new value
       beepShort(8);
-      switch (params[index].variable_type){
+      switch (params[index].datatype){
         case UINT8_T:
-          *(uint8_t*)params[index].valueL = *(uint8_t*)params[index].valueR = value;
+          if (params[index].valueL != NULL) *(uint8_t*)params[index].valueL = value;
+          if (params[index].valueR != NULL) *(uint8_t*)params[index].valueR = value;
           break;
         case UINT16_T:
-          *(uint16_t*)params[index].valueL = *(uint16_t*)params[index].valueR = value;
+          if (params[index].valueL != NULL) *(uint16_t*)params[index].valueL = value; 
+          if (params[index].valueR != NULL) *(uint16_t*)params[index].valueR = value;
           break;
         case UINT32_T:
-          *(uint32_t*)params[index].valueL = *(uint32_t*)params[index].valueR = value;
+          if (params[index].valueL != NULL) *(uint32_t*)params[index].valueL = value; 
+          if (params[index].valueR != NULL) *(uint32_t*)params[index].valueR = value;
           break;
         case INT8_T:
-          *(int8_t*)params[index].valueL = *(int8_t*)params[index].valueR = value;
+          if (params[index].valueL != NULL) *(int8_t*)params[index].valueL = value; 
+          if (params[index].valueR != NULL) *(int8_t*)params[index].valueR = value;
           break;
         case INT16_T:
-          *(int16_t*)params[index].valueL = *(int16_t*)params[index].valueR = value;
+          if (params[index].valueL != NULL) *(int16_t*)params[index].valueL = value; 
+          if (params[index].valueR != NULL) *(int16_t*)params[index].valueR = value;
           break;
         case INT32_T:
-          *(int32_t*)params[index].valueL = *(int32_t*)params[index].valueR = value;
+          if (params[index].valueL != NULL) *(int32_t*)params[index].valueL = value; 
+          if (params[index].valueR != NULL) *(int32_t*)params[index].valueR = value;
           break;
       }
     }
@@ -309,90 +319,140 @@ uint8_t setParam(uint8_t index, int32_t newValue) {
   }
 }
 
-uint8_t initParam(uint8_t index) {
-  // Only Parameters can be initialized
-  if (params[index].parameter_type == VARIABLE) return 0;
-  return setParam(index,(int32_t) params[index].init); 
+uint32_t getParamVal(uint8_t index) {
+  int32_t value = 0;
+
+  int countVar = 0;
+  if (params[index].valueL != NULL) countVar++;
+  if (params[index].valueR != NULL) countVar++;
+
+  if (countVar > 0){
+    // Read Left and Right values and calculate average 
+    // If left and right have to be summed up, DIV field could be adapted to multiply by 2
+    // Cast to parameter datatype
+    switch (params[index].datatype){
+      case UINT8_T:
+        if (params[index].valueL != NULL) value += *(uint8_t*)params[index].valueL;
+        if (params[index].valueR != NULL) value += *(uint8_t*)params[index].valueR;
+        break;
+      case UINT16_T:
+        if (params[index].valueL != NULL) value += *(uint16_t*)params[index].valueL;
+        if (params[index].valueR != NULL) value += *(uint16_t*)params[index].valueR;
+        break;
+      case UINT32_T:
+        if (params[index].valueL != NULL) value += *(uint32_t*)params[index].valueL;
+        if (params[index].valueR != NULL) value += *(uint32_t*)params[index].valueR;
+        break;
+      case INT8_T:
+        if (params[index].valueL != NULL) value += *(int8_t*)params[index].valueL;
+        if (params[index].valueR != NULL) value += *(int8_t*)params[index].valueR;
+        break;
+      case INT16_T:
+        if (params[index].valueL != NULL) value += *(int16_t*)params[index].valueL;
+        if (params[index].valueR != NULL) value += *(int16_t*)params[index].valueR;
+        break;
+      case INT32_T:
+        if (params[index].valueL != NULL) value += *(int32_t*)params[index].valueL;
+        if (params[index].valueR != NULL) value += *(int32_t*)params[index].valueR;
+        break;
+      default:
+        value = 0;
+    }
+
+    // Divide by number of values provided for the parameter
+    value /= countVar;
+
+    // Divide to translate to external format
+    if(params[index].div){
+      value /= params[index].div;
+    }
+
+    // Shift to translate to external format
+    if(params[index].fix){
+      value >>= params[index].fix;
+    }
+
+    return value;
+  }else{
+   // No variable was provided, return init value that might contain a macro
+    return params[index].init;
+  }
+
+  return 0;
+  
 }
 
-uint32_t getParam(uint8_t index) {
-  int32_t value;
-  switch (params[index].variable_type){
-    case UINT8_T:
-      value = *(uint8_t*)params[index].valueL + *(uint8_t*)params[index].valueR /2;
-      break;
-    case UINT16_T:
-      value = *(uint16_t*)params[index].valueL + *(uint16_t*)params[index].valueR /2;
-      break;
-    case UINT32_T:
-      value = *(uint32_t*)params[index].valueL + *(uint32_t*)params[index].valueR /2;
-      break;
-    case INT8_T:
-      value = *(int8_t*)params[index].valueL + *(int8_t*)params[index].valueR /2;
-      break;
-    case INT16_T:
-      value = *(int16_t*)params[index].valueL + *(int16_t*)params[index].valueR /2;
-      break;
-    case INT32_T:
-      value = *(int32_t*)params[index].valueL + *(int32_t*)params[index].valueR /2;
-      break;
-    default:
-      value = 0;
-  }
-
-  if(params[index].div){
-    value /= params[index].div;
-  }
-  if(params[index].fix){
-    value >>= params[index].fix;
-  }
-  return value;
-}
-
-void dumpParamValues(){
+void dumpParamVal(){
   printf("*");
   for(int index=0;index<PARAM_SIZE(params);index++){
-    printf("%s:%li ",params[index].name,getParam(index));
+    printf("%s:%li ",params[index].name,getParamVal(index));
   }
   printf("\r\n");
 }
 
-void dumpParameters(){
+void dumpParamDef(){
   for(int index=0;index<PARAM_SIZE(params);index++){
-    printf("#name:%s help:%s value:%li init:%li min:%li max:%li\r\n",params[index].name,params[index].help,getParam(index),params[index].init,params[index].min,params[index].max);
+    printf("#name:%s help:%s value:%li init:%li min:%li max:%li\r\n",
+           params[index].name,
+           params[index].help,
+           getParamVal(index),
+           params[index].init,
+           params[index].min,
+           params[index].max);
   }
 }
 
-uint8_t incrParam(uint8_t index) {
+uint8_t incrParamVal(uint8_t index) {
   // Only Parameters can be set
-  if (params[index].parameter_type == VARIABLE) return 0;
+  if (params[index].type == VARIABLE) return 0;
 
-  uint32_t value = getParam(index);
+  uint32_t value = getParamVal(index);
   if (value < params[index].max){
-    return setParam(index,value + 1);
+    return setParamVal(index,value + 1);
   }else{
-    return setParam(index,(int32_t) params[index].min);
+    return setParamVal(index,(int32_t) params[index].min);
   } 
 }
 
-uint8_t saveParam(uint8_t index) {
+uint8_t saveParamVal(uint8_t index) {
   // Only Parameters can be saved to EEPROM
-  if (params[index].parameter_type == VARIABLE) return 0;
+  if (params[index].type == VARIABLE) return 0;
 
   if (params[index].addr){
     HAL_FLASH_Unlock();
-    EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)getValue(index));    
+    EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)getParamVal(index));    
     HAL_FLASH_Lock();
     return 1;
   }
   return 0;
 }
 
-void saveAllParams() {
+uint8_t initParamVal(uint8_t index) {
+  // Only Parameters can be loaded from EEPROM
+  if (params[index].type == VARIABLE) return 0;
+ 
+  if (params[index].addr){
+    // if EEPROM address is specified, init from EEPROM address
+    uint16_t readEEPROMVal;
+    HAL_FLASH_Unlock();
+    EE_ReadVariable(VirtAddVarTab[params[index].addr] , &readEEPROMVal);    
+    return setParamVal(index,(int32_t) readEEPROMVal);
+    HAL_FLASH_Lock();
+    return 1;
+  }else{
+    // Initialize from param array
+    setParamVal(index,(int32_t) params[index].init);
+    return 1;
+  }
+
+  return 0;
+}
+
+void saveAllParamVal() {
   HAL_FLASH_Unlock();
   for(int index=0;index<PARAM_SIZE(params);index++){
-    if (params[index].parameter_type != VARIABLE && params[index].addr){
-      EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)getValue(index));    
+    if (params[index].type != VARIABLE && params[index].addr){
+      EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)getParamVal(index));    
     }
   }
   HAL_FLASH_Lock();
