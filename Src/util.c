@@ -262,7 +262,7 @@ parameter_entry params[] = {
 
 uint8_t setParam(uint8_t index, int32_t newValue) {
   // Only Parameters can be set
-  if (params[index].parameter_type == VARIABLE) return 1;
+  if (params[index].parameter_type == VARIABLE) return 0;
   
   int32_t value = newValue;
   // check mean and max before conversion to internal values
@@ -310,6 +310,8 @@ uint8_t setParam(uint8_t index, int32_t newValue) {
 }
 
 uint8_t initParam(uint8_t index) {
+  // Only Parameters can be initialized
+  if (params[index].parameter_type == VARIABLE) return 0;
   return setParam(index,(int32_t) params[index].init); 
 }
 
@@ -362,6 +364,9 @@ void dumpParameters(){
 }
 
 uint8_t incrParam(uint8_t index) {
+  // Only Parameters can be set
+  if (params[index].parameter_type == VARIABLE) return 0;
+
   uint32_t value = getParam(index);
   if (value < params[index].max){
     return setParam(index,value + 1);
@@ -371,14 +376,26 @@ uint8_t incrParam(uint8_t index) {
 }
 
 uint8_t saveParam(uint8_t index) {
-  uint32_t value = getValue(index); 
+  // Only Parameters can be saved to EEPROM
+  if (params[index].parameter_type == VARIABLE) return 0;
+
   if (params[index].addr){
     HAL_FLASH_Unlock();
-    EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)value);    
+    EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)getValue(index));    
     HAL_FLASH_Lock();
     return 1;
   }
   return 0;
+}
+
+void saveAllParams() {
+  HAL_FLASH_Unlock();
+  for(int index=0;index<PARAM_SIZE(params);index++){
+    if (params[index].parameter_type != VARIABLE && params[index].addr){
+      EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)getValue(index));    
+    }
+  }
+  HAL_FLASH_Lock();
 }
 
 

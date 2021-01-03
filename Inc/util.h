@@ -149,7 +149,9 @@ uint8_t initValue(uint8_t index);
 uint32_t getValue(uint8_t index);
 uint8_t incrValue(uint8_t index);
 uint8_t saveValue(uint8_t index);
-void dumpValues();
+void saveAllParams();
+void dumpParamValues();
+void dumpParameters();
 
 typedef struct parameter_entry_struct parameter_entry;
 struct parameter_entry_struct {
