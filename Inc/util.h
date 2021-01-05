@@ -127,48 +127,5 @@ typedef struct {
 } MultipleTap;
 void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x);
 
-#define SIZEP(x) ((char*)(&(x) + 1) - (char*)&(x))
-
-
-enum types {UINT8_T,UINT16_T,UINT32_T,INT8_T,INT16_T,INT32_T,INT,FLOAT};
-#define typename(x) _Generic((x), \
-    uint8_t:    UINT8_T, \
-    uint16_t:   UINT16_T, \
-    uint32_t:   UINT32_T, \
-    int8_t:     INT8_T, \
-    int16_t:    INT16_T, \
-    int32_t:    INT32_T, \
-	  int:	    	INT, \
-    float:      FLOAT)
-
-#define PARAM_SIZE(param) sizeof(param) / sizeof(parameter_entry)
-#define ADD_PARAM(var) typename(var),&var
-
-uint8_t setParamVal(uint8_t index, int32_t newValue);
-uint8_t initParamVal(uint8_t index);
-uint32_t getParamVal(uint8_t index);
-uint8_t incrParamVal(uint8_t index);
-uint8_t saveParamVal(uint8_t index);
-void saveAllParamVal();
-void dumpParamVal();
-void dumpParamDef();
-
-typedef struct parameter_entry_struct parameter_entry;
-struct parameter_entry_struct {
-  const uint8_t type;
-  const char *name;
-	const uint8_t datatype;
-  void *valueL;
-  void *valueR;
-  const int32_t addr;
-	const int32_t init;
-  const int32_t min;
-	const int32_t max;
-  const uint8_t div;
-  const uint8_t fix;
-	void (*callback_function)();
-	const char *help;
-};
-
 #endif
 

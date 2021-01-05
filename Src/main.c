@@ -29,6 +29,7 @@
 #include "util.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
+#include "comms.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
@@ -420,16 +421,20 @@ int main(void) {
 
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
-      if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms
-        printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i\r\n",
-          input1[inIdx].raw,        // 1: INPUT1
-          input2[inIdx].raw,        // 2: INPUT2
-          cmdL,                     // 3: output command: [-1000, 1000]
-          cmdR,                     // 4: output command: [-1000, 1000]
-          adc_buffer.batt1,         // 5: for battery voltage calibration
-          batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC, // 6: for verifying battery voltage calibration
-          board_temp_adcFilt,       // 7: for board temperature calibration
-          board_temp_deg_c);        // 8: for verifying board temperature calibration
+      if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms      
+        #ifndef DEBUG_SERIAL_PROTOCOL
+          printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i\r\n",
+            input1[inIdx].raw,        // 1: INPUT1
+            input2[inIdx].raw,        // 2: INPUT2
+            cmdL,                     // 3: output command: [-1000, 1000]
+            cmdR,                     // 4: output command: [-1000, 1000]
+            adc_buffer.batt1,         // 5: for battery voltage calibration
+            batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC, // 6: for verifying battery voltage calibration
+            board_temp_adcFilt,       // 7: for board temperature calibration
+            board_temp_deg_c);        // 8: for verifying board temperature calibration
+        #else
+          printParamVal();
+        #endif
       }
     #endif
 
