@@ -70,6 +70,7 @@ void handle_input(uint8_t *userCommand, uint32_t len);
 
 typedef struct command_entry_struct command_entry;
 struct command_entry_struct {
+  const uint8_t type;
   const char *name;
   int8_t (*callback_function0)();
   int8_t (*callback_function1)(uint8_t index);
@@ -84,7 +85,7 @@ struct parameter_entry_struct {
 	const uint8_t datatype;
   void *valueL;
   void *valueR;
-  const int32_t addr;
+  const uint16_t addr;
 	const int32_t init;
   const int32_t min;
 	const int32_t max;
@@ -92,7 +93,6 @@ struct parameter_entry_struct {
   const uint8_t mul;
   const uint8_t fix;
 	void (*callback_function)();
-  uint8_t watch;
 	const char *help;
 };
 
