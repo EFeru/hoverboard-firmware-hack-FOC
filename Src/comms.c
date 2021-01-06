@@ -63,7 +63,7 @@ const command_entry commands[] = {
     {READ   ,"WATCH"   ,NULL              ,watchParamVal   ,NULL           ,"Toggle Parameter/Variable Watch"},
     {WRITE  ,"SET"     ,NULL              ,NULL            ,setParamValExt ,"Set Parameter"},
     {WRITE  ,"INIT"    ,NULL              ,initParamVal    ,NULL           ,"Init Parameter from EEPROM or CONFIG.H"},
-    {WRITE  ,"SAVE"    ,NULL              ,saveParamVal    ,NULL           ,"Save Parameter to EEPROM"},
+    {WRITE  ,"SAVE"    ,saveAllParamVal   ,NULL            ,NULL           ,"Save Parameters to EEPROM"},
 };
 
 enum paramTypes {PARAMETER,VARIABLE};
@@ -122,6 +122,7 @@ const parameter_entry params[] = {
 };
 
 uint8_t * watchParamList;
+uint8_t watchParamListSize = 0;
 
 // Translate from External format to Internal Format
 int32_t ExtToInt(uint8_t index,int32_t value){
@@ -136,13 +137,15 @@ int32_t ExtToInt(uint8_t index,int32_t value){
 
 // Set Param with Value from external format
 int8_t setParamValExt(uint8_t index, int32_t value) {   
+  int8_t ret = 0;
   // check min and max before conversion to internal values
   if (IN_RANGE(value,params[index].min,params[index].max)){
-    return setParamValInt(index,ExtToInt(index,value));
+    ret = setParamValInt(index,ExtToInt(index,value));
+    printParamDef(index);
   }else{
-    printf("! Value %li out of range [min:%li max:%li]",value,params[index].min,params[index].max);
-    return 0;
+    printf("! Value %li out of range [min:%li max:%li]\r\n",value,params[index].min,params[index].max);
   }
+  return ret;
 }
 
 // Set Param with value from internal format
@@ -242,31 +245,31 @@ int32_t getParamValInt(uint8_t index) {
 
 // Set watch flag for parameter
 int8_t watchParamVal(uint8_t index){
-  boolean_T found = 0;
-  uint8_t size = sizeof(watchParamList); 
-  for(int i=0;i<size;i++){
+  boolean_T found = 0; 
+  for(int i=0;i<watchParamListSize;i++){
     if (watchParamList[i] == index) found = 1;
-    if ( found && i < size - 1 ) watchParamList[i] = watchParamList[i+1]; 
+    if ( found && i < watchParamListSize - 1 ) watchParamList[i] = watchParamList[i+1]; 
   }
   
-  if (found){size--;}else{size++;}
-  if (size == 0){
+  if (found){watchParamListSize--;}else{watchParamListSize++;}
+  if (watchParamListSize == 0){
     free(watchParamList);
   }else{
-    watchParamList = (uint8_t*) realloc(watchParamList, size * sizeof(uint8_t));
+    watchParamList = (uint8_t*) realloc(watchParamList, watchParamListSize * sizeof(uint8_t));
   }
 
-  if (!found && watchParamList != NULL) watchParamList[size-1] = index;
+  if (!found && watchParamList != NULL) watchParamList[watchParamListSize-1] = index;
   
   return 1;
 }
 
 // Print value for all parameters with watch flag
 int8_t printParamVal(){
-  for(int i=0;i<sizeof(watchParamList);i++){
-    printf("%s:%li ",params[watchParamList[i]].name,getParamValExt(i));
+  if (watchParamList == NULL) return 0;
+  for(int i=0;i<watchParamListSize;i++){
+    printf("%s:%li ",params[watchParamList[i]].name,getParamValExt(watchParamList[i]));
   }
-  if (sizeof(watchParamList)>0) printf("\r\n");
+  if (watchParamListSize>0) printf("\r\n");
   return 1;
 }
 
@@ -289,19 +292,19 @@ int8_t printAllParamHelp(){
   printf("? Commands\r\n");
   for(int i=0;i<COMMAND_SIZE(commands);i++)
     printCommandHelp(i);
-  printf("\r\n");
+  printf("?\r\n");
 
   printf("? Parameters\r\n");
   for(int i=0;i<PARAM_SIZE(params);i++){
     if (params[i].type == PARAMETER) printParamHelp(i);
   }
-  printf("\r\n");
+  printf("?\r\n");
 
   printf("? Variables\r\n");
   for(int i=0;i<PARAM_SIZE(params);i++){
     if (params[i].type == VARIABLE) printParamHelp(i);
   }
-  printf("\r\n");
+  printf("?\r\n");
 
   return 1;
 }
@@ -334,26 +337,18 @@ int8_t incrParamVal(uint8_t index) {
   } 
 }
 
-// Get internal Parameter value and save it to EEprom if address is assigned 
-int8_t saveParamVal(uint8_t index) {
-  // Only Parameters with eeprom address can be saved
-  if (params[index].addr){ 
-    uint16_t writeCheck;
-    
-    HAL_FLASH_Unlock();
-    EE_ReadVariable(VirtAddVarTab[0], &writeCheck);
-    if (writeCheck != FLASH_WRITE_KEY){
-      // Flash Write Key is different, EEPROM should be wiped out
-      for(int i=0;i< sizeof(VirtAddVarTab)/sizeof(uint16_t);i++)
-        EE_WriteVariable(VirtAddVarTab[i] , 0);
-      EE_WriteVariable(VirtAddVarTab[0] , (uint16_t)FLASH_WRITE_KEY);
+// Get internal Parameter value and save it to EEprom for all paraemeter with an address assigned 
+int8_t saveAllParamVal() {
+  HAL_FLASH_Unlock();
+  EE_WriteVariable(VirtAddVarTab[0] , (uint16_t)FLASH_WRITE_KEY);
+  for(int i=0;i<PARAM_SIZE(params);i++){ 
+    // Only Parameters with eeprom address can be saved
+    if (params[i].addr){
+      EE_WriteVariable(VirtAddVarTab[params[i].addr] , (uint16_t)getParamValInt(i));    
     }
-    EE_WriteVariable(VirtAddVarTab[params[index].addr] , (uint16_t)getParamValInt(index));    
-    HAL_FLASH_Lock();
-    return 1;
-  }else{
-    return 0;
   }
+  HAL_FLASH_Lock();
+  return 1;
 }
 
 int32_t IntToExt(uint8_t index,int32_t value){
@@ -381,9 +376,11 @@ int16_t getParamInitInt(uint8_t index){
     EE_ReadVariable(VirtAddVarTab[params[index].addr] , &readVal);
     HAL_FLASH_Lock();
     
+    // EEPROM was written, use stored value
     if (writeCheck == FLASH_WRITE_KEY){
       return readVal;
     }else{
+      // Use init value from array
       return params[index].init;
     }
   }else{
@@ -394,7 +391,10 @@ int16_t getParamInitInt(uint8_t index){
 
 // initialize Parameter value with EEprom data if address is avalaible, init value otherwise
 int8_t initParamVal(uint8_t index) {
-  return setParamValInt(index,(int32_t) getParamInitInt(index));
+  int8_t ret = 0;
+  ret = setParamValInt(index,(int32_t) getParamInitInt(index));
+  printParamDef(index);
+  return ret;
 }
 
 // Find parameter in params array and return index

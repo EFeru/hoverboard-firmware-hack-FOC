@@ -52,7 +52,7 @@ int32_t getParamValExt(uint8_t index);
 int8_t initParamVal(uint8_t index);
 int8_t incrParamVal(uint8_t index);
 
-int8_t saveParamVal(uint8_t index);
+int8_t saveAllParamVal();
 int16_t getParamInitInt(uint8_t index);
 int32_t getParamInitExt(uint8_t index);
 int8_t printCommandHelp(uint8_t index);
