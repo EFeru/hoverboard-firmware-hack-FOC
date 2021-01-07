@@ -66,7 +66,17 @@ int8_t watchParamVal(uint8_t index);
 int8_t findCommand(uint8_t *userCommand, uint32_t len);
 int8_t findParam(uint8_t *userCommand, uint32_t len);
 void handle_input(uint8_t *userCommand, uint32_t len);
+void process_debug();
 
+
+typedef struct debug_command_struct debug_command;
+struct debug_command_struct {
+  uint8_t semaphore;
+  uint8_t error;
+  int8_t command_index;
+  int8_t param_index;
+  int32_t param_value;
+};
 
 typedef struct command_entry_struct command_entry;
 struct command_entry_struct {

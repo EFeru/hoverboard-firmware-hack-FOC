@@ -32,6 +32,8 @@
 
 #if defined(DEBUG_SERIAL_PROTOCOL)
 
+#define MAX_PARAM_WATCH 15
+
 extern ExtY rtY_Left;                   /* External outputs */
 extern ExtU rtU_Left;                   /* External inputs */
 extern P    rtP_Left;
@@ -121,8 +123,8 @@ const parameter_entry params[] = {
 
 };
 
-uint8_t * watchParamList;
-uint8_t watchParamListSize = 0;
+debug_command command;
+int8_t watchParamList[MAX_PARAM_WATCH] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; 
 
 // Translate from External format to Internal Format
 int32_t ExtToInt(uint8_t index,int32_t value){
@@ -242,34 +244,31 @@ int32_t getParamValInt(uint8_t index) {
   return value;
 }
 
-
-// Set watch flag for parameter
+// Add or remove parameter from watch list
 int8_t watchParamVal(uint8_t index){
-  boolean_T found = 0; 
-  for(int i=0;i<watchParamListSize;i++){
+  int8_t i,found = 0;
+  for(i=0;i < MAX_PARAM_WATCH && watchParamList[i]>-1;i++){
     if (watchParamList[i] == index) found = 1;
-    if ( found && i < watchParamListSize - 1 ) watchParamList[i] = watchParamList[i+1]; 
+    if (found) watchParamList[i] = (i < MAX_PARAM_WATCH-1)?watchParamList[i+1]:-1;
   }
-  
-  if (found){watchParamListSize--;}else{watchParamListSize++;}
-  if (watchParamListSize == 0){
-    free(watchParamList);
-  }else{
-    watchParamList = (uint8_t*) realloc(watchParamList, watchParamListSize * sizeof(uint8_t));
+  if (!found){
+    if (watchParamList[i] == -1){
+      watchParamList[i] = index;
+      return 1;
+    }
+    printf("! Watch list is full\r\n");
+    return 0;
   }
-
-  if (!found && watchParamList != NULL) watchParamList[watchParamListSize-1] = index;
-  
   return 1;
 }
 
 // Print value for all parameters with watch flag
 int8_t printParamVal(){
-  if (watchParamList == NULL) return 0;
-  for(int i=0;i<watchParamListSize;i++){
+  int8_t i = 0; 
+  for(i=0;i < MAX_PARAM_WATCH && watchParamList[i]>-1;i++){
     printf("%s:%li ",params[watchParamList[i]].name,getParamValExt(watchParamList[i]));
   }
-  if (watchParamListSize>0) printf("\r\n");
+  if (i>0) printf("\r\n");
   return 1;
 }
 
@@ -424,6 +423,166 @@ int8_t findCommand(uint8_t *userCommand, uint32_t len){
 }
 
 
+
+// Parse and save the command to be executed
+void handle_input(uint8_t *userCommand, uint32_t len)
+{
+
+  // If there is already an unprocessed command, exit
+  if (command.semaphore == 1) return;
+  
+  int8_t  cindex = -1;
+  int8_t  pindex = -1;
+  uint8_t size   = 0;
+
+  // Find Command
+  cindex = findCommand(userCommand,len);
+  if (cindex == -1){
+    // Error - Command not found
+    command.error = 1;
+    return;
+  }
+
+  // Skip command characters
+  size = strlen(commands[cindex].name);
+  {len-=size;userCommand+=size;}
+  // Skip if space
+  if (*userCommand == 0x20){len-=1;userCommand+=1;}
+
+  if ( (*userCommand == '\n' || *userCommand == '\r') && 
+       commands[cindex].callback_function0 != NULL){
+    // Command without parameter
+    command.semaphore = 1;
+    command.command_index = cindex;
+    command.param_index   = -1;
+    command.param_value   = 0;
+    return;
+  }
+
+  // Find parameter
+  pindex = findParam(userCommand,len);
+  if (pindex == -1){
+    // Error - Parameter not found
+    command.error = 2;
+    return;
+  }
+   
+  if (commands[cindex].type == WRITE && params[pindex].type == VARIABLE){
+    // Error - This command cannot be used with a Variable
+    command.error = 3;
+    return;
+  }
+
+  if ( //(*userCommand == '\n' || *userCommand == '\r') &&
+       commands[cindex].callback_function1 != NULL){
+    // Command with parameter
+    command.semaphore = 1;
+    command.command_index = cindex;
+    command.param_index   = pindex;
+    command.param_value   = 0;
+    return;
+  }
+
+  // Skip parameter characters
+  size = strlen(params[pindex].name);
+  {len-=size;userCommand+=size;}
+  // Skip if space
+  if (*userCommand == 0x20){len-=1;userCommand+=1;}
+
+  
+  int32_t value = 0;
+  int8_t  sign  = 1;
+  int8_t  count = 0;
+
+  // Read sign
+  if (*userCommand == '-'){len-=1;userCommand+=1;sign =-1;} 
+  // Read value
+  for (value=0; (unsigned)*userCommand-'0'<10; userCommand++){
+    value = 10*value+(*userCommand-'0');
+    count++;
+    // Error - Value out of range
+    if (value>MAX_int16_T){command.error = 4;return;}
+  }
+
+  if (count == 0){
+    // Error - Value required
+    command.error = 5;
+    return;
+  }
+      
+  // Apply sign
+  value*= sign;
+
+  if ( //(*userCommand == '\n' || *userCommand == '\r') &&
+       commands[cindex].callback_function2 != NULL){
+    // Store command
+    // Command with parameter and value
+    command.semaphore = 1;
+    command.command_index = cindex;
+    command.param_index   = pindex;
+    command.param_value   = value;
+  }
+
+}
+
+
+void process_debug()
+{
+  
+  // Print parameters from watch list
+  printParamVal();
+
+  // Process errors
+  switch(command.error){
+    case 1:
+      printf("! Command not found\r\n");
+      break;
+    case 2:
+      printf("! Parameter not found\r\n");
+      break;
+    case 3:
+      printf("! This command cannot be used with a Variable\r\n");
+      break;
+    case 4:
+      printf("! Value not in range\r\n");
+      break;
+    case 5:
+      printf("! Value required\r\n");
+      break; 
+  }
+  
+  if (command.error != 0){command.error = 0;return;};
+  if (command.semaphore == 0) return;
+
+  int8_t ret = 0;
+  if (commands[command.command_index].callback_function0 != NULL && 
+      command.param_index == -1){
+    // This function needs no parameter
+    ret = (*commands[command.command_index].callback_function0)();
+    if (ret==1){printf("OK\r\n");}
+    command.semaphore = 0;
+    return;
+  }
+
+  if (commands[command.command_index].callback_function1 != NULL &&
+      command.param_index != -1){
+    // This function needs only a parameter
+    ret = (*commands[command.command_index].callback_function1)(command.param_index);
+    if (ret==1){printf("OK\r\n");}
+    command.semaphore = 0;
+    return;
+  }  
+
+  if (commands[command.command_index].callback_function2 != NULL && 
+      command.param_index != -1){
+    // This function needs an additional parameter
+    ret = (*commands[command.command_index].callback_function2)(command.param_index,command.param_value);
+    if (ret==1){printf("OK\r\n");}
+    command.semaphore = 0;
+  }
+}
+
+/*
 void handle_input(uint8_t *userCommand, uint32_t len)
 {
   
@@ -506,6 +665,6 @@ void handle_input(uint8_t *userCommand, uint32_t len)
     if (ret==1){printf("OK\r\n");}
   }
 
-}
+}*/
 
 #endif

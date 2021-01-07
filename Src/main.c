@@ -433,7 +433,7 @@ int main(void) {
             board_temp_adcFilt,       // 7: for board temperature calibration
             board_temp_deg_c);        // 8: for verifying board temperature calibration
         #else
-          printParamVal();
+          process_debug();
         #endif
       }
     #endif
