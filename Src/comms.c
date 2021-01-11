@@ -30,7 +30,16 @@
 #include "util.h"
 #include "comms.h"
 
-#if defined(DEBUG_SERIAL_PROTOCOL)
+#if defined(DEBUG_SERIAL_PROTOCOL) && (defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3))
+
+#ifdef CONTROL_ADC
+  #define RAW_MIN 0
+  #define RAW_MAX 4095
+#else
+  #define RAW_MIN -1000
+  #define RAW_MAX 1000
+#endif
+
 
 #define MAX_PARAM_WATCH 15
 
@@ -71,116 +80,125 @@ const command_entry commands[] = {
 enum paramTypes {PARAMETER,VARIABLE};
 const parameter_entry params[] = {
   // CONTROL PARAMETERS
-  // Type       ,Name                 ,Datatype ,ValueL ptr                  ,ValueR                    ,EEPRM Addr ,Init              ,Min    ,Max    ,Div             ,Mul  ,Fix   ,Callback Function  ,Help text
-    {PARAMETER  ,"CTRL_MOD"           ,ADD_PARAM(ctrlModReqRaw)              ,NULL                      ,0          ,CTRL_MOD_REQ      ,1      ,3      ,0               ,0    ,0     ,NULL               ,"Ctrl mode 1:VLT 2:SPD 3:TRQ"},
-    {PARAMETER  ,"CTRL_TYP"           ,ADD_PARAM(rtP_Left.z_ctrlTypSel)      ,&rtP_Right.z_ctrlTypSel   ,0          ,CTRL_TYP_SEL      ,0      ,2      ,0               ,0    ,0     ,NULL               ,"Ctrl type 0:COM 1:SIN 2:FOC"},
-    {PARAMETER  ,"I_MOT_MAX"          ,ADD_PARAM(rtP_Left.i_max)             ,&rtP_Right.i_max          ,1          ,I_MOT_MAX         ,1      ,40     ,A2BIT_CONV      ,0    ,4     ,NULL               ,"Max phase current A"},
-    {PARAMETER  ,"N_MOT_MAX"          ,ADD_PARAM(rtP_Left.n_max)             ,&rtP_Right.n_max          ,2          ,N_MOT_MAX         ,10     ,2000   ,0               ,0    ,4     ,NULL               ,"Max motor RPM"},
-    {PARAMETER  ,"FI_WEAK_ENA"        ,ADD_PARAM(rtP_Left.b_fieldWeakEna)    ,&rtP_Right.b_fieldWeakEna ,0          ,FIELD_WEAK_ENA    ,0      ,1      ,0               ,0    ,0     ,NULL               ,"Enable field weak"},
-  	{PARAMETER  ,"FI_WEAK_HI"         ,ADD_PARAM(rtP_Left.r_fieldWeakHi)     ,&rtP_Right.r_fieldWeakHi  ,0          ,FIELD_WEAK_HI     ,0      ,1500   ,0               ,0    ,4     ,Input_Lim_Init     ,"Field weak high RPM"},
-	  {PARAMETER  ,"FI_WEAK_LO"         ,ADD_PARAM(rtP_Left.r_fieldWeakLo)     ,&rtP_Right.r_fieldWeakLo  ,0          ,FIELD_WEAK_LO     ,0      ,1000   ,0               ,0    ,4     ,Input_Lim_Init     ,"Field weak low RPM"},
-    {PARAMETER  ,"FI_WEAK_MAX"        ,ADD_PARAM(rtP_Left.id_fieldWeakMax)   ,&rtP_Right.id_fieldWeakMax,0          ,FIELD_WEAK_MAX    ,0      ,20     ,A2BIT_CONV      ,0    ,4     ,NULL               ,"Field weak max current A(FOC)"},
-    {PARAMETER  ,"PHA_ADV_MAX"        ,ADD_PARAM(rtP_Left.a_phaAdvMax)       ,&rtP_Right.a_phaAdvMax    ,0          ,PHASE_ADV_MAX     ,0      ,55     ,0               ,0    ,4     ,NULL               ,"Max Phase Adv angle Deg(SIN)"},     
+  // Type       ,Name                 ,Datatype ,ValueL ptr                  ,ValueR                    ,EEPRM Addr ,Init              Int/Ext ,Min    ,Max    ,Div             ,Mul  ,Fix   ,Callback Function  ,Help text
+    {PARAMETER  ,"CTRL_MOD"           ,ADD_PARAM(ctrlModReqRaw)              ,NULL                      ,0          ,CTRL_MOD_REQ      ,0      ,1      ,3      ,0               ,0    ,0     ,NULL               ,"Ctrl mode 1:VLT 2:SPD 3:TRQ"},
+    {PARAMETER  ,"CTRL_TYP"           ,ADD_PARAM(rtP_Left.z_ctrlTypSel)      ,&rtP_Right.z_ctrlTypSel   ,0          ,CTRL_TYP_SEL      ,0      ,0      ,2      ,0               ,0    ,0     ,NULL               ,"Ctrl type 0:COM 1:SIN 2:FOC"},
+    {PARAMETER  ,"I_MOT_MAX"          ,ADD_PARAM(rtP_Left.i_max)             ,&rtP_Right.i_max          ,1          ,I_MOT_MAX         ,1      ,1      ,40     ,A2BIT_CONV      ,0    ,4     ,NULL               ,"Max phase current A"},
+    {PARAMETER  ,"N_MOT_MAX"          ,ADD_PARAM(rtP_Left.n_max)             ,&rtP_Right.n_max          ,2          ,N_MOT_MAX         ,1      ,10     ,2000   ,0               ,0    ,4     ,NULL               ,"Max motor RPM"},
+    {PARAMETER  ,"FI_WEAK_ENA"        ,ADD_PARAM(rtP_Left.b_fieldWeakEna)    ,&rtP_Right.b_fieldWeakEna ,0          ,FIELD_WEAK_ENA    ,0      ,0      ,1      ,0               ,0    ,0     ,NULL               ,"Enable field weak"},
+  	{PARAMETER  ,"FI_WEAK_HI"         ,ADD_PARAM(rtP_Left.r_fieldWeakHi)     ,&rtP_Right.r_fieldWeakHi  ,0          ,FIELD_WEAK_HI     ,1      ,0      ,1500   ,0               ,0    ,4     ,Input_Lim_Init     ,"Field weak high RPM"},
+	  {PARAMETER  ,"FI_WEAK_LO"         ,ADD_PARAM(rtP_Left.r_fieldWeakLo)     ,&rtP_Right.r_fieldWeakLo  ,0          ,FIELD_WEAK_LO     ,1      ,0      ,1000   ,0               ,0    ,4     ,Input_Lim_Init     ,"Field weak low RPM"},
+    {PARAMETER  ,"FI_WEAK_MAX"        ,ADD_PARAM(rtP_Left.id_fieldWeakMax)   ,&rtP_Right.id_fieldWeakMax,0          ,FIELD_WEAK_MAX    ,1      ,0      ,20     ,A2BIT_CONV      ,0    ,4     ,NULL               ,"Field weak max current A(FOC)"},
+    {PARAMETER  ,"PHA_ADV_MAX"        ,ADD_PARAM(rtP_Left.a_phaAdvMax)       ,&rtP_Right.a_phaAdvMax    ,0          ,PHASE_ADV_MAX     ,1      ,0      ,55     ,0               ,0    ,4     ,NULL               ,"Max Phase Adv angle Deg(SIN)"},     
   // INPUT PARAMETERS
-  // Type       ,Name                 ,ValueL ptr                            ,ValueR                    ,EEPRM Addr ,Init              ,Min    ,Max    ,Div             ,Mul  ,Fix   ,Callback Function  ,Help text
-    {PARAMETER  ,"PRI_IN1_TYP"        ,ADD_PARAM(input1[0].typ)              ,NULL                      ,3          ,0                 ,0      ,3      ,0               ,0    ,0     ,0                  ,"Input1 type"},        
-    {PARAMETER  ,"PRI_IN1_MIN"        ,ADD_PARAM(input1[0].min)              ,NULL                      ,4          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input1 min"},        
-    {PARAMETER  ,"PRI_IN1_MID"        ,ADD_PARAM(input1[0].mid)              ,NULL                      ,5          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input1 mid"},
-    {PARAMETER  ,"PRI_IN1_MAX"        ,ADD_PARAM(input1[0].max)              ,NULL                      ,6          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input1 max"},        
-    {PARAMETER  ,"PRI_IN2_TYP"        ,ADD_PARAM(input2[0].typ)              ,NULL                      ,7          ,0                 ,0      ,3      ,0               ,0    ,0     ,0                  ,"Input2 type"},        
-    {PARAMETER  ,"PRI_IN2_MIN"        ,ADD_PARAM(input2[0].min)              ,NULL                      ,8          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input2 min"},        
-    {PARAMETER  ,"PRI_IN2_MID"        ,ADD_PARAM(input2[0].mid)              ,NULL                      ,9          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input2 mid"},
-    {PARAMETER  ,"PRI_IN2_MAX"        ,ADD_PARAM(input2[0].max)              ,NULL                      ,10         ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input2 max"},
-    {VARIABLE   ,"PRI_IN1_RAW"        ,ADD_PARAM(input1[0].raw)              ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input1 raw"},        
-    {VARIABLE   ,"PRI_IN2_RAW"        ,ADD_PARAM(input2[0].raw)              ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input2 raw"},   
-    {VARIABLE   ,"PRI_IN1_CMD"        ,ADD_PARAM(input1[0].cmd)              ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input1 cmd"},        
-    {VARIABLE   ,"PRI_IN2_CMD"        ,ADD_PARAM(input2[0].cmd)              ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input2 cmd"},
+  // Type       ,Name                 ,ValueL ptr                            ,ValueR                    ,EEPRM Addr ,Init              Int/Ext ,Min    ,Max    ,Div             ,Mul  ,Fix   ,Callback Function  ,Help text
+    {VARIABLE   ,"IN1_RAW"            ,ADD_PARAM(input1[0].raw)              ,NULL                      ,0          ,0                 ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Input1 raw"},        
+    {PARAMETER  ,"IN1_TYP"            ,ADD_PARAM(input1[0].typ)              ,NULL                      ,3          ,0                 ,0      ,0      ,3      ,0               ,0    ,0     ,0                  ,"Input1 type"},        
+    {PARAMETER  ,"IN1_MIN"            ,ADD_PARAM(input1[0].min)              ,NULL                      ,4          ,RAW_MIN           ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Input1 min"},        
+    {PARAMETER  ,"IN1_MID"            ,ADD_PARAM(input1[0].mid)              ,NULL                      ,5          ,0                 ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Input1 mid"},
+    {PARAMETER  ,"IN1_MAX"            ,ADD_PARAM(input1[0].max)              ,NULL                      ,6          ,RAW_MAX           ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Input1 max"},        
+    {VARIABLE   ,"IN1_CMD"            ,ADD_PARAM(input1[0].cmd)              ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input1 cmd"},        
+    
+    {VARIABLE   ,"IN2_RAW"            ,ADD_PARAM(input2[0].raw)              ,NULL                      ,0          ,0                 ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Input2 raw"},   
+    {PARAMETER  ,"IN2_TYP"            ,ADD_PARAM(input2[0].typ)              ,NULL                      ,7          ,0                 ,0      ,0      ,3      ,0               ,0    ,0     ,0                  ,"Input2 type"},        
+    {PARAMETER  ,"IN2_MIN"            ,ADD_PARAM(input2[0].min)              ,NULL                      ,8          ,RAW_MIN           ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Input2 min"},        
+    {PARAMETER  ,"IN2_MID"            ,ADD_PARAM(input2[0].mid)              ,NULL                      ,9          ,0                 ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Input2 mid"},
+    {PARAMETER  ,"IN2_MAX"            ,ADD_PARAM(input2[0].max)              ,NULL                      ,10         ,RAW_MAX           ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Input2 max"},
+    {VARIABLE   ,"IN2_CMD"            ,ADD_PARAM(input2[0].cmd)              ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,0                  ,"Input2 cmd"},
 #if defined(PRI_INPUT1) && defined(PRI_INPUT2) && defined(AUX_INPUT1) && defined(AUX_INPUT2)  
-    {PARAMETER  ,"AUX_IN1_TYP"        ,ADD_PARAM(input1[1].typ)              ,NULL                      ,11         ,0                 ,0      ,3      ,0               ,0    ,0     ,0                  ,"Aux. input1 type"},        
-    {PARAMETER  ,"AUX_IN1_MIN"        ,ADD_PARAM(input1[1].min)              ,NULL                      ,12         ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input1 min"},        
-    {PARAMETER  ,"AUX_IN1_MID"        ,ADD_PARAM(input1[1].mid)              ,NULL                      ,13         ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input1 mid"},
-    {PARAMETER  ,"AUX_IN1_MAX"        ,ADD_PARAM(input1[1].max)              ,NULL                      ,14         ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input1 max"},        
-    {PARAMETER  ,"AUX_IN2_TYP"        ,ADD_PARAM(input2[1].typ)              ,NULL                      ,15         ,0                 ,0      ,3      ,0               ,0    ,0     ,0                  ,"Aux. input2 type"},        
-    {PARAMETER  ,"AUX_IN2_MIN"        ,ADD_PARAM(input2[1].min)              ,NULL                      ,16         ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input2 min"},        
-    {PARAMETER  ,"AUX_IN2_MID"        ,ADD_PARAM(input2[1].mid)              ,NULL                      ,17         ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input2 mid"},
-    {PARAMETER  ,"AUX_IN2_MAX"        ,ADD_PARAM(input2[1].max)              ,NULL                      ,18         ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input2 max"},
-    {VARIABLE   ,"AUX_IN1_RAW"        ,ADD_PARAM(input1[1].raw)              ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input1 raw"},        
-    {VARIABLE   ,"AUX_IN2_RAW"        ,ADD_PARAM(input2[1].raw)              ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input2 raw"},        
-    {VARIABLE   ,"AUX_IN1_CMD"        ,ADD_PARAM(input1[1].cmd)              ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input1 cmd"},        
-    {VARIABLE   ,"AUX_IN2_CMD"        ,ADD_PARAM(input2[1].cmd)              ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input2 cmd"},
+  // Type       ,Name                 ,ValueL ptr                            ,ValueR                    ,EEPRM Addr ,Init              Int/Ext ,Min    ,Max    ,Div             ,Mul  ,Fix   ,Callback Function  ,Help text
+    {VARIABLE   ,"AUX_IN1_RAW"        ,ADD_PARAM(input1[1].raw)              ,NULL                      ,0          ,0                 ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Aux. input1 raw"},        
+    {PARAMETER  ,"AUX_IN1_TYP"        ,ADD_PARAM(input1[1].typ)              ,NULL                      ,11         ,0                 ,0      ,0      ,3      ,0               ,0    ,0     ,0                  ,"Aux. input1 type"},        
+    {PARAMETER  ,"AUX_IN1_MIN"        ,ADD_PARAM(input1[1].min)              ,NULL                      ,12         ,RAW_MIN           ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Aux. input1 min"},        
+    {PARAMETER  ,"AUX_IN1_MID"        ,ADD_PARAM(input1[1].mid)              ,NULL                      ,13         ,0                 ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Aux. input1 mid"},
+    {PARAMETER  ,"AUX_IN1_MAX"        ,ADD_PARAM(input1[1].max)              ,NULL                      ,14         ,RAW_MAX           ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Aux. input1 max"},        
+    {VARIABLE   ,"AUX_IN1_CMD"        ,ADD_PARAM(input1[1].cmd)              ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input1 cmd"},        
+    
+    {VARIABLE   ,"AUX_IN2_RAW"        ,ADD_PARAM(input2[1].raw)              ,NULL                      ,0          ,0                 ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Aux. input2 raw"},        
+    {PARAMETER  ,"AUX_IN2_TYP"        ,ADD_PARAM(input2[1].typ)              ,NULL                      ,15         ,0                 ,0      ,0      ,3      ,0               ,0    ,0     ,0                  ,"Aux. input2 type"},        
+    {PARAMETER  ,"AUX_IN2_MIN"        ,ADD_PARAM(input2[1].min)              ,NULL                      ,16         ,RAW_MIN           ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Aux. input2 min"},        
+    {PARAMETER  ,"AUX_IN2_MID"        ,ADD_PARAM(input2[1].mid)              ,NULL                      ,17         ,0                 ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Aux. input2 mid"},
+    {PARAMETER  ,"AUX_IN2_MAX"        ,ADD_PARAM(input2[1].max)              ,NULL                      ,18         ,RAW_MAX           ,0      ,RAW_MIN,RAW_MAX,0               ,0    ,0     ,0                  ,"Aux. input2 max"},
+    {VARIABLE   ,"AUX_IN2_CMD"        ,ADD_PARAM(input2[1].cmd)              ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,0                  ,"Aux. input2 cmd"},
 #endif  
   // FEEDBACK
-  // Type       ,Name                 ,Datatype, ValueL ptr                  ,ValueR                    ,EEPRM Addr ,Init              ,Min    ,Max    ,Div             ,Mul  ,Fix   ,Callback Function  ,Help text
-    {VARIABLE   ,"I_DC_LINK"          ,ADD_PARAM(rtU_Left.i_DCLink)          ,&rtU_Right.i_DCLink       ,0          ,0                 ,0      ,0      ,A2BIT_CONV      ,0    ,0     ,NULL               ,"DC Link current A"},
-    {VARIABLE   ,"SPD_AVG"            ,ADD_PARAM(speedAvg)                   ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Motor Measured Avg RPM"},
-    {VARIABLE   ,"SPDL"               ,ADD_PARAM(rtY_Left.n_mot)             ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Left Motor Measured RPM"},
-    {VARIABLE   ,"SPDR"               ,ADD_PARAM(rtY_Right.n_mot)            ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Right Motor Measured RPM"},
-    {VARIABLE   ,"RATE"               ,0       , NULL                        ,NULL                      ,0          ,RATE              ,0      ,0      ,0               ,0    ,4     ,NULL               ,"Rate *10"},
-    {VARIABLE   ,"SPD_COEF"           ,0       , NULL                        ,NULL                      ,0          ,SPEED_COEFFICIENT ,0      ,0      ,0               ,10   ,14    ,NULL               ,"Speed Coefficient *10"},
-    {VARIABLE   ,"STR_COEF"           ,0       , NULL                        ,NULL                      ,0          ,STEER_COEFFICIENT ,0      ,0      ,0               ,10   ,14    ,NULL               ,"Steer Coefficient *10"},
-    {VARIABLE   ,"BATV"               ,ADD_PARAM(adc_buffer.batt1)           ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Battery voltage *100"},       
-  //{VARIABLE   ,"TEMP"               ,ADD_PARAM(board_temp_deg_c)           ,NULL                      ,0          ,0                 ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Temperature °C *10"},       
+  // Type       ,Name                 ,Datatype, ValueL ptr                  ,ValueR                    ,EEPRM Addr ,Init              Int/Ext ,Min    ,Max    ,Div             ,Mul  ,Fix   ,Callback Function  ,Help text
+    {VARIABLE   ,"I_DC_LINK"          ,ADD_PARAM(rtU_Left.i_DCLink)          ,&rtU_Right.i_DCLink       ,0          ,0                 ,0      ,0      ,0      ,A2BIT_CONV      ,100  ,0     ,NULL               ,"DC Link current A *100"},
+    {VARIABLE   ,"SPD_AVG"            ,ADD_PARAM(speedAvg)                   ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Motor Measured Avg RPM"},
+    {VARIABLE   ,"SPDL"               ,ADD_PARAM(rtY_Left.n_mot)             ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Left Motor Measured RPM"},
+    {VARIABLE   ,"SPDR"               ,ADD_PARAM(rtY_Right.n_mot)            ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Right Motor Measured RPM"},
+    {VARIABLE   ,"RATE"               ,0       , NULL                        ,NULL                      ,0          ,RATE              ,0      ,0      ,0      ,0               ,0    ,4     ,NULL               ,"Rate *10"},
+    {VARIABLE   ,"SPD_COEF"           ,0       , NULL                        ,NULL                      ,0          ,SPEED_COEFFICIENT ,0      ,0      ,0      ,0               ,10   ,14    ,NULL               ,"Speed Coefficient *10"},
+    {VARIABLE   ,"STR_COEF"           ,0       , NULL                        ,NULL                      ,0          ,STEER_COEFFICIENT ,0      ,0      ,0      ,0               ,10   ,14    ,NULL               ,"Steer Coefficient *10"},
+    {VARIABLE   ,"BATV"               ,ADD_PARAM(adc_buffer.batt1)           ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Battery voltage *100"},       
+  //{VARIABLE   ,"TEMP"               ,ADD_PARAM(board_temp_deg_c)           ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Temperature °C *10"},       
 
+};
+
+
+const char *errors[9] = {
+  "Command not found", // Err1
+  "Parameter not found", // Err2
+  "This command cannot be used with a Variable", // Err3
+  "Value not in range", // Err4
+  "Value expected", // Err5
+  "Start of line expected", // Err6
+  "End of line expected", // Err7
+  "Parameter expected", // Err8
+  "Uncaught error" // Err9
+  "Watch list is full" // Err10
 };
 
 debug_command command;
 int8_t watchParamList[MAX_PARAM_WATCH] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; 
-
-// Translate from External format to Internal Format
-int32_t ExtToInt(uint8_t index,int32_t value){
-  // Multiply to translate to internal format
-  if(params[index].div) value *= params[index].div;
-  // Shift to translate to internal format
-  if (params[index].fix) value <<= params[index].fix;
-  // Divide for small number
-  if(params[index].mul) value /= params[index].mul;
-  return value;
-}
 
 // Set Param with Value from external format
 int8_t setParamValExt(uint8_t index, int32_t value) {   
   int8_t ret = 0;
   // check min and max before conversion to internal values
   if (IN_RANGE(value,params[index].min,params[index].max)){
-    ret = setParamValInt(index,ExtToInt(index,value));
+    ret = setParamValInt(index,extToInt(index,value));
     printParamDef(index);
   }else{
-    printf("! Value %li out of range [min:%li max:%li]\r\n",value,params[index].min,params[index].max);
+    printError(4); // Error - Value out of range
   }
   return ret;
 }
 
 // Set Param with value from internal format
 int8_t setParamValInt(uint8_t index, int32_t newValue) {
-  int32_t value = newValue;
-  if (*(int32_t*)params[index].valueL != value){ 
+  int32_t oldValue = getParamValInt(index);
+  if (oldValue != newValue){ 
     // if value is different, beep, cast and assign new value
     switch (params[index].datatype){
       case UINT8_T:
-        if (params[index].valueL != NULL) *(uint8_t*)params[index].valueL = value;
-        if (params[index].valueR != NULL) *(uint8_t*)params[index].valueR = value;
+        if (params[index].valueL != NULL) *(uint8_t*)params[index].valueL = newValue;
+        if (params[index].valueR != NULL) *(uint8_t*)params[index].valueR = newValue;
         break;
       case UINT16_T:
-        if (params[index].valueL != NULL) *(uint16_t*)params[index].valueL = value; 
-        if (params[index].valueR != NULL) *(uint16_t*)params[index].valueR = value;
+        if (params[index].valueL != NULL) *(uint16_t*)params[index].valueL = newValue; 
+        if (params[index].valueR != NULL) *(uint16_t*)params[index].valueR = newValue;
         break;
       case UINT32_T:
-        if (params[index].valueL != NULL) *(uint32_t*)params[index].valueL = value; 
-        if (params[index].valueR != NULL) *(uint32_t*)params[index].valueR = value;
+        if (params[index].valueL != NULL) *(uint32_t*)params[index].valueL = newValue; 
+        if (params[index].valueR != NULL) *(uint32_t*)params[index].valueR = newValue;
         break;
       case INT8_T:
-        if (params[index].valueL != NULL) *(int8_t*)params[index].valueL = value; 
-        if (params[index].valueR != NULL) *(int8_t*)params[index].valueR = value;
+        if (params[index].valueL != NULL) *(int8_t*)params[index].valueL = newValue; 
+        if (params[index].valueR != NULL) *(int8_t*)params[index].valueR = newValue;
         break;
       case INT16_T:
-        if (params[index].valueL != NULL) *(int16_t*)params[index].valueL = value; 
-        if (params[index].valueR != NULL) *(int16_t*)params[index].valueR = value;
+        if (params[index].valueL != NULL) *(int16_t*)params[index].valueL = newValue; 
+        if (params[index].valueR != NULL) *(int16_t*)params[index].valueR = newValue;
         break;
       case INT32_T:
-        if (params[index].valueL != NULL) *(int32_t*)params[index].valueL = value; 
-        if (params[index].valueR != NULL) *(int32_t*)params[index].valueR = value;
+        if (params[index].valueL != NULL) *(int32_t*)params[index].valueL = newValue; 
+        if (params[index].valueR != NULL) *(int32_t*)params[index].valueR = newValue;
         break;
     }
+
+    // Beep if value was modified
+    beepShort(5);
   }
 
   // Run callback function if assigned
@@ -190,7 +208,7 @@ int8_t setParamValInt(uint8_t index, int32_t newValue) {
 
 // Get Parameter Internal value and translate to external 
 int32_t getParamValExt(uint8_t index) {
-  return IntToExt(index,getParamValInt(index));
+  return intToExt(index,getParamValInt(index));
 }
 
 // Get Parameter Internal Value
@@ -256,7 +274,7 @@ int8_t watchParamVal(uint8_t index){
       watchParamList[i] = index;
       return 1;
     }
-    printf("! Watch list is full\r\n");
+    printError(10);
     return 0;
   }
   return 1;
@@ -272,15 +290,15 @@ int8_t printParamVal(){
   return 1;
 }
 
-// Print help for parameter
+// Print help for Command
 int8_t printCommandHelp(uint8_t index){
-  printf("? %s:%s\r\n",commands[index].name,commands[index].help);
+  printf("? %s:\"%s\"\r\n",commands[index].name,commands[index].help);
   return 1;
 }
 
 // Print help for parameter
 int8_t printParamHelp(uint8_t index){
-  printf("? %s:%s ",params[index].name,params[index].help);
+  printf("? %s:\"%s\" ",params[index].name,params[index].help);
   if (params[index].type == PARAMETER) printf("[min:%li max:%li]",params[index].min,params[index].max);
   printf("\r\n");
   return 1;
@@ -308,9 +326,9 @@ int8_t printAllParamHelp(){
   return 1;
 }
 
-// Print definition for parameter
+// Print definition(name,value,initial value, min, max) for parameter
 int8_t printParamDef(uint8_t index){
-  printf("# name:%s value:%li init:%li min:%li max:%li\r\n",
+  printf("# name:\"%s\" value:%li init:%li min:%li max:%li\r\n",
          params[index].name,     // Parameter Name
          getParamValExt(index),  // Parameter Value translated to external format
          getParamInitExt(index), // Parameter Init Value translated to external format
@@ -319,15 +337,23 @@ int8_t printParamDef(uint8_t index){
   return 1;
 }
 
-// Print definition for all parameters
+// Print definition(name,value,initial value, min, max) for all parameters
 int8_t printAllParamDef(){
   for(int i=0;i<PARAM_SIZE(params);i++) printParamDef(i);
   return 1;
 }
 
+void printError(uint8_t errornum ){
+  printf("! Err%i:\"%s\"\r\n",errornum,errors[errornum-1]);
+}
 
+// Function to increment a value
 // Get Parameter in External format, check max value, increment, set Parameter
+// Not used in the protocol yet 
 int8_t incrParamVal(uint8_t index) {
+  // This should be used only if min and max values are known
+  if (params[index].min == params[index].max) return 0;
+  
   uint32_t value = getParamValExt(index);
   if (value < params[index].max){
     return setParamValExt(index,value + 1);
@@ -350,7 +376,8 @@ int8_t saveAllParamVal() {
   return 1;
 }
 
-int32_t IntToExt(uint8_t index,int32_t value){
+// Translate from Internal to External format
+int32_t intToExt(uint8_t index,int32_t value){
   // Multiply for small number
   if(params[index].mul) value *= params[index].mul;
   // Divide to translate to external format
@@ -360,11 +387,23 @@ int32_t IntToExt(uint8_t index,int32_t value){
   return value;
 }
 
-int32_t getParamInitExt(uint8_t index) {
-  return IntToExt(index,getParamInitInt(index));
+// Translate from External to Internal Format
+int32_t extToInt(uint8_t index,int32_t value){
+  // Multiply to translate to internal format
+  if(params[index].div) value *= params[index].div;
+  // Shift to translate to internal format
+  if (params[index].fix) value <<= params[index].fix;
+  // Divide for small number
+  if(params[index].mul) value /= params[index].mul;
+  return value;
 }
 
-// Get Parameter value with EEprom data if address is avalaible, init value otherwise
+// Get Parameter Init value(EEPROM or init/config.h) and translate to external format
+int32_t getParamInitExt(uint8_t index) {
+  return intToExt(index,getParamInitInt(index));
+}
+
+// Get Parameter value with EEprom data if address is avalaible, init/config.h value otherwise
 int16_t getParamInitInt(uint8_t index){
   if (params[index].addr){
     // if EEPROM address is specified, init from EEPROM address
@@ -380,33 +419,30 @@ int16_t getParamInitInt(uint8_t index){
       return readVal;
     }else{
       // Use init value from array
-      return params[index].init;
+      if (params[index].initFormat){
+        // Init Value is in External format (e.g. PHA_ADV_MAX is 25 deg)
+        return extToInt(index,params[index].init);
+      }else{
+        return params[index].init;
+      }
     }
   }else{
-    return params[index].init;
+    if (params[index].initFormat){
+      // Init Value is in External format (e.g. PHA_ADV_MAX is 25 deg)
+      return extToInt(index,params[index].init);
+    }else{
+      return params[index].init;
+    }
   }
 }
 
 
-// initialize Parameter value with EEprom data if address is avalaible, init value otherwise
+// initialize Parameter value with EEprom data if address is avalaible, init/config.h value otherwise
 int8_t initParamVal(uint8_t index) {
   int8_t ret = 0;
   ret = setParamValInt(index,(int32_t) getParamInitInt(index));
   printParamDef(index);
   return ret;
-}
-
-// Find parameter in params array and return index
-int8_t findParam(uint8_t *userCommand, uint32_t len){
-  for(int index=0;index<PARAM_SIZE(params);index++){
-    uint8_t param_len = strlen(params[index].name);
-    if (param_len < len){
-      if (memcmp(userCommand,params[index].name,param_len)==0){
-        return index;
-      }
-    }
-  }
-  return -1; // Not found
 }
 
 // Find command in commands array and return index
@@ -422,7 +458,18 @@ int8_t findCommand(uint8_t *userCommand, uint32_t len){
   return -1; // Not found
 }
 
-
+// Find parameter in params array and return index
+int8_t findParam(uint8_t *userCommand, uint32_t len){
+  for(int index=0;index<PARAM_SIZE(params);index++){
+    uint8_t param_len = strlen(params[index].name);
+    if (param_len < len){
+      if (memcmp(userCommand,params[index].name,param_len)==0){
+        return index;
+      }
+    }
+  }
+  return -1; // Not found
+}
 
 // Parse and save the command to be executed
 void handle_input(uint8_t *userCommand, uint32_t len)
@@ -430,7 +477,15 @@ void handle_input(uint8_t *userCommand, uint32_t len)
 
   // If there is already an unprocessed command, exit
   if (command.semaphore == 1) return;
-  
+
+  // Check end of line
+  userCommand+=len-1; // Go to last char
+  if (*userCommand != '\n' && *userCommand != '\r'){
+    command.error = 7; // Error - End of line expected
+    return;
+  }
+  userCommand-=len-1; // Come back
+
   int8_t  cindex = -1;
   int8_t  pindex = -1;
   uint8_t size   = 0;
@@ -449,13 +504,16 @@ void handle_input(uint8_t *userCommand, uint32_t len)
   // Skip if space
   if (*userCommand == 0x20){len-=1;userCommand+=1;}
 
-  if ( (*userCommand == '\n' || *userCommand == '\r') && 
-       commands[cindex].callback_function0 != NULL){
-    // Command without parameter
-    command.semaphore = 1;
-    command.command_index = cindex;
-    command.param_index   = -1;
-    command.param_value   = 0;
+  if (*userCommand == '\n' || *userCommand == '\r'){
+    if (commands[cindex].callback_function0 != NULL){
+      // Command without parameter
+      command.semaphore = 1;
+      command.command_index = cindex;
+      command.param_index   = -1;
+      command.param_value   = 0;
+    }else{
+      command.error = 8; // Error - Parameter expected
+    }
     return;
   }
 
@@ -466,29 +524,31 @@ void handle_input(uint8_t *userCommand, uint32_t len)
     command.error = 2;
     return;
   }
-   
-  if (commands[cindex].type == WRITE && params[pindex].type == VARIABLE){
-    // Error - This command cannot be used with a Variable
-    command.error = 3;
-    return;
-  }
-
-  if ( //(*userCommand == '\n' || *userCommand == '\r') &&
-       commands[cindex].callback_function1 != NULL){
-    // Command with parameter
-    command.semaphore = 1;
-    command.command_index = cindex;
-    command.param_index   = pindex;
-    command.param_value   = 0;
-    return;
-  }
 
   // Skip parameter characters
   size = strlen(params[pindex].name);
   {len-=size;userCommand+=size;}
   // Skip if space
   if (*userCommand == 0x20){len-=1;userCommand+=1;}
-
+   
+  if (commands[cindex].type == WRITE && params[pindex].type == VARIABLE){
+    // Error - This command cannot be used with a Variable
+    command.error = 3;
+    return;
+  }
+  
+  if (commands[cindex].callback_function1 != NULL){
+    if (*userCommand == '\n' || *userCommand == '\r'){
+      // Command with parameter
+      command.semaphore = 1;
+      command.command_index = cindex;
+      command.param_index   = pindex;
+      command.param_value   = 0;
+    }else{
+      command.error = 7; // Error - End of line expected
+    }
+    return;
+  }
   
   int32_t value = 0;
   int8_t  sign  = 1;
@@ -513,18 +573,23 @@ void handle_input(uint8_t *userCommand, uint32_t len)
   // Apply sign
   value*= sign;
 
-  if ( //(*userCommand == '\n' || *userCommand == '\r') &&
-       commands[cindex].callback_function2 != NULL){
-    // Store command
-    // Command with parameter and value
-    command.semaphore = 1;
-    command.command_index = cindex;
-    command.param_index   = pindex;
-    command.param_value   = value;
+  // Command with parameter and value
+  if (commands[cindex].callback_function2 != NULL){
+    if (*userCommand == '\n' || *userCommand == '\r'){
+      command.semaphore = 1;
+      command.command_index = cindex;
+      command.param_index   = pindex;
+      command.param_value   = value;
+    }else{
+      command.error = 7; // Error - End of line expected
+    }
+    return;
   }
 
-}
+  // Uncaught error
+  command.error = 9;
 
+}
 
 void process_debug()
 {
@@ -532,26 +597,14 @@ void process_debug()
   // Print parameters from watch list
   printParamVal();
 
-  // Process errors
-  switch(command.error){
-    case 1:
-      printf("! Command not found\r\n");
-      break;
-    case 2:
-      printf("! Parameter not found\r\n");
-      break;
-    case 3:
-      printf("! This command cannot be used with a Variable\r\n");
-      break;
-    case 4:
-      printf("! Value not in range\r\n");
-      break;
-    case 5:
-      printf("! Value required\r\n");
-      break; 
+  // Show Error if any
+  if(command.error> 0){
+    printError(command.error);
+    command.error = 0;
+    return;
   }
-  
-  if (command.error != 0){command.error = 0;return;};
+
+  // Nothing to do
   if (command.semaphore == 0) return;
 
   int8_t ret = 0;
@@ -581,90 +634,5 @@ void process_debug()
     command.semaphore = 0;
   }
 }
-
-/*
-void handle_input(uint8_t *userCommand, uint32_t len)
-{
-  
-  int8_t  cindex = -1;
-  int8_t  pindex = -1;
-  uint8_t size   = 0;
-  int8_t  ret    = 0;
-
-  // Find Command
-  cindex = findCommand(userCommand,len);
-  if (cindex == -1){
-    printf("! Command not found\r\n");
-    return;
-  }
-
-  // Skip command characters
-  size = strlen(commands[cindex].name);
-  {len-=size;userCommand+=size;}
-  // Skip if space
-  if (*userCommand == 0x20){len-=1;userCommand+=1;}
-
-  if ( (*userCommand == '\n' || *userCommand == '\r') && 
-       commands[cindex].callback_function0 != NULL){
-    // This function needs no parameter
-    ret = (*commands[cindex].callback_function0)();
-    if (ret==1){printf("OK\r\n");}
-    return;
-  }
-
-  // Find parameter
-  pindex = findParam(userCommand,len);
-  if (pindex == -1){
-    printf("! Parameter not found\r\n");
-    return;
-  }
-   
-  if (commands[cindex].type == WRITE && params[pindex].type == VARIABLE){
-    printf("! This command cannot be used with a Variable\r\n");
-    return;
-  }
-
-  if (commands[cindex].callback_function1 != NULL){
-    // This function needs only a parameter
-    ret = (*commands[cindex].callback_function1)(pindex);
-    if (ret==1){printf("OK\r\n");}
-    return;
-  }
-
-  // Skip parameter characters
-  size = strlen(params[pindex].name);
-  {len-=size;userCommand+=size;}
-  // Skip if space
-  if (*userCommand == 0x20){len-=1;userCommand+=1;}
-
-  
-  int32_t value = 0;
-  int8_t  sign  = 1;
-  int8_t  count = 0;
-
-  // Read sign
-  if (*userCommand == '-'){len-=1;userCommand+=1;sign =-1;} 
-  // Read value
-  for (value=0; (unsigned)*userCommand-'0'<10; userCommand++){
-    value=10*value+(*userCommand-'0');
-    count++;
-    if (value>MAX_int16_T){printf("! Value not in range\r\n");return;}
-  }
-
-  if (count == 0){
-    printf("! Value required\r\n");
-    return;
-  }
-      
-  // Apply sign
-  value*= sign;
-
-  if (commands[cindex].callback_function2 != NULL){
-    // This function needs an additional parameter
-    ret = (*commands[cindex].callback_function2)(pindex,value);
-    if (ret==1){printf("OK\r\n");}
-  }
-
-}*/
 
 #endif

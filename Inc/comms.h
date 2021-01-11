@@ -42,10 +42,10 @@ enum types {UINT8_T,UINT16_T,UINT32_T,INT8_T,INT16_T,INT32_T,INT,FLOAT};
 #define ADD_PARAM(var) typename(var),&var
 
 
-int32_t ExtToInt(uint8_t index,int32_t value);
+int32_t extToInt(uint8_t index,int32_t value);
 int8_t  setParamValInt(uint8_t index, int32_t newValue);
 int8_t  setParamValExt(uint8_t index, int32_t newValue);
-int32_t IntToExt(uint8_t index,int32_t value);
+int32_t intToExt(uint8_t index,int32_t value);
 int32_t getParamValInt(uint8_t index);
 int32_t getParamValExt(uint8_t index);
 
@@ -61,6 +61,7 @@ int8_t printAllParamHelp();
 int8_t printParamVal();
 int8_t printParamDef(uint8_t index);
 int8_t printAllParamDef();
+void printError(uint8_t errornum );
 int8_t watchParamVal(uint8_t index);
 
 int8_t findCommand(uint8_t *userCommand, uint32_t len);
@@ -97,6 +98,7 @@ struct parameter_entry_struct {
   void *valueR;
   const uint16_t addr;
 	const int32_t init;
+  const uint8_t initFormat;
   const int32_t min;
 	const int32_t max;
   const uint8_t div;

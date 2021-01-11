@@ -1133,14 +1133,21 @@ void usart3_rx_check(void)
   #endif
 
   #if defined(DEBUG_SERIAL_USART3)
+  uint8_t *ptr;
+  
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_R[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      usart_process_debug(&rx_buffer_R[old_pos], rx_buffer_R_len - old_pos); // First Process data from the end of buffer
+      ptr = (uint8_t *) malloc( sizeof(uint8_t) * (rx_buffer_R_len - old_pos + pos) );
+      memcpy(ptr,&rx_buffer_R[old_pos],rx_buffer_R_len - old_pos);      // First Process data from the end of buffer 
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
-        usart_process_debug(&rx_buffer_R[0], pos);                      // Process remaining data
+        ptr += rx_buffer_R_len - old_pos;
+        memcpy(ptr,&rx_buffer_R[0], pos);                               // Process remaining data
       }
+      ptr -= rx_buffer_R_len - old_pos;
+      usart_process_debug(ptr, rx_buffer_R_len - old_pos + pos);
+      free( ptr );
     }
   }
   #endif // DEBUG_SERIAL_USART3
