@@ -598,7 +598,8 @@ void poweroffPressCheck(void) {
             adcCalibLim();
             shortBeep(5);
           }
-        } else {                                            // Short press: power off
+        } else if (cnt_press >= 10) {                         // Check if press is more than 5 sec
+
           poweroff();
         }
       }
