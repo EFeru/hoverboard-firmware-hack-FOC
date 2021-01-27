@@ -199,6 +199,8 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
+  // Loop until button is released
+  while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) HAL_Delay(10);
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP);        // delay in ms
