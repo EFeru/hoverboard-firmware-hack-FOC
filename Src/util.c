@@ -483,6 +483,7 @@ void calcAvgSpeed(void) {
  * The Values will be saved to flash. Values are persistent if you flash with platformio. To erase them, make a full chip erase.
  */
 void adcCalibLim(void) {
+#ifdef AUTO_CALIBRATION_ENA
   calcAvgSpeed();
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
@@ -571,6 +572,7 @@ void adcCalibLim(void) {
   #endif
 
 #endif
+#endif  // AUTO_CALIBRATION_ENA
 }
  /*
  * Update Maximum Motor Current Limit (via ADC1) and Maximum Speed Limit (via ADC2)
@@ -1063,14 +1065,20 @@ void usart2_rx_check(void)
   #endif
 
   #if defined(DEBUG_SERIAL_USART2)
+  uint8_t *ptr;
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_L[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      usart_process_debug(&rx_buffer_L[old_pos], rx_buffer_L_len - old_pos); // First Process data from the end of buffer
+      ptr = (uint8_t *) malloc(sizeof(uint8_t) * (rx_buffer_L_len - old_pos + pos));
+      memcpy(ptr, &rx_buffer_L[old_pos], rx_buffer_L_len - old_pos);    // First copy data from the end of buffer
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
-        usart_process_debug(&rx_buffer_L[0], pos);                      // Process remaining data
+        ptr += rx_buffer_L_len - old_pos;
+        memcpy(ptr, &rx_buffer_L[0], pos);                              // Copy remaining data
       }
+      ptr -= rx_buffer_L_len - old_pos;
+      usart_process_debug(ptr, rx_buffer_L_len - old_pos + pos);        // Process data
+      free(ptr);
     }
   }
   #endif // DEBUG_SERIAL_USART2
@@ -1134,26 +1142,25 @@ void usart3_rx_check(void)
 
   #if defined(DEBUG_SERIAL_USART3)
   uint8_t *ptr;
-  
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_R[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      ptr = (uint8_t *) malloc( sizeof(uint8_t) * (rx_buffer_R_len - old_pos + pos) );
-      memcpy(ptr,&rx_buffer_R[old_pos],rx_buffer_R_len - old_pos);      // First Process data from the end of buffer 
+      ptr = (uint8_t *) malloc(sizeof(uint8_t) * (rx_buffer_R_len - old_pos + pos));
+      memcpy(ptr, &rx_buffer_R[old_pos], rx_buffer_R_len - old_pos);    // First copy data from the end of buffer
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
         ptr += rx_buffer_R_len - old_pos;
-        memcpy(ptr,&rx_buffer_R[0], pos);                               // Process remaining data
+        memcpy(ptr, &rx_buffer_R[0], pos);                              // Copy remaining data
       }
       ptr -= rx_buffer_R_len - old_pos;
-      usart_process_debug(ptr, rx_buffer_R_len - old_pos + pos);
-      free( ptr );
+      usart_process_debug(ptr, rx_buffer_R_len - old_pos + pos);        // Process data
+      free(ptr);
     }
   }
   #endif // DEBUG_SERIAL_USART3
 
   #ifdef CONTROL_SERIAL_USART3
-  uint8_t *ptr;	
+  uint8_t *ptr;
   if (pos != old_pos) {                                                 // Check change in received data
     ptr = (uint8_t *)&commandR_raw;                                     // Initialize the pointer with command_raw address
     if (pos > old_pos && (pos - old_pos) == commandR_len) {             // "Linear" buffer mode: check if current position is over previous one AND data length equals expected length
@@ -1202,16 +1209,8 @@ void usart3_rx_check(void)
 #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
 void usart_process_debug(uint8_t *userCommand, uint32_t len)
 {
-  
-  #ifndef DEBUG_SERIAL_PROTOCOL
-    for (; len > 0; len--, userCommand++) {
-      if (*userCommand != '\n' && *userCommand != '\r') {   // Do not accept 'new line' and 'carriage return' commands
-        printf("Command = %c\r\n", *userCommand);
-        // handle_input(*userCommand);                      // -> Create this function to handle the user commands
-      }
-    }
-  #else
-    handle_input(userCommand,len);
+  #ifdef DEBUG_SERIAL_PROTOCOL
+    handle_input(userCommand, len);
   #endif
 }
 
@@ -1542,9 +1541,11 @@ void poweroffPressCheck(void) {
           updateCurSpdLim();
           beepShort(5);
         } else {                                          // Long press: Calibrate ADC Limits
+          #ifdef AUTO_CALIBRATION_ENA
           beepLong(16); 
           adcCalibLim();
           beepShort(5);
+          #endif
         }
       } else if (cnt_press > 8) {                         // Short press: power off (80 ms debounce)
         poweroff();

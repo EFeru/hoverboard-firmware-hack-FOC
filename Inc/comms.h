@@ -23,6 +23,7 @@
 
 #include "stm32f1xx_hal.h"
 
+#if defined(DEBUG_SERIAL_PROTOCOL)
 
 enum types {UINT8_T,UINT16_T,UINT32_T,INT8_T,INT16_T,INT32_T,INT,FLOAT};
 #define typename(x) _Generic((x), \
@@ -32,7 +33,7 @@ enum types {UINT8_T,UINT16_T,UINT32_T,INT8_T,INT16_T,INT32_T,INT,FLOAT};
     int8_t:     INT8_T, \
     int16_t:    INT16_T, \
     int32_t:    INT32_T, \
-	  int:	    	INT, \
+    int:        INT, \
     float:      FLOAT)
 
 #define PARAM_SIZE(param) sizeof(param) / sizeof(parameter_entry)
@@ -93,20 +94,20 @@ typedef struct parameter_entry_struct parameter_entry;
 struct parameter_entry_struct {
   const uint8_t type;
   const char *name;
-	const uint8_t datatype;
+  const uint8_t datatype;
   void *valueL;
   void *valueR;
   const uint16_t addr;
-	const int32_t init;
+  const int32_t init;
   const uint8_t initFormat;
   const int32_t min;
-	const int32_t max;
+  const int32_t max;
   const uint8_t div;
   const uint8_t mul;
   const uint8_t fix;
-	void (*callback_function)();
-	const char *help;
+  void (*callback_function)();
+  const char *help;
 };
 
-
-#endif
+#endif  // DEBUG_SERIAL_PROTOCOL
+#endif  // COMMS_H

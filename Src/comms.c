@@ -17,7 +17,6 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 // Includes
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +29,7 @@
 #include "util.h"
 #include "comms.h"
 
+#if defined(DEBUG_SERIAL_PROTOCOL)
 #if defined(DEBUG_SERIAL_PROTOCOL) && (defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3))
 
 #ifdef CONTROL_ADC
@@ -636,3 +636,5 @@ void process_debug()
 }
 
 #endif
+#endif  // DEBUG_SERIAL_PROTOCOL
+

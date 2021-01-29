@@ -200,7 +200,7 @@ int main(void) {
   int16_t board_temp_deg_c;
 
   // Loop until button is released
-  while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) HAL_Delay(10);
+  while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP);        // delay in ms
@@ -424,7 +424,9 @@ int main(void) {
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms      
-        #ifndef DEBUG_SERIAL_PROTOCOL
+        #if defined(DEBUG_SERIAL_PROTOCOL)
+          process_debug();
+        #else
           printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i\r\n",
             input1[inIdx].raw,        // 1: INPUT1
             input2[inIdx].raw,        // 2: INPUT2
@@ -434,8 +436,6 @@ int main(void) {
             batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC, // 6: for verifying battery voltage calibration
             board_temp_adcFilt,       // 7: for board temperature calibration
             board_temp_deg_c);        // 8: for verifying board temperature calibration
-        #else
-          process_debug();
         #endif
       }
     #endif
