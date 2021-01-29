@@ -48,8 +48,6 @@ jobs:
     - name: platformio
       script: platformio run
       language: python
-      python:
-      - "2.7"
       install:
       - pip install -U platformio
       - platformio update
