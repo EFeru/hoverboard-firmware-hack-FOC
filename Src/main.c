@@ -61,6 +61,8 @@ extern P    rtP_Left;                   /* Block parameters (auto storage) */
 extern P    rtP_Right;                  /* Block parameters (auto storage) */
 extern ExtY rtY_Left;                   /* External outputs */
 extern ExtY rtY_Right;                  /* External outputs */
+extern ExtU rtU_Left;                   /* External inputs */
+extern ExtU rtU_Right;                  /* External inputs */
 //---------------
 
 extern uint8_t     inIdx;               // input index used for dual-inputs
@@ -102,6 +104,13 @@ extern volatile uint16_t pwm_captured_ch2_value;
 //------------------------------------------------------------------------
 uint8_t backwardDrive;
 volatile uint32_t main_loop_counter;
+int16_t batVoltageCalib;         // global variable for calibrated battery voltage
+int16_t board_temp_deg_c;        // global variable for calibrated temperature in degrees Celsius
+int16_t left_dc_curr;            // global variable for Left DC Link current 
+int16_t right_dc_curr;           // global variable for Right DC Link current
+int16_t dc_curr;                 // global variable for Total DC Link current 
+int16_t cmdL;                    // global variable for Left Command 
+int16_t cmdR;                    // global variable for Right Command 
 
 //------------------------------------------------------------------------
 // Local variables
@@ -151,7 +160,6 @@ static int16_t    speed;                // local variable for speed. -1000 to 10
 static uint32_t    inactivity_timeout_counter;
 static MultipleTap MultipleTapBrake;    // define multiple tap functionality for the Brake pedal
 
-
 int main(void) {
 
   HAL_Init();
@@ -191,13 +199,9 @@ int main(void) {
 
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
-
-  int16_t cmdL      = 0, cmdR      = 0;
-  int16_t cmdL_prev = 0, cmdR_prev = 0;
-
+  
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
-  int16_t board_temp_deg_c;
 
   // Loop until button is released
   while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
@@ -293,18 +297,16 @@ int main(void) {
       mixerFcn(speed << 4, steer << 4, &cmdR, &cmdL);   // This function implements the equations above
 
       // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
-      if ((cmdL > cmdL_prev-100 && cmdL < cmdL_prev+100) && (cmdR > cmdR_prev-100 && cmdR < cmdR_prev+100)) {
-        #ifdef INVERT_R_DIRECTION
-          pwmr = cmdR;
-        #else
-          pwmr = -cmdR;
-        #endif
-        #ifdef INVERT_L_DIRECTION
-          pwml = -cmdL;
-        #else
-          pwml = cmdL;
-        #endif
-      }
+      #ifdef INVERT_R_DIRECTION
+        pwmr = cmdR;
+      #else
+        pwmr = -cmdR;
+      #endif
+      #ifdef INVERT_L_DIRECTION
+        pwml = -cmdL;
+      #else
+        pwml = cmdL;
+      #endif
     #endif
 
     #ifdef VARIANT_TRANSPOTTER
@@ -315,32 +317,30 @@ int main(void) {
       if (nunchuk_connected == 0) {
         cmdL = cmdL * 0.8f + (CLAMP(distanceErr + (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
         cmdR = cmdR * 0.8f + (CLAMP(distanceErr - (steering*((float)MAX(ABS(distanceErr), 50)) * ROT_P), -850, 850) * -0.2f);
-        if ((cmdL < cmdL_prev + 50 && cmdL > cmdL_prev - 50) && (cmdR < cmdR_prev + 50 && cmdR > cmdR_prev - 50)) {
-          if (distanceErr > 0) {
-            enable = 1;
-          }
-          if (distanceErr > -300) {
-            #ifdef INVERT_R_DIRECTION
-              pwmr = cmdR;
-            #else
-              pwmr = -cmdR;
-            #endif
-            #ifdef INVERT_L_DIRECTION
-              pwml = -cmdL;
-            #else
-              pwml = cmdL;
-            #endif
+        if (distanceErr > 0) {
+          enable = 1;
+        }
+        if (distanceErr > -300) {
+          #ifdef INVERT_R_DIRECTION
+            pwmr = cmdR;
+          #else
+            pwmr = -cmdR;
+          #endif
+          #ifdef INVERT_L_DIRECTION
+            pwml = -cmdL;
+          #else
+            pwml = cmdL;
+          #endif
 
-            if (checkRemote) {
-              if (!HAL_GPIO_ReadPin(LED_PORT, LED_PIN)) {
-                //enable = 1;
-              } else {
-                enable = 0;
-              }
+          if (checkRemote) {
+            if (!HAL_GPIO_ReadPin(LED_PORT, LED_PIN)) {
+              //enable = 1;
+            } else {
+              enable = 0;
             }
-          } else {
-            enable = 0;
           }
+        } else {
+          enable = 0;
         }
         timeoutCntGen = 0;
         timeoutFlgGen = 0;
@@ -421,6 +421,14 @@ int main(void) {
     board_temp_adcFilt  = (int16_t)(board_temp_adcFixdt >> 16);  // convert fixed-point to integer
     board_temp_deg_c    = (TEMP_CAL_HIGH_DEG_C - TEMP_CAL_LOW_DEG_C) * (board_temp_adcFilt - TEMP_CAL_LOW_ADC) / (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
 
+    // ####### CALC CALIBRATED BATTERY VOLTAGE #######
+    batVoltageCalib = batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC;
+
+    // ####### CALC DC LINK CURRENT #######
+    left_dc_curr  = -(rtU_Left.i_DCLink * 100) / A2BIT_CONV;   // Left DC Link Current * 100 
+    right_dc_curr = -(rtU_Right.i_DCLink * 100) / A2BIT_CONV;  // Right DC Link Current * 100
+    dc_curr       = left_dc_curr + right_dc_curr;            // Total DC Link Current * 100
+
     // ####### DEBUG SERIAL OUT #######
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
       if (main_loop_counter % 25 == 0) {    // Send data periodically every 125 ms      
@@ -433,7 +441,7 @@ int main(void) {
             cmdL,                     // 3: output command: [-1000, 1000]
             cmdR,                     // 4: output command: [-1000, 1000]
             adc_buffer.batt1,         // 5: for battery voltage calibration
-            batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC, // 6: for verifying battery voltage calibration
+            batVoltageCalib,          // 6: for verifying battery voltage calibration
             board_temp_adcFilt,       // 7: for board temperature calibration
             board_temp_deg_c);        // 8: for verifying board temperature calibration
         #endif
@@ -448,7 +456,7 @@ int main(void) {
         Feedback.cmd2           = (int16_t)input2[inIdx].cmd;
         Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
         Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
-        Feedback.batVoltage	    = (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
+        Feedback.batVoltage	    = (int16_t)batVoltageCalib;
         Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
 
         #if defined(FEEDBACK_SERIAL_USART2)
@@ -512,11 +520,10 @@ int main(void) {
       poweroff();
     }
 
+
     // HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
     // Update states
     inIdx_prev = inIdx;
-    cmdL_prev  = cmdL;
-    cmdR_prev  = cmdR;
     main_loop_counter++;
   }
 }

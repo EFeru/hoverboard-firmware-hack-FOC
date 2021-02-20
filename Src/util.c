@@ -802,8 +802,13 @@ void calcInputCmd(InputStruct *in, int16_t out_min, int16_t out_max) {
 void readInputRaw(void) {
     #ifdef CONTROL_ADC
     if (inIdx == CONTROL_ADC) {
-      input1[inIdx].raw = adc_buffer.l_tx2;
-      input2[inIdx].raw = adc_buffer.l_rx2;
+      #ifndef ADC_CONNECTION_ALTERNATE
+        input1[inIdx].raw = adc_buffer.l_tx2;
+        input2[inIdx].raw = adc_buffer.l_rx2;
+      #else
+	      input1[inIdx].raw = adc_buffer.l_rx2;
+        input2[inIdx].raw = adc_buffer.l_tx2;
+      #endif
     }
     #endif
 
@@ -1065,20 +1070,16 @@ void usart2_rx_check(void)
   #endif
 
   #if defined(DEBUG_SERIAL_USART2)
-  uint8_t *ptr;
+  uint8_t ptr[SERIAL_BUFFER_SIZE];
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_L[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      ptr = (uint8_t *) malloc(sizeof(uint8_t) * (rx_buffer_L_len - old_pos + pos));
-      memcpy(ptr, &rx_buffer_L[old_pos], rx_buffer_L_len - old_pos);    // First copy data from the end of buffer
+      memcpy(&ptr[0], &rx_buffer_L[old_pos], rx_buffer_L_len - old_pos);    // First copy data from the end of buffer
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
-        ptr += rx_buffer_L_len - old_pos;
-        memcpy(ptr, &rx_buffer_L[0], pos);                              // Copy remaining data
+        memcpy(&ptr[rx_buffer_L_len - old_pos], &rx_buffer_L[0], pos);                              // Copy remaining data
       }
-      ptr -= rx_buffer_L_len - old_pos;
       usart_process_debug(ptr, rx_buffer_L_len - old_pos + pos);        // Process data
-      free(ptr);
     }
   }
   #endif // DEBUG_SERIAL_USART2
@@ -1141,20 +1142,17 @@ void usart3_rx_check(void)
   #endif
 
   #if defined(DEBUG_SERIAL_USART3)
-  uint8_t *ptr;
+  uint8_t ptr[SERIAL_BUFFER_SIZE];
+
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_R[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      ptr = (uint8_t *) malloc(sizeof(uint8_t) * (rx_buffer_R_len - old_pos + pos));
-      memcpy(ptr, &rx_buffer_R[old_pos], rx_buffer_R_len - old_pos);    // First copy data from the end of buffer
+      memcpy(&ptr[0], &rx_buffer_R[old_pos], rx_buffer_R_len - old_pos);    // First copy data from the end of buffer
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
-        ptr += rx_buffer_R_len - old_pos;
-        memcpy(ptr, &rx_buffer_R[0], pos);                              // Copy remaining data
+        memcpy(&ptr[rx_buffer_R_len - old_pos], &rx_buffer_R[0], pos);                              // Copy remaining data
       }
-      ptr -= rx_buffer_R_len - old_pos;
       usart_process_debug(ptr, rx_buffer_R_len - old_pos + pos);        // Process data
-      free(ptr);
     }
   }
   #endif // DEBUG_SERIAL_USART3
