@@ -60,7 +60,7 @@ extern volatile adc_buf_t adc_buffer;
 uint8_t buzzerFreq          = 0;
 uint8_t buzzerPattern       = 0;
 uint8_t buzzerCount         = 0;
-static uint32_t buzzerTimer = 0;
+volatile uint32_t buzzerTimer = 0;
 static uint8_t  buzzerPrev  = 0;
 static uint8_t  buzzerIdx   = 0;
 

@@ -802,12 +802,12 @@ void calcInputCmd(InputStruct *in, int16_t out_min, int16_t out_max) {
 void readInputRaw(void) {
     #ifdef CONTROL_ADC
     if (inIdx == CONTROL_ADC) {
-      #ifndef ADC_CONNECTION_ALTERNATE
+      #ifdef ADC_ALTERNATE_CONNECT
+        input1[inIdx].raw = adc_buffer.l_rx2;
+        input2[inIdx].raw = adc_buffer.l_tx2;
+      #else
         input1[inIdx].raw = adc_buffer.l_tx2;
         input2[inIdx].raw = adc_buffer.l_rx2;
-      #else
-	      input1[inIdx].raw = adc_buffer.l_rx2;
-        input2[inIdx].raw = adc_buffer.l_tx2;
       #endif
     }
     #endif
