@@ -56,11 +56,17 @@ extern InputStruct input1[];            // input structure
 extern InputStruct input2[];            // input structure
 
 extern uint16_t VirtAddVarTab[NB_OF_VAR];
-extern int16_t  speedAvg;                      // average measured speed
-extern int16_t  speedAvgAbs;                   // average measured speed in absolute
-extern uint8_t  ctrlModReqRaw;
-extern adc_buf_t adc_buffer;
+extern int16_t speedAvg;                      // average measured speed
+extern int16_t speedAvgAbs;                   // average measured speed in absolute
+extern uint8_t ctrlModReqRaw;
+extern int16_t batVoltageCalib;
 extern int16_t board_temp_deg_c;
+extern int16_t left_dc_curr;
+extern int16_t right_dc_curr;
+extern int16_t dc_curr;
+extern int16_t cmdL; 
+extern int16_t cmdR; 
+
 
 
 enum commandTypes {READ,WRITE};
@@ -123,15 +129,19 @@ const parameter_entry params[] = {
 #endif  
   // FEEDBACK
   // Type       ,Name                 ,Datatype, ValueL ptr                  ,ValueR                    ,EEPRM Addr ,Init              Int/Ext ,Min    ,Max    ,Div             ,Mul  ,Fix   ,Callback Function  ,Help text
-    {VARIABLE   ,"I_DC_LINK"          ,ADD_PARAM(rtU_Left.i_DCLink)          ,&rtU_Right.i_DCLink       ,0          ,0                 ,0      ,0      ,0      ,A2BIT_CONV      ,100  ,0     ,NULL               ,"DC Link current A *100"},
+    {VARIABLE   ,"DC_CURR"            ,ADD_PARAM(dc_curr)                    ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Total DC Link current A *100"},
+    {VARIABLE   ,"RDC_CURR"           ,ADD_PARAM(right_dc_curr)              ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Right DC Link current A *100"},
+    {VARIABLE   ,"LDC_CURR"           ,ADD_PARAM(left_dc_curr)               ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Left DC Link current A *100"},
+    {VARIABLE   ,"CMDL"               ,ADD_PARAM(cmdL)                       ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Left Motor Command"},
+    {VARIABLE   ,"CMDR"               ,ADD_PARAM(cmdR)                       ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Right Motor Command"},
     {VARIABLE   ,"SPD_AVG"            ,ADD_PARAM(speedAvg)                   ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Motor Measured Avg RPM"},
     {VARIABLE   ,"SPDL"               ,ADD_PARAM(rtY_Left.n_mot)             ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Left Motor Measured RPM"},
     {VARIABLE   ,"SPDR"               ,ADD_PARAM(rtY_Right.n_mot)            ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Right Motor Measured RPM"},
     {VARIABLE   ,"RATE"               ,0       , NULL                        ,NULL                      ,0          ,RATE              ,0      ,0      ,0      ,0               ,0    ,4     ,NULL               ,"Rate *10"},
     {VARIABLE   ,"SPD_COEF"           ,0       , NULL                        ,NULL                      ,0          ,SPEED_COEFFICIENT ,0      ,0      ,0      ,0               ,10   ,14    ,NULL               ,"Speed Coefficient *10"},
     {VARIABLE   ,"STR_COEF"           ,0       , NULL                        ,NULL                      ,0          ,STEER_COEFFICIENT ,0      ,0      ,0      ,0               ,10   ,14    ,NULL               ,"Steer Coefficient *10"},
-    {VARIABLE   ,"BATV"               ,ADD_PARAM(adc_buffer.batt1)           ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Battery voltage *100"},       
-  //{VARIABLE   ,"TEMP"               ,ADD_PARAM(board_temp_deg_c)           ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Temperature °C *10"},       
+    {VARIABLE   ,"BATV"               ,ADD_PARAM(batVoltageCalib)            ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Calibrated Battery voltage *100"},       
+    {VARIABLE   ,"TEMP"               ,ADD_PARAM(board_temp_deg_c)           ,NULL                      ,0          ,0                 ,0      ,0      ,0      ,0               ,0    ,0     ,NULL               ,"Calibrated Temperature °C *10"},       
 
 };
 

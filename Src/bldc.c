@@ -39,13 +39,14 @@ extern RT_MODEL *const rtM_Right;
 extern DW   rtDW_Left;                  /* Observable states */
 extern ExtU rtU_Left;                   /* External inputs */
 extern ExtY rtY_Left;                   /* External outputs */
+extern P    rtP_Left;
 
 extern DW   rtDW_Right;                 /* Observable states */
 extern ExtU rtU_Right;                  /* External inputs */
 extern ExtY rtY_Right;                  /* External outputs */
 // ###############################################################################
 
-static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
+static int16_t pwm_margin;              /* This margin allows to have a window in the PWM signal for proper FOC Phase currents measurement */
 
 extern uint8_t ctrlModReq;
 static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
@@ -60,7 +61,7 @@ extern volatile adc_buf_t adc_buffer;
 uint8_t buzzerFreq          = 0;
 uint8_t buzzerPattern       = 0;
 uint8_t buzzerCount         = 0;
-static uint32_t buzzerTimer = 0;
+volatile uint32_t buzzerTimer = 0;
 static uint8_t  buzzerPrev  = 0;
 static uint8_t  buzzerIdx   = 0;
 
@@ -144,6 +145,13 @@ void DMA1_Channel1_IRQHandler(void) {
   } else if (buzzerPrev) {
       HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, GPIO_PIN_RESET);
       buzzerPrev = 0;
+  }
+
+  // Adjust pwm_margin depending on the selected Control Type
+  if (rtP_Left.z_ctrlTypSel == FOC_CTRL) {
+    pwm_margin = 110;
+  } else {
+    pwm_margin = 0;
   }
 
   // ############################### MOTOR CONTROL ###############################
