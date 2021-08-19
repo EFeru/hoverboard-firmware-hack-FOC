@@ -275,6 +275,10 @@ For a more detailed troubleshooting connect an [FTDI Serial adapter](https://s.c
 
 - **Telegram Community:** If you are an enthusiast join our [Hooover Telegram Group](https://t.me/joinchat/BHWO_RKu2LT5ZxEkvUB8uw)
 
+---
+## Stargazers
+
+[![Stargazers over time](https://starchart.cc/EmanuelFeru/hoverboard-firmware-hack-FOC.svg)](https://starchart.cc/EmanuelFeru/hoverboard-firmware-hack-FOC)
 
 ---
 ## Contributions
@@ -285,6 +289,4 @@ If you want to donate to keep this firmware updated, please use the link below:
 
 [![paypal](https://www.paypalobjects.com/en_US/NL/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
 
-
 ---
-
