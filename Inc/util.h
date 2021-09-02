@@ -108,6 +108,12 @@ void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sid
 void sideboardLeds(uint8_t *leds);
 void sideboardSensors(uint8_t sensors);
 
+#ifdef VARIANT_BBCAR
+  // Poweron Functions
+  void bbcarDetectDrivingMode();
+  int16_t bbcarLoop();
+#endif
+
 // Poweroff Functions
 void saveConfig(void);
 void poweroff(void);

@@ -149,7 +149,10 @@ static uint8_t sideboard_leds_R;
   static uint16_t transpotter_counter = 0;
 #endif
 
-static int16_t    speed;                // local variable for speed. -1000 to 1000
+int16_t    speed;                // local variable for speed. -1000 to 1000
+int16_t speedL     = 0, speedR     = 0;
+int16_t lastSpeedL = 0, lastSpeedR = 0;
+
 #ifndef VARIANT_TRANSPOTTER
   static int16_t  steer;                // local variable for steering. -1000 to 1000
   static int16_t  steerRateFixdt;       // local fixed-point variable for steering rate limiter
@@ -201,6 +204,11 @@ int main(void) {
 
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
+
+  #ifdef VARIANT_BBCAR
+    poweroffPressCheck();  //to prevent shutdown by bad adc values before calibaration. here you can enter calibration mode before shutdown.
+    bbcarDetectDrivingMode();
+  #endif
   
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
@@ -297,6 +305,10 @@ int main(void) {
       // cmdR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MAX);
       // cmdL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MAX);
       mixerFcn(speed << 4, steer << 4, &cmdR, &cmdL);   // This function implements the equations above
+      
+      #ifdef VARIANT_BBCAR
+        cmdR = cmdL = bbcarLoop();
+      #endif
 
       // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
       #ifdef INVERT_R_DIRECTION
@@ -487,21 +499,31 @@ int main(void) {
 
     // ####### BEEP AND EMERGENCY POWEROFF #######
     if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
+      if (board_temp_deg_c >= TEMP_POWEROFF) printf("# Error: STM32 overtemp: %4.1f°C: power off\r\n", board_temp_deg_c / 10.0);
+      if (batVoltage < BAT_DEAD) printf("# Battery empty: %4.2fV: power off\r\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       poweroff();
     } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): Motor error, disable motors
+      if (rtY_Left.z_errCode && main_loop_counter % 50 == 0) printf("# Warning: rtY_Left.z_errCode: %i\r\n", rtY_Left.z_errCode);
+      if (rtY_Right.z_errCode && main_loop_counter % 50 == 0) printf("# Warning: rtY_Right.z_errCode: %i\r\n", rtY_Right.z_errCode);
       enable = 0;
       beepCount(1, 24, 1);
     } else if (timeoutFlgADC) {                                                                       // 2 beeps (low pitch): ADC timeout
+      if (timeoutFlgADC && main_loop_counter % 50 == 0) printf("# Warning: ADC timeout\r\n");
       beepCount(2, 24, 1);
     } else if (timeoutFlgSerial) {                                                                    // 3 beeps (low pitch): Serial timeout
+      if (timeoutFlgSerial && main_loop_counter % 50 == 0) printf("# Warning: Serial timeout\r\n");
       beepCount(3, 24, 1);
     } else if (timeoutFlgGen) {                                                                       // 4 beeps (low pitch): General timeout (PPM, PWM, Nunchuk)
+      if (timeoutFlgGen && main_loop_counter % 50 == 0) printf("# Warning: General timeout (PPM, PWM, Nunchuk)\r\n");
       beepCount(4, 24, 1);
     } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {                             // 5 beeps (low pitch): Mainboard temperature warning
+      if (main_loop_counter % 50 == 0) printf("# Warning: STM32 is getting hot: %4.1f°C\r\n", board_temp_deg_c / 10.0);
       beepCount(5, 24, 1);
     } else if (BAT_LVL1_ENABLE && batVoltage < BAT_LVL1) {                                            // 1 beep fast (medium pitch): Low bat 1
+      if (main_loop_counter % 50 == 0) printf("# Warning: Battery is getting empty 1: %4.2fV\r\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       beepCount(0, 10, 6);
     } else if (BAT_LVL2_ENABLE && batVoltage < BAT_LVL2) {                                            // 1 beep slow (medium pitch): Low bat 2
+      if (main_loop_counter % 50 == 0) printf("# Warning: Battery is getting empty 2: %4.2fV\r\n", batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC / 100.0);
       beepCount(0, 10, 30);
     } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) { // 1 beep fast (high pitch): Backward spinning motors
       beepCount(0, 5, 1);
@@ -519,6 +541,7 @@ int main(void) {
       inactivity_timeout_counter++;
     }
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
+      printf("# inactivity timeout: power off\r\n");
       poweroff();
     }
 

@@ -67,6 +67,10 @@ extern volatile uint16_t pwm_captured_ch1_value;
 extern volatile uint16_t pwm_captured_ch2_value;
 #endif
 
+#ifdef VARIANT_BBCAR
+  int8_t drive_mode;
+#endif
+
 
 //------------------------------------------------------------------------
 // Global variables set here in util.c
@@ -453,6 +457,15 @@ void beepShortMany(uint8_t cnt, int8_t dir) {
     }
 }
 
+#ifdef VARIANT_BBCAR
+  void beepShortMany2(uint8_t cnt) {
+      for(uint8_t i = 0; i < cnt; i++) {
+      beepShort(2);
+      HAL_Delay(200);
+      }
+  }
+#endif
+
 void calcAvgSpeed(void) {
     // Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
     #if   !defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
@@ -492,7 +505,10 @@ void adcCalibLim(void) {
 #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
 
   #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
-  printf("Input calibration started...\r\n");
+  printf("# Input calibration started...\r\n");
+  printf("# move the potentiometers freely to the min and max limits repeatedly\r\n");
+  printf("# release potentiometers to the resting postion\r\n");
+  printf("# press the power button to confirm or wait for the 20 sec timeout\r\n");
   #endif
 
   readInputRaw();
@@ -590,7 +606,9 @@ void updateCurSpdLim(void) {
 #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
 
   #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
-  printf("Torque and Speed limits update started...\r\n");
+  printf("# Torque and Speed limits update started...\r\n");
+  printf("# move and hold the pots to a desired limit position for Current and Speed\r\n");
+  printf("# press the power button to confirm or wait for the 10 sec timeout\r\n");
   #endif
 
   int32_t  input1_fixdt = input1[inIdx].raw << 16;
@@ -723,6 +741,158 @@ void cruiseControl(uint8_t button) {
     }
   #endif
 }
+
+
+/* =========================== BBCAR Functions =========================== */
+
+  #ifdef VARIANT_BBCAR
+    static float speedRL = 0.0;  // [-1000.0 to 1000.0] for high precision internal speed calculation
+    static float weak = 0.0;  // [-0.0 to 500.0]
+    
+    extern int16_t speedL, speedR, speed;
+
+    static float acc_cmd = 0.0;
+    static float brk_cmd = 0.0;
+    
+    static float input1_filtered;
+    static float input2_filtered;
+
+    extern int8_t drive_mode;
+
+     /*
+     * Driving mode detection on startup
+     * Hold different combinations of forward oder backwart poti on startup to select driving mode.
+     * 
+     * Input: potis: full press poti(s), poweron, release poti(s)
+     * Output: drive_mode
+     */
+    void bbcarDetectDrivingMode() {
+      readInputRaw();
+      input1_filtered = input1[inIdx].min;  // set start value
+      input2_filtered = input2[inIdx].min;
+      
+      printf("\r\n");
+      printf("# hoverboard-firmware-hack larsm's Bobby Car Edition\r\n");
+      printf("# GCC Version: %s\r\n",__VERSION__);
+      printf("# Build Date: %s\r\n",__DATE__);
+      printf("\r\n");
+      printf("# Mode 1: MAX_SPEED_FORWARDS_M1:%i ACC_FORWARDS_M1:%4.2f MAX_SPEED_BACKWARDS_M1:%i ACC_BACKWARDS_M1:%4.2f (no turbo)\r\n", MAX_SPEED_FORWARDS_M1, ACC_FORWARDS_M1, MAX_SPEED_BACKWARDS_M1, ACC_BACKWARDS_M1);
+      printf("# Mode 2: MAX_SPEED_FORWARDS_M2:%i ACC_FORWARDS_M2:%4.2f MAX_SPEED_BACKWARDS_M2:%i ACC_BACKWARDS_M2:%4.2f (no turbo)\r\n", MAX_SPEED_FORWARDS_M2, ACC_FORWARDS_M2, MAX_SPEED_BACKWARDS_M2, ACC_BACKWARDS_M2);
+      printf("# Mode 3: MAX_SPEED_FORWARDS_M3:%i ACC_FORWARDS_M3:%4.2f MAX_SPEED_BACKWARDS_M3:%i ACC_BACKWARDS_M3:%4.2f (no turbo)\r\n", MAX_SPEED_FORWARDS_M3, ACC_FORWARDS_M3, MAX_SPEED_BACKWARDS_M3, ACC_BACKWARDS_M3);
+      printf("# Mode 4: MAX_SPEED_FORWARDS_M4:%i ACC_FORWARDS_M4:%4.2f MAX_SPEED_BACKWARDS_M4:%i ACC_BACKWARDS_M4:%4.2f (turbo)\r\n", MAX_SPEED_FORWARDS_M4, ACC_FORWARDS_M4, MAX_SPEED_BACKWARDS_M4, ACC_BACKWARDS_M4);
+      printf("\r\n");
+
+      // ####### driving modes #######
+
+      // beim einschalten gashebel gedrueckt halten um modus einzustellen:
+      // Drive Mode 1, links:     3 kmh, ohne Turbo
+      // Drive Mode 2, default:   6 kmh, ohne Turbo
+      // Drive Mode 3, rechts:   12 kmh, ohne Turbo
+      // Drive Mode 4, l + r:    22 kmh, 29 kmh mit Turbo
+      int16_t start_links  = adc_buffer.l_rx2;  // ADC2, links, rueckwearts, gruen
+      int16_t start_rechts = adc_buffer.l_tx2;  // ADC1, rechts, vorwaerts, blau
+      HAL_Delay(300);
+      if(start_rechts > (input1[inIdx].max - (input1[inIdx].max - input1[inIdx].min)*0.2) && start_links > (input2[inIdx].max - (input2[inIdx].max - input2[inIdx].min)*0.2)){  // Mode 4
+        drive_mode = 4;
+        beepShortMany2(4);
+      } else if(start_rechts > (input1[inIdx].max - (input1[inIdx].max - input1[inIdx].min)*0.2)){  // Mode 3
+        drive_mode = 3;
+        beepShortMany2(3);
+      } else if(start_links > (input2[inIdx].max - (input2[inIdx].max - input2[inIdx].min)*0.2)){  // Mode 1
+        drive_mode = 1;
+        beepShortMany2(1);
+      } else {  // Mode 2
+        drive_mode = 2;
+        beepShortMany2(2);
+      }
+      printf("# Mode: %i\r\n", drive_mode);
+      printf("# waiting for poti release...\r\n");
+      while(adc_buffer.l_tx2 > (input1[inIdx].max - (input1[inIdx].max - input1[inIdx].min)*0.2) || adc_buffer.l_rx2 > (input2[inIdx].max - (input2[inIdx].max - input2[inIdx].min)*0.2)) HAL_Delay(100); //delay in ms, wait until potis released
+      printf("# potis released\r\n");
+      printf("# driving mode detection done\r\n");
+    }
+
+     /*
+     * larsm's bobby car main loop
+     * This function calculates the motor output based on driving mode and poti input. In mode 4 it adds field weakening.
+     * 
+     * Input: potis
+     * Output: speed (normal motor speed), weak (field weakening)
+     */
+    int16_t bbcarLoop() {
+      #define INPUT_MAX 1000  // [-] Defines the Input target maximum limitation
+      #define INPUT_MIN -1000  // [-] Defines the Input target minimum limitation
+
+      // LOW-PASS FILTER (fliessender Mittelwert)
+      input1_filtered = input1_filtered * 0.9 + (float)adc_buffer.l_tx2 * 0.1;  // ADC1, TX, rechts, vorwaerts, blau
+      input2_filtered = input2_filtered * 0.9 + (float)adc_buffer.l_rx2 * 0.1;  // ADC2, RX, links, rueckwearts, gruen
+
+      // poti range normalized from INPUT1_MIN - INPUT1_MAX to 0.0 - 1.0
+      acc_cmd = CLAMP((input1_filtered - input1[inIdx].min) / (input1[inIdx].max - input1[inIdx].min), 0, 1.0);
+      brk_cmd = CLAMP((input2_filtered - input2[inIdx].min) / (input2[inIdx].max - input2[inIdx].min), 0, 1.0);
+
+      // if poti is significantly out of range: break and poweroff. if MAX or MIN gets too close to 0 or 4095 this feature gets disabled.
+      // if(input1_filtered < ((input1[inIdx].min < 100) ? 0 : 50) || input1_filtered > ((input1[inIdx].max > 4095-400) ? 4095 : 4095-50) || input2_filtered < ((input2[inIdx].min < 100) ? 0 : 50) || input2_filtered > ((input2[inIdx].max > 4095-400) ? 4095 : 4095-50)){
+      if (timeoutFlgADC || timeoutFlgSerial || timeoutFlgGen) {  // In case of timeout bring the system to a Safe State
+        acc_cmd = brk_cmd = 0.0;
+        if (ABS((int)speedRL) < 5) {  // error beep
+          readInputRaw();
+          printf("# Poti significantly out of range:\r\n");
+          printf("# Input1: %i, Input2: %i\r\n", input1[inIdx].raw, input2[inIdx].raw);
+          printf("# Limits Input1: TYP:%i MIN:%i MID:%i MAX:%i\r\nLimits Input2: TYP:%i MIN:%i MID:%i MAX:%i\r\n",
+          input1[inIdx].typ, input1[inIdx].min, input1[inIdx].mid, input1[inIdx].max,
+          input2[inIdx].typ, input2[inIdx].min, input2[inIdx].mid, input2[inIdx].max);
+          printf("# power off\r\n");
+          for(uint8_t i = 0; i < 6; i++) {
+            buzzerFreq = 6;
+            HAL_Delay(50);
+            buzzerFreq = 0;
+            HAL_Delay(50);
+            buzzerFreq = 8;
+            HAL_Delay(50);
+            buzzerFreq = 0;
+            HAL_Delay(50);
+          }
+          poweroff();
+        }
+      }
+
+      if (drive_mode == 1) {  // Mode 1: 3 km/h@12s
+        speedRL = speedRL * (1.0 - (speedRL > 0 ? ACC_FORWARDS_M1/MAX_SPEED_FORWARDS_M1*5.0 : ACC_BACKWARDS_M1/MAX_SPEED_BACKWARDS_M1*5.0))  // breaking if poti is not pressed
+                + acc_cmd * ACC_FORWARDS_M1*5.0  // accelerating forwards
+                - brk_cmd * ACC_BACKWARDS_M1*5.0;  // accelerating backwards
+
+      } else if (drive_mode == 2) {  // Mode 2: 6 km/h@12s
+        speedRL = speedRL * (1.0 - (speedRL > 0 ? ACC_FORWARDS_M2/MAX_SPEED_FORWARDS_M2*5.0 : ACC_BACKWARDS_M2/MAX_SPEED_BACKWARDS_M2*5.0))  // breaking if poti is not pressed
+                + acc_cmd * ACC_FORWARDS_M2*5.0  // accelerating forwards
+                - brk_cmd * ACC_BACKWARDS_M2*5.0;  // accelerating backwards
+
+      } else if (drive_mode == 3) {  // Mode 3: 12 km/h@12s
+        speedRL = speedRL * (1.0 - (speedRL > 0 ? ACC_FORWARDS_M3/MAX_SPEED_FORWARDS_M3*5.0 : ACC_BACKWARDS_M3/MAX_SPEED_BACKWARDS_M3*5.0))  // breaking if poti is not pressed
+                + acc_cmd * ACC_FORWARDS_M3*5.0  // accelerating forwards
+                - brk_cmd * ACC_BACKWARDS_M3*5.0;  // accelerating backwards
+
+      } else if (drive_mode == 4) {  // Mode 4: without fw: 21 km/h@12s, with fw: 30 km/h@12s
+        if(acc_cmd > 0.8 & brk_cmd > 0.8 & speedRL > 0.7 * (float)INPUT_MAX){  // fahrzeug schnell, gas und bremse voll gedrueckt: field weakening
+          speedRL = speedRL * (1.0 - (speedRL > 0 ? ACC_FORWARDS_M4/MAX_SPEED_FORWARDS_M4*5.0 : ACC_BACKWARDS_M4/MAX_SPEED_BACKWARDS_M4*5.0))  // breaking if poti is not pressed
+                  + acc_cmd * ACC_FORWARDS_M4*5.0;  // accelerating forwards
+          weak = weak * 0.95 + 500.0 * 0.05;  // sanftes hinzuschalten des field weakening
+        } else {  // nur gas gedrueckt: normale fahrt ohne field weakening
+          speedRL = speedRL * (1.0 - (speedRL > 0 ? ACC_FORWARDS_M4/MAX_SPEED_FORWARDS_M4*5.0 : ACC_BACKWARDS_M4/MAX_SPEED_BACKWARDS_M4*5.0))  // breaking if poti is not pressed
+                  + acc_cmd * ACC_FORWARDS_M4*5.0  // accelerating forwards
+                  - brk_cmd * ACC_BACKWARDS_M4*5.0;  // accelerating backwards
+          weak = weak * 0.95;  // sanftes abschalten des field weakening
+        }
+        // weakr = weakl = (int)weak;  // weak should never exceed 400 or 450 MAX!!
+      }
+
+      return CLAMP((int16_t)(speedRL + weak), INPUT_MIN, FIELD_WEAK_HI);  // clamp output
+    }
+  #endif
+
+/* =========================== ENDE BBCAR Functions =========================== */
+
+
 
  /*
  * Check Input Type
@@ -1002,13 +1172,13 @@ void handleTimeout(void) {
     #endif
 
     // In case of timeout bring the system to a Safe State
-    if (timeoutFlgADC || timeoutFlgSerial || timeoutFlgGen) {
-      ctrlModReq  = OPEN_MODE;                                          // Request OPEN_MODE. This will bring the motor power to 0 in a controlled way
-      input1[inIdx].cmd  = 0;
-      input2[inIdx].cmd  = 0;
-    } else {
-      ctrlModReq  = ctrlModReqRaw;                                      // Follow the Mode request
-    }
+    // if (timeoutFlgADC || timeoutFlgSerial || timeoutFlgGen) {
+    //   ctrlModReq  = OPEN_MODE;                                          // Request OPEN_MODE. This will bring the motor power to 0 in a controlled way
+    //   input1[inIdx].cmd  = 0;
+    //   input2[inIdx].cmd  = 0;
+    // } else {
+    //   ctrlModReq  = ctrlModReqRaw;                                      // Follow the Mode request
+    // }
 
     // Beep in case of Input index change
     if (inIdx && !inIdx_prev) {                                         // rising edge
