@@ -1,5 +1,5 @@
 # hoverboard-firmware-hack-FOC
-[![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC)
+[![Build Status](https://app.travis-ci.com/EFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://app.travis-ci.com/EFeru/hoverboard-firmware-hack-FOC)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
 
@@ -23,11 +23,11 @@ Table of Contents
 * [Contributions](#contributions)
 
 #### For the hoverboard sideboard firmware, see the following repositories:
- - [hoverboard-sideboard-hack-GD](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-GD)
- - [hoverboard-sideboard-hack-STM](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-STM)
+ - [hoverboard-sideboard-hack-GD](https://github.com/EFeru/hoverboard-sideboard-hack-GD)
+ - [hoverboard-sideboard-hack-STM](https://github.com/EFeru/hoverboard-sideboard-hack-STM)
  
 #### For the FOC controller design, see the following repository:
- - [bldc-motor-control-FOC](https://github.com/EmanuelFeru/bldc-motor-control-FOC)
+ - [bldc-motor-control-FOC](https://github.com/EFeru/bldc-motor-control-FOC)
 
 #### Videos:
 <table>
@@ -96,8 +96,8 @@ In all FOC control modes, the controller features maximum motor speed and maximu
 ### Parameters
  - All the calibratable motor parameters can be found in the 'BLDC_controller_data.c'. I provided you with an already calibrated controller, but if you feel like fine tuning it feel free to do so 
  - The parameters are represented in Fixed-point data type for a more efficient code execution
- - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EmanuelFeru/FixedPointViewer) tool
- - The controller parameters are given in [this table](https://github.com/EmanuelFeru/bldc-motor-control-FOC/blob/master/02_Figures/paramTable.png)
+ - For calibrating the fixed-point parameters use the [Fixed-Point Viewer](https://github.com/EFeru/FixedPointViewer) tool
+ - The controller parameters are given in [this table](https://github.com/EFeru/bldc-motor-control-FOC/blob/master/02_Figures/paramTable.png)
 
 
 ---
@@ -110,7 +110,7 @@ This firmware offers currently these variants (selectable in [platformio.ini](/p
 - **VARIANT_PPM**: RC remote control with PPM Sum signal.
 - **VARIANT_PWM**: RC remote control with PWM signal.
 - **VARIANT_IBUS**: RC remote control with Flysky iBUS protocol connected to the Left sensor cable.
-- **VARIANT_HOVERCAR**: The motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill. See [HOVERCAR wiki](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki/Variant-HOVERCAR).
+- **VARIANT_HOVERCAR**: The motors are controlled by two pedals brake and throttle. Reverse is engaged by double tapping on the brake pedal at standstill. See [HOVERCAR wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki/Variant-HOVERCAR).
 - **VARIANT_HOVERBOARD**: The mainboard reads the two sideboards data. The sideboards need to be flashed with the hacked version. The balancing controller is **not** yet implemented.
 - **VARIANT_TRANSPOTTER**: This is for transpotter build, which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
 - **VARIANT_SKATEBOARD**: This is for skateboard build, controlled using an RC remote with PWM signal connected to the right sensor cable.
@@ -146,7 +146,7 @@ With slight modifications in config.h, other dual-inputs combinations can be rea
 
 Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer, like the ST-Link found on many STM devboards.
 
-If you have never flashed your sideboard before, the MCU is probably locked. To unlock the flash, check-out the wiki page [How to Unlock MCU flash](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki/How-to-Unlock-MCU-flash).
+If you have never flashed your sideboard before, the MCU is probably locked. To unlock the flash, check-out the wiki page [How to Unlock MCU flash](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki/How-to-Unlock-MCU-flash).
 
 Do not power the mainboard from the 3.3V of your programmer! This has already killed multiple mainboards.
 
@@ -242,7 +242,7 @@ Most robust way for input is to use the ADC and potis. It works well even on 1m 
 ---
 ## Diagnostics
 The errors reported by the board are in the form of audible beeps:
-- **1 beep  (low pitch)**: Motor error (see [possible causes](https://github.com/EmanuelFeru/bldc-motor-control-FOC#diagnostics))
+- **1 beep  (low pitch)**: Motor error (see [possible causes](https://github.com/EFeru/bldc-motor-control-FOC#diagnostics))
 - **2 beeps (low pitch)**: ADC timeout
 - **3 beeps (low pitch)**: Serial communication timeout
 - **4 beeps (low pitch)**: General timeout (PPM, PWM, Nunchuk)
@@ -278,7 +278,7 @@ For a more detailed troubleshooting connect an [FTDI Serial adapter](https://s.c
 ---
 ## Stargazers
 
-[![Stargazers over time](https://starchart.cc/EmanuelFeru/hoverboard-firmware-hack-FOC.svg)](https://starchart.cc/EmanuelFeru/hoverboard-firmware-hack-FOC)
+[![Stargazers over time](https://starchart.cc/EFeru/hoverboard-firmware-hack-FOC.svg)](https://starchart.cc/EFeru/hoverboard-firmware-hack-FOC)
 
 ---
 ## Contributions
