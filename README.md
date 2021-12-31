@@ -238,6 +238,7 @@ Recommendation: Nunchuk Breakout Board https://github.com/Jan--Henrik/hoverboard
 
 Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
 
+Please check the [WIKI](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki/Troubleshooting) for more troubleshooting tips.
 
 ---
 ## Diagnostics
