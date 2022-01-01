@@ -258,7 +258,7 @@ Please also note that with `BEEPS_BACKWARD = 1` (default setting) the board also
 
 For a more detailed troubleshooting connect an [FTDI Serial adapter](https://s.click.aliexpress.com/e/_AqPOBr) or a [Bluetooth module](https://s.click.aliexpress.com/e/_A4gkMD) to the DEBUG_SERIAL cable (Left or Right) and monitor the output data using the [Hoverboard Web Serial Control](https://candas1.github.io/Hoverboard-Web-Serial-Control/) tool developed by [Candas](https://github.com/Candas1/).
 
-HC-05 (https://www.aliexpress.com/af/HC-06.html) works, connected to USART2 at 9600 bauds (define DEBUG_SERIAL_USART2 and USART2_BAUD=9600).
+[HC-06](https://www.aliexpress.com/af/HC-06.html) works, connected to USART2 at 9600 bauds (define DEBUG_SERIAL_USART2 and USART2_BAUD=9600).
 
 ---
 ## Projects and Links
