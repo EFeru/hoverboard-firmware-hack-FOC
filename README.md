@@ -144,9 +144,9 @@ With slight modifications in config.h, other dual-inputs combinations can be rea
 ---
 ## Flashing
 
-Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer (don't connect 3V3 pin with ST-Link), like the ST-Link found on many STM devboards.
+Next to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer (don't connect 3V3 pin with ST-Link), like the ST-Link found on many STM devboards.
 
-In case you connected the pins and you get connection errors, make sure your ST-Link dongle pins are real, by sliding the plastic cover and checking on the ST-Link board itself. An example can be seen here https://youtu.be/XWh8yJ_p0HA?t=60.
+In case you connected the pins and you get connection errors, make sure your ST-Link dongle pins are real, by sliding the plastic cover and checking on the ST-Link board itself. An example can be seen [here](https://youtu.be/XWh8yJ_p0HA?t=60).
 
 If you have never flashed your sideboard before, the MCU is probably locked. To unlock the flash, check-out the wiki page [How to Unlock MCU flash](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki/How-to-Unlock-MCU-flash).
 
@@ -253,13 +253,11 @@ The errors reported by the board are in the form of audible beeps:
 - **1 beep fast (medium pitch)**: Low battery voltage < 35V
 - **1 beep fast (high pitch)**: Backward spinning motors
 
-Please also note that with BEEPS_BACKWARD=1 (default setting) the board also makes a beep when the motors go backwards. If running hoverserial.ino from Arduino the backward beeps are normal, unless you intentionally disable them.
+Please also note that with `BEEPS_BACKWARD = 1` (default setting) the board also makes a beep when the motors go backwards. If running [hoverserial.ino](/Arduino/hoverserial) from Arduino the backward beeps are normal, unless you intentionally disable them.
 
 For a more detailed troubleshooting connect an [FTDI Serial adapter](https://s.click.aliexpress.com/e/_AqPOBr) or a [Bluetooth module](https://s.click.aliexpress.com/e/_A4gkMD) to the DEBUG_SERIAL cable (Left or Right) and monitor the output data using the [Hoverboard Web Serial Control](https://candas1.github.io/Hoverboard-Web-Serial-Control/) tool developed by [Candas](https://github.com/Candas1/).
 
 HC-05 (https://www.aliexpress.com/af/HC-06.html) works, connected to USART2 at 9600 bauds (define DEBUG_SERIAL_USART2 and USART2_BAUD=9600).
-
-In main.c you can see at [lines 440](https://github.com/EFeru/hoverboard-firmware-hack-FOC/blob/cf7b1d0de1da34612b056c316480f47702a15cbe/Src/main.c#L440) and [line 224][https://github.com/EFeru/hoverboard-firmware-hack-FOC/blob/cf7b1d0de1da34612b056c316480f47702a15cbe/Src/main.c#L225] printf statements, wrapped in ```#if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)```. Feel free to add more printf statements with same wrapping, in main.c, in places you want to see what happens.
 
 ---
 ## Projects and Links
