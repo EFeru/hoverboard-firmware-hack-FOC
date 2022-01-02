@@ -15,6 +15,7 @@ Table of Contents
 * [Hardware](#hardware)
 * [FOC Firmware](#foc-firmware)
 * [Example Variants](#example-variants)
+* [Wiki](#wiki)
 * [Projects and Links](#projects-and-links)
 * [Contributions](#contributions)
 
@@ -112,7 +113,11 @@ In all FOC control modes, the controller features maximum motor speed and maximu
 
 Of course the firmware can be further customized for other needs or projects.
 
-### Please check the wiki for [Getting Started](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#getting-started) and for [Troubleshooting](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#troubleshooting)
+
+---
+## Wiki 
+Please check the wiki for [Getting Started](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#getting-started) and for [Troubleshooting](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#troubleshooting)
+
 
 ---
 ## Projects and Links
