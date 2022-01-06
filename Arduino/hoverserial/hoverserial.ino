@@ -11,6 +11,8 @@
 //   it is recommended to use the built-in Serial interface for full speed perfomace.
 // • The data packaging includes a Start Frame, checksum, and re-syncronization capability for reliable communication
 // 
+// The code starts with zero speed and moves towards +
+//
 // CONFIGURATION on the hoverboard side in config.h:
 // • Option 1: Serial on Right Sensor cable (short wired cable) - recommended, since the USART3 pins are 5V tolerant.
 //   #define CONTROL_SERIAL_USART3
@@ -28,6 +30,7 @@
 #define START_FRAME         0xABCD     	// [-] Start frme definition for reliable serial communication
 #define TIME_SEND           100         // [ms] Sending time interval
 #define SPEED_MAX_TEST      300         // [-] Maximum speed for testing
+#define SPEED_STEP          20          // [-] Speed step
 // #define DEBUG_RX                        // [-] Debug received data. Prints all bytes to serial (comment-out to disable)
 
 #include <SoftwareSerial.h>
@@ -146,8 +149,8 @@ void Receive()
 // ########################## LOOP ##########################
 
 unsigned long iTimeSend = 0;
-int iTestMax = SPEED_MAX_TEST;
 int iTest = 0;
+int iStep = SPEED_STEP;
 
 void loop(void)
 { 
@@ -159,11 +162,14 @@ void loop(void)
   // Send commands
   if (iTimeSend > timeNow) return;
   iTimeSend = timeNow + TIME_SEND;
-  Send(0, SPEED_MAX_TEST - 2*abs(iTest));
+  Send(0, iTest);
 
   // Calculate test command signal
-  iTest += 10;
-  if (iTest > iTestMax) iTest = -iTestMax;
+  iTest += iStep;
+
+  // invert step if reaching limit
+  if (iTest >= SPEED_MAX_TEST || iTest <= -SPEED_MAX_TEST)
+    iStep = -iStep;
 
   // Blink the LED
   digitalWrite(LED_BUILTIN, (timeNow%2000)<1000);
