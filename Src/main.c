@@ -138,7 +138,7 @@ static uint8_t sideboard_leds_R;
 #endif
 
 #ifdef VARIANT_TRANSPOTTER
-  extern uint8_t  nunchuk_connected;
+  uint8_t  nunchuk_connected;
   extern float    setDistance;  
 
   static uint8_t  checkRemote = 0;
@@ -376,17 +376,15 @@ int main(void) {
       #ifdef SUPPORT_NUNCHUK
         if (transpotter_counter % 500 == 0) {
           if (nunchuk_connected == 0 && enable == 0) {
-            if (Nunchuk_Ping()) {
-              HAL_Delay(500);
-              Nunchuk_Init();
-              #ifdef SUPPORT_LCD
-                LCD_SetLocation(&lcd, 0, 0); LCD_WriteString(&lcd, "Nunchuk Control");
-              #endif
-              timeoutCntGen = 0;
-              timeoutFlgGen = 0;
-              HAL_Delay(1000);
-              nunchuk_connected = 1;
-            }
+              if(Nunchuk_Read() == NUNCHUK_CONNECTED) {
+                #ifdef SUPPORT_LCD
+                  LCD_SetLocation(&lcd, 0, 0); LCD_WriteString(&lcd, "Nunchuk Control");
+                #endif
+                nunchuk_connected = 1;
+	      }
+	    } else {
+              nunchuk_connected = 0;
+	    }
           }
         }   
       #endif

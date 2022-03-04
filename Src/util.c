@@ -111,12 +111,6 @@ uint8_t  ctrlModReq    = CTRL_MOD_REQ;  // Final control mode request
 LCD_PCF8574_HandleTypeDef lcd;
 #endif
 
-#if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
-uint8_t nunchuk_connected = 1;
-#else
-uint8_t nunchuk_connected = 0;
-#endif
-
 #ifdef VARIANT_TRANSPOTTER
 float    setDistance;
 uint16_t VirtAddVarTab[NB_OF_VAR] = {1337};       // Virtual address defined by the user: 0xFFFF value is prohibited
@@ -286,11 +280,6 @@ void Input_Init(void) {
 
  #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
     PWM_Init();
-  #endif
-
-  #ifdef CONTROL_NUNCHUK
-    I2C_Init();
-    Nunchuk_Init();
   #endif
 
   #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
@@ -643,8 +632,8 @@ void updateCurSpdLim(void) {
 void standstillHold(void) {
   #if defined(STANDSTILL_HOLD_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ != SPD_MODE)
     if (!rtP_Left.b_cruiseCtrlEna) {                                  // If Stanstill in NOT Active -> try Activation
-      if ((input1[inIdx].cmd > 50 && speedAvgAbs < 30)                // Check if Brake is pressed AND measured speed is small
-          || (abs(input2[inIdx].cmd) < 20 && speedAvgAbs < 5)) {      // OR Throttle is small AND measured speed is very small
+      if (((input1[inIdx].cmd > 50 || input2[inIdx].cmd < -50) && speedAvgAbs < 30) // Check if Brake is pressed AND measured speed is small
+          || (input2[inIdx].cmd < 20 && speedAvgAbs < 5)) {           // OR Throttle is small AND measured speed is very small
         rtP_Left.n_cruiseMotTgt   = 0;
         rtP_Right.n_cruiseMotTgt  = 0;
         rtP_Left.b_cruiseCtrlEna  = 1;
@@ -653,7 +642,7 @@ void standstillHold(void) {
       } 
     }
     else {                                                            // If Stanstill is Active -> try Deactivation
-      if (input1[inIdx].cmd < 20 && abs(input2[inIdx].cmd) > 50 && !cruiseCtrlAcv) { // Check if Brake is released AND Throttle is pressed AND no Cruise Control
+      if (input1[inIdx].cmd < 20 && input2[inIdx].cmd > 50 && !cruiseCtrlAcv) { // Check if Brake is released AND Throttle is pressed AND no Cruise Control
         rtP_Left.b_cruiseCtrlEna  = 0;
         rtP_Right.b_cruiseCtrlEna = 0;
         standstillAcv = 0;
@@ -813,8 +802,7 @@ void readInputRaw(void) {
     #endif
 
     #if defined(CONTROL_NUNCHUK) || defined(SUPPORT_NUNCHUK)
-    if (nunchuk_connected) {
-      Nunchuk_Read();
+    if (Nunchuk_Read() == NUNCHUK_CONNECTED) {
       if (inIdx == CONTROL_NUNCHUK) {
         input1[inIdx].raw = (nunchuk_data[0] - 127) * 8; // X axis 0-255
         input2[inIdx].raw = (nunchuk_data[1] - 128) * 8; // Y axis 0-255
