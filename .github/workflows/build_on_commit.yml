@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    # Get required packages
+    - uses: actions/checkout@v2
+    - uses: fiam/arm-none-eabi-gcc@v1
+      with:
+        release: '9-2019-q4'
+
+    # Build with make
+    - name: make
+      env: 
+        VARIANT: VARIANT_ADC
+      run: make
+
+    # Build with Platformio
+    - name: PlatformIO Install
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    - name: PlatformIO Run
+      run: pio run
+
+    - name: 'Upload Build Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        path: ${{github.workspace}}/.pio/build/**
+        name: ${{github.event.repository.name}}_build_${{github.run_number}}
+        retention-days: 5
+
