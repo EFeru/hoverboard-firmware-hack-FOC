@@ -8,14 +8,13 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
  - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
 
-
 Table of Contents
 =======================
 
+* **Wiki:** please check the wiki pages for [Getting Started](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#getting-started) and for [Troubleshooting](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#troubleshooting)
 * [Hardware](#hardware)
 * [FOC Firmware](#foc-firmware)
 * [Example Variants](#example-variants)
-* [Wiki](#wiki)
 * [Projects and Links](#projects-and-links)
 * [Contributions](#contributions)
 
@@ -118,11 +117,6 @@ To explore the controller without a Matlab/Simulink installation click on the li
 - **VARIANT_SKATEBOARD**: This is for skateboard build, controlled using an RC remote with PWM signal connected to the right sensor cable.
 
 Of course the firmware can be further customized for other needs or projects.
-
-
----
-## Wiki 
-Please check the wiki for [Getting Started](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#getting-started) and for [Troubleshooting](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#troubleshooting)
 
 
 ---
