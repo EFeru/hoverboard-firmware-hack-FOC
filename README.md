@@ -97,6 +97,12 @@ In all FOC control modes, the controller features maximum motor speed and maximu
  - The controller parameters are given in [this table](https://github.com/EFeru/bldc-motor-control-FOC/blob/master/02_Figures/paramTable.png)
 
 
+### FOC Webview
+
+To explore the controller without a Matlab/Simulink installation click on the link below:
+
+[https://eferu.github.io/bldc-motor-control-FOC/](https://eferu.github.io/bldc-motor-control-FOC/)
+
 ---
 ## Example Variants
 
