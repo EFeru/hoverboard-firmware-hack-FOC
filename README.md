@@ -1,5 +1,5 @@
 # hoverboard-firmware-hack-FOC
-[![Build Status](https://app.travis-ci.com/EFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://app.travis-ci.com/EFeru/hoverboard-firmware-hack-FOC)
+[![Build status](https://github.com/EFeru/hoverboard-firmware-hack-FOC/actions/workflows/build_on_commit.yml/badge.svg)](https://github.com/EFeru/hoverboard-firmware-hack-FOC/actions/workflows/build_on_commit.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
 
@@ -8,14 +8,13 @@ This repository implements Field Oriented Control (FOC) for stock hoverboards. C
  - smooth torque output and improved motor efficiency. Thus, lower energy consumption
  - field weakening to increase maximum speed range
 
-
 Table of Contents
 =======================
 
+* **Wiki:** please check the wiki pages for [Getting Started](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#getting-started) and for [Troubleshooting](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#troubleshooting)
 * [Hardware](#hardware)
 * [FOC Firmware](#foc-firmware)
 * [Example Variants](#example-variants)
-* [Wiki](#wiki)
 * [Projects and Links](#projects-and-links)
 * [Contributions](#contributions)
 
@@ -97,6 +96,12 @@ In all FOC control modes, the controller features maximum motor speed and maximu
  - The controller parameters are given in [this table](https://github.com/EFeru/bldc-motor-control-FOC/blob/master/02_Figures/paramTable.png)
 
 
+### FOC Webview
+
+To explore the controller without a Matlab/Simulink installation click on the link below:
+
+[https://eferu.github.io/bldc-motor-control-FOC/](https://eferu.github.io/bldc-motor-control-FOC/)
+
 ---
 ## Example Variants
 
@@ -112,11 +117,6 @@ In all FOC control modes, the controller features maximum motor speed and maximu
 - **VARIANT_SKATEBOARD**: This is for skateboard build, controlled using an RC remote with PWM signal connected to the right sensor cable.
 
 Of course the firmware can be further customized for other needs or projects.
-
-
----
-## Wiki 
-Please check the wiki for [Getting Started](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#getting-started) and for [Troubleshooting](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#troubleshooting)
 
 
 ---

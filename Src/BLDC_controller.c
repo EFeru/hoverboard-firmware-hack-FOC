@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BLDC_controller'.
  *
- * Model version                  : 1.1296
+ * Model version                  : 1.1297
  * Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
- * C/C++ source code generated on : Tue Oct 20 17:29:57 2020
+ * C/C++ source code generated on : Sun Mar  6 11:02:11 2022
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -1019,6 +1019,8 @@ void BLDC_controller_step(RT_MODEL *const rtM)
   int32_T rtb_Sum1_jt;
   int16_T rtb_Merge_m;
   int16_T rtb_Merge1;
+  uint16_T rtb_Divide14_e;
+  uint16_T rtb_Divide1_f;
   int16_T rtb_TmpSignalConversionAtLow_Pa[2];
   int32_T rtb_Switch1;
   int32_T rtb_Sum1;
@@ -2116,20 +2118,15 @@ void BLDC_controller_step(RT_MODEL *const rtM)
 
       /* End of Switch: '<S44>/Switch2' */
 
-      /* Switch: '<S42>/Switch2' incorporates:
-       *  Constant: '<S1>/z_ctrlTypSel'
-       *  Constant: '<S42>/CTRL_COMM2'
-       *  Constant: '<S42>/a_phaAdvMax'
-       *  Constant: '<S42>/id_fieldWeakMax'
-       *  RelationalOperator: '<S42>/Relational Operator1'
+      /* Product: '<S42>/Divide14' incorporates:
+       *  Constant: '<S42>/r_fieldWeakHi'
+       *  Constant: '<S42>/r_fieldWeakLo'
+       *  Sum: '<S42>/Sum1'
+       *  Sum: '<S42>/Sum3'
        */
-      if (rtP->z_ctrlTypSel == 2) {
-        rtb_Saturation1 = rtP->id_fieldWeakMax;
-      } else {
-        rtb_Saturation1 = rtP->a_phaAdvMax;
-      }
-
-      /* End of Switch: '<S42>/Switch2' */
+      rtb_Divide14_e = (uint16_T)(((int16_T)(DataTypeConversion2 -
+        rtP->r_fieldWeakLo) << 15) / (int16_T)(rtP->r_fieldWeakHi -
+        rtP->r_fieldWeakLo));
 
       /* Switch: '<S43>/Switch2' incorporates:
        *  Constant: '<S42>/n_fieldWeakAuthHi'
@@ -2151,25 +2148,53 @@ void BLDC_controller_step(RT_MODEL *const rtM)
 
       /* End of Switch: '<S43>/Switch2' */
 
-      /* Product: '<S42>/Divide3' incorporates:
+      /* Product: '<S42>/Divide1' incorporates:
        *  Constant: '<S42>/n_fieldWeakAuthHi'
        *  Constant: '<S42>/n_fieldWeakAuthLo'
-       *  Constant: '<S42>/r_fieldWeakHi'
-       *  Constant: '<S42>/r_fieldWeakLo'
-       *  Product: '<S42>/Divide1'
-       *  Product: '<S42>/Divide14'
-       *  Product: '<S42>/Divide2'
-       *  Sum: '<S42>/Sum1'
        *  Sum: '<S42>/Sum2'
-       *  Sum: '<S42>/Sum3'
        *  Sum: '<S42>/Sum4'
        */
-      rtDW->Divide3 = (int16_T)(((uint16_T)(((uint32_T)(uint16_T)(((int16_T)
-        (DataTypeConversion2 - rtP->r_fieldWeakLo) << 15) / (int16_T)
-        (rtP->r_fieldWeakHi - rtP->r_fieldWeakLo)) * (uint16_T)(((int16_T)
-        (rtb_Saturation - rtP->n_fieldWeakAuthLo) << 15) / (int16_T)
-        (rtP->n_fieldWeakAuthHi - rtP->n_fieldWeakAuthLo))) >> 15) *
-        rtb_Saturation1) >> 15);
+      rtb_Divide1_f = (uint16_T)(((int16_T)(rtb_Saturation -
+        rtP->n_fieldWeakAuthLo) << 15) / (int16_T)(rtP->n_fieldWeakAuthHi -
+        rtP->n_fieldWeakAuthLo));
+
+      /* Switch: '<S42>/Switch1' incorporates:
+       *  MinMax: '<S42>/MinMax1'
+       *  RelationalOperator: '<S42>/Relational Operator6'
+       */
+      if (rtb_Divide14_e < rtb_Divide1_f) {
+        /* MinMax: '<S42>/MinMax' */
+        if (!(rtb_Divide14_e > rtb_Divide1_f)) {
+          rtb_Divide14_e = rtb_Divide1_f;
+        }
+
+        /* End of MinMax: '<S42>/MinMax' */
+      } else {
+        if (rtb_Divide1_f < rtb_Divide14_e) {
+          /* MinMax: '<S42>/MinMax1' */
+          rtb_Divide14_e = rtb_Divide1_f;
+        }
+      }
+
+      /* End of Switch: '<S42>/Switch1' */
+
+      /* Switch: '<S42>/Switch2' incorporates:
+       *  Constant: '<S1>/z_ctrlTypSel'
+       *  Constant: '<S42>/CTRL_COMM2'
+       *  Constant: '<S42>/a_phaAdvMax'
+       *  Constant: '<S42>/id_fieldWeakMax'
+       *  RelationalOperator: '<S42>/Relational Operator1'
+       */
+      if (rtP->z_ctrlTypSel == 2) {
+        rtb_Saturation1 = rtP->id_fieldWeakMax;
+      } else {
+        rtb_Saturation1 = rtP->a_phaAdvMax;
+      }
+
+      /* End of Switch: '<S42>/Switch2' */
+
+      /* Product: '<S42>/Divide3' */
+      rtDW->Divide3 = (int16_T)((rtb_Saturation1 * rtb_Divide14_e) >> 15);
 
       /* End of Outputs for SubSystem: '<S6>/Field_Weakening_Enabled' */
     }
