@@ -1,0 +1,54 @@
+name: 🐞 Bug report
+about: Create a report to help us improve
+title: ''
+labels: bug
+assignees: ''
+body:
+- type: dropdown
+  attributes:
+    label: Variant
+    description: What variant of the firmware are you using?
+    multiple: false
+    options:
+      - label: ADC
+      - label: USART
+      - label: NUNCHUK
+      - label: PPM
+      - label: PWM
+      - label: IBUS
+      - label: HOVERCAR
+      - label: TRANSPOTTER
+      - label: SKATEBOARD
+      - label: HOVERBOARD
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: Control type
+    description: What Control type are you using?
+    multiple: false
+    options:
+      - label: Commutation
+      - label: Sinusoidale
+      - label: FOC
+  validations:
+    required: true    
+- type: dropdown
+  attributes:
+    label: Control mode
+    description: What Control mode are you using?
+    multiple: false
+    options:
+      - label: Voltage
+      - label: Speed
+      - label: Torque
+  validations:
+    required: true    
+
+- type: textarea
+  attributes:
+    label: Desciption
+    description: Describe the bug and how we can reproduce it.
+    placeholder: Example: bla bla bla
+  validations:
+    required: true
