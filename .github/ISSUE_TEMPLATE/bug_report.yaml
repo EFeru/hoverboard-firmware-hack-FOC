@@ -4,7 +4,7 @@ labels: "bug"
 body:
 - type: markdown
   attributes:
-    value: Please check the [Wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki), it contains tips for troubleshooting
+    value: "**Please check the [Wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki), it contains tips for troubleshooting**"
 - type: dropdown
   attributes:
     label: Variant
