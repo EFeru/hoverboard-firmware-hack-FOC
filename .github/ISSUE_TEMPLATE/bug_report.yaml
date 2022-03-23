@@ -9,16 +9,16 @@ body:
     description: What variant of the firmware are you using?
     multiple: false
     options:
-      - label: ADC
-      - label: USART
-      - label: NUNCHUK
-      - label: PPM
-      - label: PWM
-      - label: IBUS
-      - label: HOVERCAR
-      - label: TRANSPOTTER
-      - label: SKATEBOARD
-      - label: HOVERBOARD
+      - ADC
+      - USART
+      - NUNCHUK
+      - PPM
+      - PWM
+      - IBUS
+      - HOVERCAR
+      - TRANSPOTTER
+      - SKATEBOARD
+      - HOVERBOARD
   validations:
     required: true
 - type: dropdown
@@ -27,9 +27,9 @@ body:
     description: What Control type are you using?
     multiple: false
     options:
-      - label: Commutation
-      - label: Sinusoidale
-      - label: FOC
+      - Commutation
+      - Sinusoidale
+      - FOC
   validations:
     required: true    
 - type: dropdown
@@ -38,9 +38,9 @@ body:
     description: What Control mode are you using?
     multiple: false
     options:
-      - label: Voltage
-      - label: Speed
-      - label: Torque
+      - Voltage
+      - Speed
+      - Torque
   validations:
     required: true    
 
