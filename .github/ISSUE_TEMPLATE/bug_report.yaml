@@ -2,6 +2,12 @@ name: 🐞 Bug report
 description: Create a report to help us improve
 labels: "bug"
 body:
+- type: checkboxes
+  id: Wiki
+  attributes:
+    label: Wiki
+    options:
+      - I have already checked the [wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki)
 - type: dropdown
   attributes:
     label: Variant
