@@ -7,17 +7,17 @@ assignees: ''
 
 ---
 
-### Your System
+### Before asking a question
+See if it is already answered in [Wiki pages](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki)
+
+### Describe your System so we can help you better
 - VARIANT:
 - CONTROL TYPE:
 - CONTROL MODE:
 - What is your application?
     - Hovercar, Skateboard, RC platform, etc.
 
-**Before asking a question** see if it is already answered in:
-* [Wiki pages](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki)
-
-**Indicate what you have tried:**
+### Indicate what you have tried
 If applicable, indicate what you tried that _doesn't_ work:
 
 ```c
