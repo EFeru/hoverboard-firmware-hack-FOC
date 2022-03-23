@@ -48,7 +48,7 @@ body:
 
 - type: textarea
   attributes:
-    label: Description
-    placeholder: Describe the bug and how we can reproduce it
+    label: What is the bug and how to reproduce it ?
+    placeholder: Describe the bug and how to reproduce it
   validations:
     required: true
