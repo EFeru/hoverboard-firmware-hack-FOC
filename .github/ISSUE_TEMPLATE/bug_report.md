@@ -7,7 +7,9 @@ assignees: ''
 
 ---
 
-### Your System
+**Before reporting an issue**, check the [Wiki pages](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki), there are hints for troubleshooting.
+
+### Describe your System so we can help you better
 - VARIANT:
 - CONTROL TYPE:
 - CONTROL MODE:
