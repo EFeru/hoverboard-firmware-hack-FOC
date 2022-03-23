@@ -5,9 +5,9 @@ body:
 - type: checkboxes
   id: Wiki
   attributes:
-    label: Wiki
+    label: I have already checked the [wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki)
     options:
-      - I have already checked the [wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki)
+      - Yes
 - type: dropdown
   attributes:
     label: Variant
