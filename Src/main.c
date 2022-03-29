@@ -216,7 +216,8 @@ int main(void) {
 
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-      if (enable == 0 && (!rtY_Left.z_errCode && !rtY_Right.z_errCode) && (input1[inIdx].cmd > -50 && input1[inIdx].cmd < 50) && (input2[inIdx].cmd > -50 && input2[inIdx].cmd < 50)){
+      if (enable == 0 && !rtY_Left.z_errCode && !rtY_Right.z_errCode && 
+          ABS(input1[inIdx].cmd) < 50 && ABS(input2[inIdx].cmd) < 50){
         beepShort(6);                     // make 2 beeps indicating the motor enable
         beepShort(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
@@ -293,10 +294,15 @@ int main(void) {
       }
       #endif
 
-      // ####### MIXER #######
-      // cmdR = CLAMP((int)(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MAX);
-      // cmdL = CLAMP((int)(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT), INPUT_MIN, INPUT_MAX);
-      mixerFcn(speed << 4, steer << 4, &cmdR, &cmdL);   // This function implements the equations above
+      #if defined(TANK_STEERING) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_SKATEBOARD) 
+        // Tank steering (no mixing)
+        cmdL = steer; 
+        cmdR = speed;
+      #else 
+        // ####### MIXER #######
+        mixerFcn(speed << 4, steer << 4, &cmdR, &cmdL);   // This function implements the equations above
+      #endif
+
 
       // ####### SET OUTPUTS (if the target change is less than +/- 100) #######
       #ifdef INVERT_R_DIRECTION
@@ -407,14 +413,19 @@ int main(void) {
     #endif
 
     // ####### SIDEBOARDS HANDLING #######
-    #if defined(SIDEBOARD_SERIAL_USART2) && defined(FEEDBACK_SERIAL_USART2)
-      sideboardLeds(&sideboard_leds_L);
+    #if defined(SIDEBOARD_SERIAL_USART2)
       sideboardSensors((uint8_t)Sideboard_L.sensors);
     #endif
-    #if defined(SIDEBOARD_SERIAL_USART3) && defined(FEEDBACK_SERIAL_USART3)
-      sideboardLeds(&sideboard_leds_R);
+    #if defined(FEEDBACK_SERIAL_USART2)
+      sideboardLeds(&sideboard_leds_L);
+    #endif
+    #if defined(SIDEBOARD_SERIAL_USART3)
       sideboardSensors((uint8_t)Sideboard_R.sensors);
     #endif
+    #if defined(FEEDBACK_SERIAL_USART3)
+      sideboardLeds(&sideboard_leds_R);
+    #endif
+    
 
     // ####### CALC BOARD TEMPERATURE #######
     filtLowPass32(adc_buffer.temp, TEMP_FILT_COEF, &board_temp_adcFixdt);
@@ -484,7 +495,15 @@ int main(void) {
     poweroffPressCheck();
 
     // ####### BEEP AND EMERGENCY POWEROFF #######
-    if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
+    if (TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20){  // poweroff before mainboard burns OR low bat 3
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+        printf("Powering off, temperature is too high\r\n");
+      #endif
+      poweroff();
+    } else if ( BAT_DEAD_ENABLE && batVoltage < BAT_DEAD && speedAvgAbs < 20){
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+        printf("Powering off, battery voltage is too low\r\n");
+      #endif
       poweroff();
     } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): Motor error, disable motors
       enable = 0;
@@ -510,13 +529,24 @@ int main(void) {
     }
 
 
+    inactivity_timeout_counter++;
+
     // ####### INACTIVITY TIMEOUT #######
     if (abs(cmdL) > 50 || abs(cmdR) > 50) {
       inactivity_timeout_counter = 0;
-    } else {
-      inactivity_timeout_counter++;
     }
+
+    #if defined(CRUISE_CONTROL_SUPPORT)
+      if ((abs(rtP_Left.n_cruiseMotTgt)  > 50 && rtP_Left.b_cruiseCtrlEna) || 
+          (abs(rtP_Right.n_cruiseMotTgt) > 50 && rtP_Right.b_cruiseCtrlEna)) {
+        inactivity_timeout_counter = 0;
+      }
+    #endif
+
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+        printf("Powering off, wheels were inactive for too long\r\n");
+      #endif
       poweroff();
     }
 

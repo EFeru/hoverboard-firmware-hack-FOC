@@ -488,6 +488,8 @@ void handle_input(uint8_t *userCommand, uint32_t len)
   // If there is already an unprocessed command, exit
   if (command.semaphore == 1) return;
 
+  if (*userCommand > 127) return; // reject if first character is not ascii 
+
   // Check end of line
   userCommand+=len-1; // Go to last char
   if (*userCommand != '\n' && *userCommand != '\r'){

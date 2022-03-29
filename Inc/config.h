@@ -78,6 +78,7 @@
 #define BAT_CELLS               10        // battery number of cells. Normal Hoverboard battery: 10s
 #define BAT_LVL2_ENABLE         0         // to beep or not to beep, 1 or 0
 #define BAT_LVL1_ENABLE         1         // to beep or not to beep, 1 or 0
+#define BAT_DEAD_ENABLE         1         // to poweroff or not to poweroff, 1 or 0
 #define BAT_BLINK_INTERVAL      80        // battery led blink interval (80 loops * 5ms ~= 400ms)
 #define BAT_LVL5                (390 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Green blink:  no beep
 #define BAT_LVL4                (380 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Yellow:       no beep
@@ -299,6 +300,7 @@
     #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
   #endif
 
+  // #define TANK_STEERING                   // use for tank steering, each input controls each wheel 
   // #define ADC_ALTERNATE_CONNECT           // use to swap ADC inputs
   // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
@@ -330,6 +332,7 @@
     #define FLASH_WRITE_KEY      0x1002  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
   #endif
 
+  // #define TANK_STEERING              // use for tank steering, each input controls each wheel 
   // #define SUPPORT_BUTTONS_LEFT       // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT      // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 #endif
@@ -396,6 +399,7 @@
   #endif
   #define PPM_NUM_CHANNELS        6       // total number of PPM channels to receive, even if they are not used.
 
+  // #define TANK_STEERING                   // use for tank steering, each input controls each wheel 
   // #define SUPPORT_BUTTONS                 // Define for PPM buttons support
   // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
@@ -435,6 +439,7 @@
   #define FILTER                  6553    // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
   #define SPEED_COEFFICIENT       16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
   #define STEER_COEFFICIENT       16384   // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14. If you do not want any steering, set it to 0.
+  // #define TANK_STEERING                   // use for tank steering, each input controls each wheel 
   // #define INVERT_R_DIRECTION
   // #define INVERT_L_DIRECTION
   // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
@@ -478,6 +483,8 @@
     #define PRI_INPUT1            3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
     #define PRI_INPUT2            3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
   #endif
+
+  // #define TANK_STEERING                // use for tank steering, each input controls each wheel 
 
   #if defined(CONTROL_SERIAL_USART3) && !defined(DUAL_INPUTS)
     #define DEBUG_SERIAL_USART2           // left sensor cable debug
