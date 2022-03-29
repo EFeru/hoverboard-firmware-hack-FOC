@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 ### Before asking a question
-See if it is already answered in [Wiki pages](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki)
+See if it is already answered in [Wiki pages](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki)
 
 ### Describe your System so we can help you better
 - VARIANT:
