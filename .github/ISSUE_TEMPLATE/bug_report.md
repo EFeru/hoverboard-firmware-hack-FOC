@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 ### Before reporting an issue
-Check the [Wiki pages](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki), there are hints for troubleshooting.
+Check the [Wiki pages](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki), there are hints for troubleshooting.
 
 ### Describe your System so we can help you better
 - VARIANT:
