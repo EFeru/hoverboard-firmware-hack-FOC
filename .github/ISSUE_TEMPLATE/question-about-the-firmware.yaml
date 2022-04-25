@@ -22,7 +22,7 @@ body:
       - SKATEBOARD
       - HOVERBOARD
   validations:
-    required: true
+    required: false
 - type: dropdown
   attributes:
     label: Control type
@@ -33,7 +33,7 @@ body:
       - Sinusoidale
       - FOC
   validations:
-    required: true    
+    required: false    
 - type: dropdown
   attributes:
     label: Control mode
@@ -44,7 +44,7 @@ body:
       - Speed
       - Torque
   validations:
-    required: true    
+    required: false    
 
 - type: textarea
   attributes:
