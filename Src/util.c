@@ -459,16 +459,6 @@ void beepShortMany(uint8_t cnt, int8_t dir) {
 
 void calcAvgSpeed(void) {
     // Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
-    #if   !defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
-      speedAvg    = ( rtY_Left.n_mot - rtY_Right.n_mot);
-    #elif !defined(INVERT_L_DIRECTION) &&  defined(INVERT_R_DIRECTION)
-      speedAvg    = ( rtY_Left.n_mot + rtY_Right.n_mot);
-    #elif  defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
-      speedAvg    = (-rtY_Left.n_mot - rtY_Right.n_mot);
-    #elif  defined(INVERT_L_DIRECTION) &&  defined(INVERT_R_DIRECTION)
-      speedAvg    = (-rtY_Left.n_mot + rtY_Right.n_mot);
-    #endif
-
     speedAvg = 0;
     #if defined(MOTOR_LEFT_ENA)
       #if defined(INVERT_L_DIRECTION)
