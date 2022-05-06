@@ -303,6 +303,10 @@ void Input_Init(void) {
     EE_Init();            /* EEPROM Init */
     EE_ReadVariable(VirtAddVarTab[0], &writeCheck);
     if (writeCheck == FLASH_WRITE_KEY) {
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+        printf("Using the configuration from EEprom\r\n");
+      #endif
+
       EE_ReadVariable(VirtAddVarTab[1] , &readVal); rtP_Left.i_max = rtP_Right.i_max = (int16_t)readVal;
       EE_ReadVariable(VirtAddVarTab[2] , &readVal); rtP_Left.n_max = rtP_Right.n_max = (int16_t)readVal;
       for (uint8_t i=0; i<INPUTS_NR; i++) {
@@ -314,8 +318,16 @@ void Input_Init(void) {
         EE_ReadVariable(VirtAddVarTab[ 8+8*i] , &readVal); input2[i].min = (int16_t)readVal;
         EE_ReadVariable(VirtAddVarTab[ 9+8*i] , &readVal); input2[i].mid = (int16_t)readVal;
         EE_ReadVariable(VirtAddVarTab[10+8*i] , &readVal); input2[i].max = (int16_t)readVal;
+      
+        printf("Limits Input1: TYP:%i MIN:%i MID:%i MAX:%i\r\nLimits Input2: TYP:%i MIN:%i MID:%i MAX:%i\r\n",
+          input1[i].typ, input1[i].min, input1[i].mid, input1[i].max,
+          input2[i].typ, input2[i].min, input2[i].mid, input2[i].max);
       }
     } else {
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+        printf("Using the configuration from config.h\r\n");
+      #endif
+
       for (uint8_t i=0; i<INPUTS_NR; i++) {
         if (input1[i].typDef == 3) {  // If Input type defined is 3 (auto), identify the input type based on the values from config.h
           input1[i].typ = checkInputType(input1[i].min, input1[i].mid, input1[i].max);
@@ -327,6 +339,9 @@ void Input_Init(void) {
         } else {
           input2[i].typ = input2[i].typDef;
         }
+        printf("Limits Input1: TYP:%i MIN:%i MID:%i MAX:%i\r\nLimits Input2: TYP:%i MIN:%i MID:%i MAX:%i\r\n",
+          input1[i].typ, input1[i].min, input1[i].mid, input1[i].max,
+          input2[i].typ, input2[i].min, input2[i].mid, input2[i].max);
       }
     }
     HAL_FLASH_Lock();
@@ -444,14 +459,25 @@ void beepShortMany(uint8_t cnt, int8_t dir) {
 
 void calcAvgSpeed(void) {
     // Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
-    #if   !defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
-      speedAvg    = ( rtY_Left.n_mot - rtY_Right.n_mot) / 2;
-    #elif !defined(INVERT_L_DIRECTION) &&  defined(INVERT_R_DIRECTION)
-      speedAvg    = ( rtY_Left.n_mot + rtY_Right.n_mot) / 2;
-    #elif  defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
-      speedAvg    = (-rtY_Left.n_mot - rtY_Right.n_mot) / 2;
-    #elif  defined(INVERT_L_DIRECTION) &&  defined(INVERT_R_DIRECTION)
-      speedAvg    = (-rtY_Left.n_mot + rtY_Right.n_mot) / 2;
+    speedAvg = 0;
+    #if defined(MOTOR_LEFT_ENA)
+      #if defined(INVERT_L_DIRECTION)
+        speedAvg -= rtY_Left.n_mot;
+      #else
+        speedAvg += rtY_Left.n_mot;
+      #endif
+    #endif
+    #if defined(MOTOR_RIGHT_ENA)
+      #if defined(INVERT_R_DIRECTION)
+        speedAvg += rtY_Right.n_mot;
+      #else
+        speedAvg -= rtY_Right.n_mot;
+      #endif
+
+      // Average only if both motors are enabled
+      #if defined(MOTOR_LEFT_ENA)
+        speedAvg /= 2;
+      #endif  
     #endif
 
     // Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
@@ -521,16 +547,13 @@ void adcCalibLim(void) {
   #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   printf("Input1 is ");
   #endif
-  input1[inIdx].typ = checkInputType(INPUT1_MIN_temp, INPUT1_MID_temp, INPUT1_MAX_temp);
-  if (input1[inIdx].typ == input1[inIdx].typDef || input1[inIdx].typDef == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
-    input1[inIdx].min = INPUT1_MIN_temp + input_margin;
-    input1[inIdx].mid = INPUT1_MID_temp;
-    input1[inIdx].max = INPUT1_MAX_temp - input_margin;
+  uint8_t input1TypTemp = checkInputType(INPUT1_MIN_temp, INPUT1_MID_temp, INPUT1_MAX_temp);
+  if (input1TypTemp == input1[inIdx].typDef || input1[inIdx].typDef == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
     printf("..OK\r\n");
     #endif
   } else {
-    input1[inIdx].typ = 0; // Disable input
+    input1TypTemp = 0; // Disable input
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
     printf("..NOK\r\n");
     #endif
@@ -539,26 +562,42 @@ void adcCalibLim(void) {
   #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   printf("Input2 is ");
   #endif
-  input2[inIdx].typ = checkInputType(INPUT2_MIN_temp, INPUT2_MID_temp, INPUT2_MAX_temp);
-  if (input2[inIdx].typ == input2[inIdx].typDef || input2[inIdx].typDef == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
-    input2[inIdx].min = INPUT2_MIN_temp + input_margin;
-    input2[inIdx].mid = INPUT2_MID_temp;
-    input2[inIdx].max = INPUT2_MAX_temp - input_margin;
+  uint8_t input2TypTemp = checkInputType(INPUT2_MIN_temp, INPUT2_MID_temp, INPUT2_MAX_temp);
+  if (input2TypTemp == input2[inIdx].typDef || input2[inIdx].typDef == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
     printf("..OK\r\n");
     #endif
   } else {
-    input2[inIdx].typ = 0; // Disable input
+    input2TypTemp = 0; // Disable input
     #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
     printf("..NOK\r\n");
     #endif
   }
-  inp_cal_valid = 1;    // Mark calibration to be saved in Flash at shutdown
-  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
-  printf("Limits Input1: TYP:%i MIN:%i MID:%i MAX:%i\r\nLimits Input2: TYP:%i MIN:%i MID:%i MAX:%i\r\n",
-          input1[inIdx].typ, input1[inIdx].min, input1[inIdx].mid, input1[inIdx].max,
-          input2[inIdx].typ, input2[inIdx].min, input2[inIdx].mid, input2[inIdx].max);
-  #endif
+
+
+  // At least one of the inputs is not ignored
+  if (input1TypTemp != 0 || input2TypTemp != 0){
+    input1[inIdx].typ = input1TypTemp;
+    input1[inIdx].min = INPUT1_MIN_temp + input_margin;
+    input1[inIdx].mid = INPUT1_MID_temp;
+    input1[inIdx].max = INPUT1_MAX_temp - input_margin;
+
+    input2[inIdx].typ = input2TypTemp;
+    input2[inIdx].min = INPUT2_MIN_temp + input_margin;
+    input2[inIdx].mid = INPUT2_MID_temp;
+    input2[inIdx].max = INPUT2_MAX_temp - input_margin;
+
+    inp_cal_valid = 1;    // Mark calibration to be saved in Flash at shutdown
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("Limits Input1: TYP:%i MIN:%i MID:%i MAX:%i\r\nLimits Input2: TYP:%i MIN:%i MID:%i MAX:%i\r\n",
+            input1[inIdx].typ, input1[inIdx].min, input1[inIdx].mid, input1[inIdx].max,
+            input2[inIdx].typ, input2[inIdx].min, input2[inIdx].mid, input2[inIdx].max);
+    #endif
+  }else{
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    printf("Both inputs cannot be ignored, calibration rejected.\r\n");
+    #endif
+  }
 
 #endif
 #endif  // AUTO_CALIBRATION_ENA
@@ -1040,7 +1079,7 @@ void readCommand(void) {
     #endif
 
     #if defined(CRUISE_CONTROL_SUPPORT) && (defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT))
-      cruiseControl(button1);                                           // Cruise control activation/deactivation
+        cruiseControl(button1);                                           // Cruise control activation/deactivation
     #endif
 }
 
@@ -1058,16 +1097,16 @@ void usart2_rx_check(void)
   #endif
 
   #if defined(DEBUG_SERIAL_USART2)
-  uint8_t ptr[SERIAL_BUFFER_SIZE];
+  uint8_t ptr_debug[SERIAL_BUFFER_SIZE];
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_L[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      memcpy(&ptr[0], &rx_buffer_L[old_pos], rx_buffer_L_len - old_pos);    // First copy data from the end of buffer
+      memcpy(&ptr_debug[0], &rx_buffer_L[old_pos], rx_buffer_L_len - old_pos);    // First copy data from the end of buffer
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
-        memcpy(&ptr[rx_buffer_L_len - old_pos], &rx_buffer_L[0], pos);                              // Copy remaining data
+        memcpy(&ptr_debug[rx_buffer_L_len - old_pos], &rx_buffer_L[0], pos);                              // Copy remaining data
       }
-      usart_process_debug(ptr, rx_buffer_L_len - old_pos + pos);        // Process data
+      usart_process_debug(ptr_debug, rx_buffer_L_len - old_pos + pos);        // Process data
     }
   }
   #endif // DEBUG_SERIAL_USART2
@@ -1130,17 +1169,17 @@ void usart3_rx_check(void)
   #endif
 
   #if defined(DEBUG_SERIAL_USART3)
-  uint8_t ptr[SERIAL_BUFFER_SIZE];
+  uint8_t ptr_debug[SERIAL_BUFFER_SIZE];
 
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_R[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      memcpy(&ptr[0], &rx_buffer_R[old_pos], rx_buffer_R_len - old_pos);    // First copy data from the end of buffer
+      memcpy(&ptr_debug[0], &rx_buffer_R[old_pos], rx_buffer_R_len - old_pos);    // First copy data from the end of buffer
       if (pos > 0) {                                                    // Check and continue with beginning of buffer
-        memcpy(&ptr[rx_buffer_R_len - old_pos], &rx_buffer_R[0], pos);                              // Copy remaining data
+        memcpy(&ptr_debug[rx_buffer_R_len - old_pos], &rx_buffer_R[0], pos);                              // Copy remaining data
       }
-      usart_process_debug(ptr, rx_buffer_R_len - old_pos + pos);        // Process data
+      usart_process_debug(ptr_debug, rx_buffer_R_len - old_pos + pos);        // Process data
     }
   }
   #endif // DEBUG_SERIAL_USART3
@@ -1387,9 +1426,7 @@ void sideboardSensors(uint8_t sensors) {
       sensor1_prev  = sensor1_index;
     } else {                                                      // Use Optical switches
       sensor1_trig  = (sensors & SENSOR1_SET) && !sensor1_prev;   // rising edge detection
-      sensor2_trig  = (sensors & SENSOR2_SET) && !sensor2_prev;   // rising edge detection
       sensor1_prev  =  sensors & SENSOR1_SET;
-      sensor2_prev  =  sensors & SENSOR2_SET;
     }
 
     // Control MODE and Control Type Handling
@@ -1418,11 +1455,7 @@ void sideboardSensors(uint8_t sensors) {
       if (++sensor1_index > 4) { sensor1_index = 0; }
     }
 
-    #ifdef CRUISE_CONTROL_SUPPORT                                 // Cruise Control Activation/Deactivation
-      if (sensor2_trig) {
-        cruiseControl(sensor2_trig);
-      }
-    #else                                                         // Field Weakening Activation/Deactivation
+                                                             // Field Weakening Activation/Deactivation
       static uint8_t  sensor2_index = 1;                          // holds the press index number for sensor2, when used as a button
 
       // Override in case the Sideboard control is Active
@@ -1433,25 +1466,33 @@ void sideboardSensors(uint8_t sensors) {
           sensor2_trig  = 1;
         }
         sensor2_prev  = sensor2_index;
+      }else{
+        sensor2_trig  = (sensors & SENSOR2_SET) && !sensor2_prev;   // rising edge detection
+        sensor2_prev  =  sensors & SENSOR2_SET;
       }
 
-      if (sensor2_trig) {
-        switch (sensor2_index) {
-          case 0:     // FW Disabled
-            rtP_Left.b_fieldWeakEna  = 0; 
-            rtP_Right.b_fieldWeakEna = 0;
-            Input_Lim_Init();
-            break;
-          case 1:     // FW Enabled
-            rtP_Left.b_fieldWeakEna  = 1; 
-            rtP_Right.b_fieldWeakEna = 1;
-            Input_Lim_Init();
-            break; 
+      #ifdef CRUISE_CONTROL_SUPPORT                                 // Cruise Control Activation/Deactivation
+        if (sensor2_trig) {
+          cruiseControl(sensor2_trig);
         }
-        if (inIdx == inIdx_prev) { beepShortMany(sensor2_index + 1, 1); }
-        if (++sensor2_index > 1) { sensor2_index = 0; }
-      }
-    #endif  // CRUISE_CONTROL_SUPPORT
+      #else
+        if (sensor2_trig) {
+          switch (sensor2_index) {
+            case 0:     // FW Disabled
+              rtP_Left.b_fieldWeakEna  = 0; 
+              rtP_Right.b_fieldWeakEna = 0;
+              Input_Lim_Init();
+              break;
+            case 1:     // FW Enabled
+              rtP_Left.b_fieldWeakEna  = 1; 
+              rtP_Right.b_fieldWeakEna = 1;
+              Input_Lim_Init();
+              break; 
+          }
+          if (inIdx == inIdx_prev) { beepShortMany(sensor2_index + 1, 1); }
+          if (++sensor2_index > 1) { sensor2_index = 0; }
+        }
+      #endif  // CRUISE_CONTROL_SUPPORT
   #endif
 }
 
@@ -1473,6 +1514,10 @@ void saveConfig() {
   #endif
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
     if (inp_cal_valid || cur_spd_valid) {
+      #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+        printf("Saving configuration to EEprom\r\n");
+      #endif
+
       HAL_FLASH_Unlock();
       EE_WriteVariable(VirtAddVarTab[0] , (uint16_t)FLASH_WRITE_KEY);
       EE_WriteVariable(VirtAddVarTab[1] , (uint16_t)rtP_Left.i_max);
@@ -1513,12 +1558,14 @@ void poweroff(void) {
 void poweroffPressCheck(void) {
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
     if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
-      enable = 0;
       uint16_t cnt_press = 0;
       while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
         HAL_Delay(10);
         if (cnt_press++ == 5 * 100) { beepShort(5); }
       }
+
+      if (cnt_press > 8) enable = 0;
+
       if (cnt_press >= 5 * 100) {                         // Check if press is more than 5 sec
         HAL_Delay(1000);
         if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {  // Double press: Adjust Max Current, Max Speed
@@ -1534,7 +1581,10 @@ void poweroffPressCheck(void) {
           #endif
         }
       } else if (cnt_press > 8) {                         // Short press: power off (80 ms debounce)
-        poweroff();
+        #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+          printf("Powering off, button has been pressed\r\n");
+        #endif
+      poweroff();
       }
     }
   #elif defined(VARIANT_TRANSPOTTER)
@@ -1634,22 +1684,22 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y) {
   * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,14)
   */
 void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t *rty_speedL) {
-  int16_t prodSpeed;
-  int16_t prodSteer;
-  int32_t tmp;
+    int16_t prodSpeed;
+    int16_t prodSteer;
+    int32_t tmp;
 
-  prodSpeed   = (int16_t)((rtu_speed * (int16_t)SPEED_COEFFICIENT) >> 14);
-  prodSteer   = (int16_t)((rtu_steer * (int16_t)STEER_COEFFICIENT) >> 14);
+    prodSpeed   = (int16_t)((rtu_speed * (int16_t)SPEED_COEFFICIENT) >> 14);
+    prodSteer   = (int16_t)((rtu_steer * (int16_t)STEER_COEFFICIENT) >> 14);
 
-  tmp         = prodSpeed - prodSteer;  
-  tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
-  *rty_speedR = (int16_t)(tmp >> 4);        // Convert from fixed-point to int 
-  *rty_speedR = CLAMP(*rty_speedR, INPUT_MIN, INPUT_MAX);
+    tmp         = prodSpeed - prodSteer;  
+    tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
+    *rty_speedR = (int16_t)(tmp >> 4);        // Convert from fixed-point to int 
+    *rty_speedR = CLAMP(*rty_speedR, INPUT_MIN, INPUT_MAX);
 
-  tmp         = prodSpeed + prodSteer;
-  tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
-  *rty_speedL = (int16_t)(tmp >> 4);        // Convert from fixed-point to int
-  *rty_speedL = CLAMP(*rty_speedL, INPUT_MIN, INPUT_MAX);
+    tmp         = prodSpeed + prodSteer;
+    tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
+    *rty_speedL = (int16_t)(tmp >> 4);        // Convert from fixed-point to int
+    *rty_speedL = CLAMP(*rty_speedL, INPUT_MIN, INPUT_MAX);
 }
 
 

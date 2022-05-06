@@ -487,7 +487,8 @@ void handle_input(uint8_t *userCommand, uint32_t len)
 
   // If there is already an unprocessed command, exit
   if (command.semaphore == 1) return;
-
+  if (*userCommand != '$') return; // reject if first character is not $ 
+  
   // Check end of line
   userCommand+=len-1; // Go to last char
   if (*userCommand != '\n' && *userCommand != '\r'){
@@ -495,6 +496,7 @@ void handle_input(uint8_t *userCommand, uint32_t len)
     return;
   }
   userCommand-=len-1; // Come back
+  userCommand++; // Skip $
 
   int8_t  cindex = -1;
   int8_t  pindex = -1;

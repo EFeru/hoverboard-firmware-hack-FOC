@@ -1,0 +1,54 @@
+name: ❓ Question about the firmware
+description: How to use the firmware to...
+labels: "question"
+body:
+- type: markdown
+  attributes:
+    value: "**Please check the [Wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki), it might already contain an answer to your question**"
+- type: dropdown
+  attributes:
+    label: Variant
+    description: What variant of the firmware are you using?
+    multiple: false
+    options:
+      - ADC
+      - USART
+      - NUNCHUK
+      - PPM
+      - PWM
+      - IBUS
+      - HOVERCAR
+      - TRANSPOTTER
+      - SKATEBOARD
+      - HOVERBOARD
+  validations:
+    required: false
+- type: dropdown
+  attributes:
+    label: Control type
+    description: What Control type are you using?
+    multiple: false
+    options:
+      - Commutation
+      - Sinusoidale
+      - FOC
+  validations:
+    required: false    
+- type: dropdown
+  attributes:
+    label: Control mode
+    description: What Control mode are you using?
+    multiple: false
+    options:
+      - Voltage
+      - Speed
+      - Torque
+  validations:
+    required: false    
+
+- type: textarea
+  attributes:
+    label: Description
+    placeholder: If applicable, indicate what you tried that doesn't work
+  validations:
+    required: true

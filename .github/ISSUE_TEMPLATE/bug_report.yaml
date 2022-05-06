@@ -1,0 +1,54 @@
+name: 🐞 Bug report
+description: Create a report to help us improve
+labels: "bug"
+body:
+- type: markdown
+  attributes:
+    value: "**Please check the [Wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki), it contains tips for troubleshooting**"
+- type: dropdown
+  attributes:
+    label: Variant
+    description: What variant of the firmware are you using?
+    multiple: false
+    options:
+      - ADC
+      - USART
+      - NUNCHUK
+      - PPM
+      - PWM
+      - IBUS
+      - HOVERCAR
+      - TRANSPOTTER
+      - SKATEBOARD
+      - HOVERBOARD
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: Control type
+    description: What Control type are you using?
+    multiple: false
+    options:
+      - Commutation
+      - Sinusoidale
+      - FOC
+  validations:
+    required: true    
+- type: dropdown
+  attributes:
+    label: Control mode
+    description: What Control mode are you using?
+    multiple: false
+    options:
+      - Voltage
+      - Speed
+      - Torque
+  validations:
+    required: true    
+
+- type: textarea
+  attributes:
+    label: What is the bug and how to reproduce it ?
+    placeholder: Describe the bug and how to reproduce it
+  validations:
+    required: true

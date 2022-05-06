@@ -1,0 +1,60 @@
+name: 🚀 Idea / Feature request
+description: Suggest an idea for this project
+labels: "enhancement"
+body:
+- type: markdown
+  attributes:
+    value: "**Please check the [Wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki) for existing features**"
+- type: dropdown
+  attributes:
+    label: Variant
+    description: What variant of the firmware are you using?
+    multiple: false
+    options:
+      - ADC
+      - USART
+      - NUNCHUK
+      - PPM
+      - PWM
+      - IBUS
+      - HOVERCAR
+      - TRANSPOTTER
+      - SKATEBOARD
+      - HOVERBOARD
+  validations:
+    required: false
+- type: dropdown
+  attributes:
+    label: Control type
+    description: What Control type are you using?
+    multiple: false
+    options:
+      - Commutation
+      - Sinusoidale
+      - FOC
+  validations:
+    required: false    
+- type: dropdown
+  attributes:
+    label: Control mode
+    description: What Control mode are you using?
+    multiple: false
+    options:
+      - Voltage
+      - Speed
+      - Torque
+  validations:
+    required: false    
+
+- type: textarea
+  attributes:
+    label: What can we do to make the firmware better?
+    placeholder: Consider if code examples or images would help communicate your request
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Describe suggestions or alternatives you have considered
+    placeholder: A clear and concise description of any alternative solutions or features you've considered
+  validations:
+    required: true   
