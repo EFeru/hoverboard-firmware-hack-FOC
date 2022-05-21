@@ -162,6 +162,11 @@ static uint32_t    buzzerTimer_prev = 0;
 static uint32_t    inactivity_timeout_counter;
 static MultipleTap MultipleTapBrake;    // define multiple tap functionality for the Brake pedal
 
+static uint16_t rate = RATE;
+#ifdef MULTI_MODE_DRIVE
+  static uint16_t max_speed;
+  static uint8_t drive_mode;
+#endif
 int main(void) {
 
   HAL_Init();
@@ -205,8 +210,28 @@ int main(void) {
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
 
+  #ifdef MULTI_MODE_DRIVE
+      int16_t adc_one  = adc_buffer.l_rx2;
+      int16_t adc_two = adc_buffer.l_tx2;
+
+      if(adc_one >= input1[0].min){
+        drive_mode = 0;
+      } else if(adc_two >= input2[0].min){
+        drive_mode = 2;
+      } else{
+        drive_mode = 1;
+      }
+
+      printf("Drive mode %i selected \r\n", drive_mode);
+  #endif
+
   // Loop until button is released
   while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
+
+  #ifdef MULTI_MODE_DRIVE
+    // Wait until triggers are released
+    while((adc_buffer.l_rx2 + adc_buffer.l_tx2) <= (input1[0].min + input2[0].min)) { HAL_Delay(10); }
+  #endif
 
   while(1) {
     if (buzzerTimer - buzzerTimer_prev > 16*DELAY_IN_MAIN_LOOP) {   // 1 ms = 16 ticks buzzerTimer
@@ -274,9 +299,20 @@ int main(void) {
         }
       #endif
 
+
+      #ifdef MULTI_MODE_DRIVE
+        if(drive_mode == 0){
+          rate = MULTI_MODE_DRIVE_M1_RATE;
+        } else if( drive_mode == 1){
+          rate = MULTI_MODE_DRIVE_M2_RATE;
+        } else if(drive_mode == 2){
+          rate = MULTI_MODE_DRIVE_M3_RATE;
+        }
+      #endif
+
       // ####### LOW-PASS FILTER #######
-      rateLimiter16(input1[inIdx].cmd , RATE, &steerRateFixdt);
-      rateLimiter16(input2[inIdx].cmd , RATE, &speedRateFixdt);
+      rateLimiter16(input1[inIdx].cmd , rate, &steerRateFixdt);
+      rateLimiter16(input2[inIdx].cmd , rate, &speedRateFixdt);
       filtLowPass32(steerRateFixdt >> 4, FILTER, &steerFixdt);
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
@@ -285,6 +321,22 @@ int main(void) {
       // ####### VARIANT_HOVERCAR #######
       #ifdef VARIANT_HOVERCAR
       if (inIdx == CONTROL_ADC) {               // Only use use implementation below if pedals are in use (ADC input)
+
+        #ifdef MULTI_MODE_DRIVE
+
+          if(drive_mode == 0){
+            max_speed = MULTI_MODE_DRIVE_M1_MAX;
+          } else if( drive_mode == 1){
+            max_speed = MULTI_MODE_DRIVE_M2_MAX;
+          } else if(drive_mode == 2){
+            max_speed = MULTI_MODE_DRIVE_M3_MAX;
+          }
+
+          if(speed >= max_speed){
+            speed = max_speed;
+          }
+        #endif
+
         if (!MultipleTapBrake.b_multipleTap) {  // Check driving direction
           speed = steer + speed;                // Forward driving: in this case steer = Brake, speed = Throttle
         } else {
@@ -446,7 +498,7 @@ int main(void) {
         #if defined(DEBUG_SERIAL_PROTOCOL)
           process_debug();
         #else
-          printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i\r\n",
+          printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i Speed:%i\r\n",
             input1[inIdx].raw,        // 1: INPUT1
             input2[inIdx].raw,        // 2: INPUT2
             cmdL,                     // 3: output command: [-1000, 1000]
@@ -454,7 +506,8 @@ int main(void) {
             adc_buffer.batt1,         // 5: for battery voltage calibration
             batVoltageCalib,          // 6: for verifying battery voltage calibration
             board_temp_adcFilt,       // 7: for board temperature calibration
-            board_temp_deg_c);        // 8: for verifying board temperature calibration
+            board_temp_deg_c,
+            speed);        // 8: for verifying board temperature calibration
         #endif
       }
     #endif
