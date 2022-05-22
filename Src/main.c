@@ -489,7 +489,7 @@ int main(void) {
         #if defined(DEBUG_SERIAL_PROTOCOL)
           process_debug();
         #else
-          printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i Speed:%i\r\n",
+          printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i \r\n",
             input1[inIdx].raw,        // 1: INPUT1
             input2[inIdx].raw,        // 2: INPUT2
             cmdL,                     // 3: output command: [-1000, 1000]
@@ -497,8 +497,7 @@ int main(void) {
             adc_buffer.batt1,         // 5: for battery voltage calibration
             batVoltageCalib,          // 6: for verifying battery voltage calibration
             board_temp_adcFilt,       // 7: for board temperature calibration
-            board_temp_deg_c,
-            speed);        // 8: for verifying board temperature calibration
+            board_temp_deg_c);        // 8: for verifying board temperature calibration
         #endif
       }
     #endif
