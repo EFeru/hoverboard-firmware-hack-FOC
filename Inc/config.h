@@ -525,7 +525,7 @@
   // #define ELECTRIC_BRAKE_MAX    100         // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
   // #define ELECTRIC_BRAKE_THRES  120         // (0, 500) Threshold below at which the electric brake starts engaging.
 
-  #define MULTI_MODE_DRIVE
+  // #define MULTI_MODE_DRIVE
   #ifdef MULTI_MODE_DRIVE
       #define MULTI_MODE_DRIVE_M1_MAX 175
       #define MULTI_MODE_DRIVE_M1_RATE 175
