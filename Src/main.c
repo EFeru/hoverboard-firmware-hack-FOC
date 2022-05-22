@@ -214,18 +214,26 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
 
   #ifdef MULTI_MODE_DRIVE
-      int16_t adc_one  = adc_buffer.l_rx2;
-      int16_t adc_two = adc_buffer.l_tx2;
+    if(adc_buffer.l_rx2 >= input1[0].min){
+      drive_mode = 0;
+      max_speed = MULTI_MODE_DRIVE_M1_MAX;
+      rate = MULTI_MODE_DRIVE_M1_RATE;
+    } else if(adc_buffer.l_tx2 >= input2[0].min){
+      drive_mode = 2;
+      max_speed = MULTI_MODE_DRIVE_M3_MAX;
+      rate = MULTI_MODE_DRIVE_M3_RATE;
+    } else{
+      drive_mode = 1;
+      max_speed = MULTI_MODE_DRIVE_M2_MAX;
+      rate = MULTI_MODE_DRIVE_M2_RATE;
+    }
 
-      if(adc_one >= input1[0].min){
-        drive_mode = 0;
-      } else if(adc_two >= input2[0].min){
-        drive_mode = 2;
-      } else{
-        drive_mode = 1;
-      }
-
-      printf("Drive mode %i selected \r\n", drive_mode);
+      printf(
+        "Drive mode %i selected: max_speed:%i acc_rate:%i \r\n",
+        drive_mode,
+        max_speed,
+        rate
+      );
   #endif
 
   // Loop until button is released
@@ -302,17 +310,6 @@ int main(void) {
         }
       #endif
 
-
-      #ifdef MULTI_MODE_DRIVE
-        if(drive_mode == 0){
-          rate = MULTI_MODE_DRIVE_M1_RATE;
-        } else if( drive_mode == 1){
-          rate = MULTI_MODE_DRIVE_M2_RATE;
-        } else if(drive_mode == 2){
-          rate = MULTI_MODE_DRIVE_M3_RATE;
-        }
-      #endif
-
       // ####### LOW-PASS FILTER #######
       rateLimiter16(input1[inIdx].cmd , rate, &steerRateFixdt);
       rateLimiter16(input2[inIdx].cmd , rate, &speedRateFixdt);
@@ -326,15 +323,6 @@ int main(void) {
       if (inIdx == CONTROL_ADC) {               // Only use use implementation below if pedals are in use (ADC input)
 
         #ifdef MULTI_MODE_DRIVE
-
-          if(drive_mode == 0){
-            max_speed = MULTI_MODE_DRIVE_M1_MAX;
-          } else if( drive_mode == 1){
-            max_speed = MULTI_MODE_DRIVE_M2_MAX;
-          } else if(drive_mode == 2){
-            max_speed = MULTI_MODE_DRIVE_M3_MAX;
-          }
-
           if(speed >= max_speed){
             speed = max_speed;
           }
