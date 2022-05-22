@@ -162,11 +162,14 @@ static uint32_t    buzzerTimer_prev = 0;
 static uint32_t    inactivity_timeout_counter;
 static MultipleTap MultipleTapBrake;    // define multiple tap functionality for the Brake pedal
 
-static uint16_t rate = RATE;
+static uint16_t rate = RATE; // Adjustable rate to support multiple drive modes on startup
+
 #ifdef MULTI_MODE_DRIVE
-  static uint16_t max_speed;
   static uint8_t drive_mode;
+  static uint16_t max_speed;
 #endif
+
+
 int main(void) {
 
   HAL_Init();
@@ -230,7 +233,7 @@ int main(void) {
 
   #ifdef MULTI_MODE_DRIVE
     // Wait until triggers are released
-    while((adc_buffer.l_rx2 + adc_buffer.l_tx2) <= (input1[0].min + input2[0].min)) { HAL_Delay(10); }
+    while((adc_buffer.l_rx2 + adc_buffer.l_tx2) >= (input1[0].min + input2[0].min)) { HAL_Delay(10); }
   #endif
 
   while(1) {
