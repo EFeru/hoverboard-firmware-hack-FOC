@@ -527,14 +527,14 @@
 
   // #define MULTI_MODE_DRIVE
   #ifdef MULTI_MODE_DRIVE
-      #define MULTI_MODE_DRIVE_M1_MAX 175
-      #define MULTI_MODE_DRIVE_M1_RATE 175
+      #define MULTI_MODE_DRIVE_M1_MAX   175
+      #define MULTI_MODE_DRIVE_M1_RATE  175
 
-      #define MULTI_MODE_DRIVE_M2_MAX 500
-      #define MULTI_MODE_DRIVE_M2_RATE 300
+      #define MULTI_MODE_DRIVE_M2_MAX   500
+      #define MULTI_MODE_DRIVE_M2_RATE  300
 
-      #define MULTI_MODE_DRIVE_M3_MAX 1000
-      #define MULTI_MODE_DRIVE_M3_RATE 450
+      #define MULTI_MODE_DRIVE_M3_MAX   1000
+      #define MULTI_MODE_DRIVE_M3_RATE  450
   #endif
 
 #endif
