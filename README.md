@@ -18,10 +18,8 @@ Table of Contents
 * [Projects and Links](#projects-and-links)
 * [Contributions](#contributions)
 
-#### For the hoverboard sideboard firmware, see the following repositories:
- - [hoverboard-sideboard-hack-GD](https://github.com/EFeru/hoverboard-sideboard-hack-GD)
- - [hoverboard-sideboard-hack-STM](https://github.com/EFeru/hoverboard-sideboard-hack-STM)
- 
+#### The hoverboards with mainboards also come with 2 sideboards(not [splitboards](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki/Firmware-Compatibility#split-boards)), check the following [wiki](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki/Sideboards) about this firmware
+
 #### For the FOC controller design, see the following repository:
  - [bldc-motor-control-FOC](https://github.com/EFeru/bldc-motor-control-FOC)
 
