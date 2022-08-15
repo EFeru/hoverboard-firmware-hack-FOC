@@ -214,18 +214,24 @@ int main(void) {
   int16_t board_temp_adcFilt  = adc_buffer.temp;
 
   #ifdef MULTI_MODE_DRIVE
-    if (adc_buffer.l_rx2 >= input1[0].min) {
-      drive_mode = 0;
-      max_speed = MULTI_MODE_DRIVE_M1_MAX;
-      rate = MULTI_MODE_DRIVE_M1_RATE;
-    } else if (adc_buffer.l_tx2 >= input2[0].min) {
+    if (adc_buffer.l_tx2 > input1[0].min + 50 && adc_buffer.l_rx2 > input2[0].min + 50) {
       drive_mode = 2;
       max_speed = MULTI_MODE_DRIVE_M3_MAX;
       rate = MULTI_MODE_DRIVE_M3_RATE;
-    } else {
+      rtP_Left.n_max = rtP_Right.n_max = MULTI_MODE_M3_N_MOT_MAX << 4;
+      rtP_Left.i_max = rtP_Right.i_max = (MULTI_MODE_M3_I_MOT_MAX * A2BIT_CONV) << 4;
+    } else if (adc_buffer.l_tx2 > input1[0].min + 50) {
       drive_mode = 1;
       max_speed = MULTI_MODE_DRIVE_M2_MAX;
       rate = MULTI_MODE_DRIVE_M2_RATE;
+      rtP_Left.n_max = rtP_Right.n_max = MULTI_MODE_M2_N_MOT_MAX << 4;
+      rtP_Left.i_max = rtP_Right.i_max = (MULTI_MODE_M2_I_MOT_MAX * A2BIT_CONV) << 4;
+    } else {
+      drive_mode = 0;
+      max_speed = MULTI_MODE_DRIVE_M1_MAX;
+      rate = MULTI_MODE_DRIVE_M1_RATE;
+      rtP_Left.n_max = rtP_Right.n_max = MULTI_MODE_M1_N_MOT_MAX << 4;
+      rtP_Left.i_max = rtP_Right.i_max = (MULTI_MODE_M1_I_MOT_MAX * A2BIT_CONV) << 4;
     }
 
     printf("Drive mode %i selected: max_speed:%i acc_rate:%i \r\n", drive_mode, max_speed, rate);
