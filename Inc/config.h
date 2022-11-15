@@ -267,7 +267,7 @@
 /* CONTROL VIA TWO POTENTIOMETERS
  * Connect potis to left sensor board cable (0 to 3.3V) (do NOT use the red 15V wire!)
  *
- * Auto-calibration of the ADC Limit to finds the Minimum, Maximum, and Middle for the ADC input
+ * Auto-calibration of the ADC Limit to finds the Minimum, Maximum, and Middle for the ADC input //
  * Procedure:
  * - press the power button for more than 5 sec and release after the beep sound
  * - move the potentiometers freely to the min and max limits repeatedly
