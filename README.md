@@ -83,8 +83,10 @@ In all FOC control modes, the controller features maximum motor speed and maximu
  - The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
  - The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
  - The figure below shows different possible calibrations for Field Weakening / Phase Advance
- ![Field Weakening](/docs/pictures/FieldWeakening.png) 
- - If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
+ ![Field Weakening](/docs/pictures/FieldWeakening.png)
+ 
+ ⚠️ If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
+ Power consumption will be highly increase and you can trigger the overvoltage protection of your BMS ⚠️
 
 
 ### Parameters
