@@ -241,8 +241,11 @@ int main(void) {
   while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
 
   #ifdef MULTI_MODE_DRIVE
-    // Wait until triggers are released
-    while((adc_buffer.l_rx2 + adc_buffer.l_tx2) >= (input1[0].min + input2[0].min)) { HAL_Delay(10); }
+    // Wait until triggers are released. Exit if timeout elapses (to unblock if the inputs are not calibrated)
+    int iTimeout = 0;
+    while((adc_buffer.l_rx2 + adc_buffer.l_tx2) >= (input1[0].min + input2[0].min) && iTimeout++ < 300) {
+      HAL_Delay(10);
+    }
   #endif
 
   while(1) {
