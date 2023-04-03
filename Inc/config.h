@@ -445,11 +445,11 @@
   // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
   // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 
-  #if defined(CONTROL_PWM_RIGHT) && !defined(DUAL_INPUTS)
-    #define DEBUG_SERIAL_USART2           // left sensor cable debug
-  #elif defined(CONTROL_PWM_LEFT) && !defined(DUAL_INPUTS)
+  //#if defined(CONTROL_PWM_RIGHT) && !defined(DUAL_INPUTS)
+    //#define DEBUG_SERIAL_USART2           // left sensor cable debug
+//#elif defined(CONTROL_PWM_LEFT) && !defined(DUAL_INPUTS)
     //#define DEBUG_SERIAL_USART3           // right sensor cable debug
-  #endif
+  //#endif
 #endif
 // ############################# END OF VARIANT_PWM SETTINGS ############################
 
