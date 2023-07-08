@@ -311,15 +311,15 @@
 
 // ############################ VARIANT_USART SETTINGS ############################
 #ifdef VARIANT_USART
-  #define SIDEBOARD_SERIAL_USART2 1
+  //#define SIDEBOARD_SERIAL_USART2 1
   #define CONTROL_SERIAL_USART2  1    // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
   #define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
 
-   #define SIDEBOARD_SERIAL_USART3 1
+   //#define SIDEBOARD_SERIAL_USART3 1
    #define CONTROL_SERIAL_USART3  1    // right sensor board cable. Number indicates priority for dual-input. Disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
    #define FEEDBACK_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
  
-  // #define DUAL_INPUTS                 //  UART*(Primary) + SIDEBOARD(Auxiliary). Uncomment this to use Dual-inputs
+  //#define DUAL_INPUTS                 //  UART*(Primary) + SIDEBOARD(Auxiliary). Uncomment this to use Dual-inputs
   #define PRI_INPUT1             3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
   #define PRI_INPUT2             3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
   #ifdef DUAL_INPUTS
