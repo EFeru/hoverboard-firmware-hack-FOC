@@ -283,7 +283,7 @@
  * - turn the potis to maximum position, write value in1 to PRI_INPUT1 MAX and value in2 to PRI_INPUT2 MAX
  * - for middle resting potis: Let the potis in the middle resting position, write value in1 to PRI_INPUT1 MID and value in2 to PRI_INPUT2 MID
 */
-  #define CONTROL_ADC           0         // use ADC as input. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
+  //#define CONTROL_ADC           0         // use ADC as input. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
 
   // #define DUAL_INPUTS                     //  ADC*(Primary) + UART(Auxiliary). Uncomment this to use Dual-inputs
   #define PRI_INPUT1            3, 0, 0, 4095, 0      // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
@@ -311,9 +311,9 @@
 
 // ############################ VARIANT_USART SETTINGS ############################
 #ifdef VARIANT_USART
-  #define SIDEBOARD_SERIAL_USART2 0
-  #define CONTROL_SERIAL_USART2  0    // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
+  //#define SIDEBOARD_SERIAL_USART2 0
+  //#define CONTROL_SERIAL_USART2  0    // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  //#define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
 
   #define SIDEBOARD_SERIAL_USART3 0
   #define CONTROL_SERIAL_USART3  0    // right sensor board cable. Number indicates priority for dual-input. Disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
