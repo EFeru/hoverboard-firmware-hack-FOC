@@ -32,7 +32,10 @@
 #include "comms.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
-#include "hd44780.h"
+  #ifdef OLED_DISPLAY
+    #include "ssd1306.h"
+  #else
+    #include "hd44780.h"
 #endif
 
 void SystemClock_Config(void);
@@ -46,8 +49,10 @@ extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern volatile adc_buf_t adc_buffer;
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
+  #ifndef OLED_DISPLAY
   extern LCD_PCF8574_HandleTypeDef lcd;
   extern uint8_t LCDerrorFlag;
+  #endif
 #endif
 
 extern UART_HandleTypeDef huart2;
@@ -504,6 +509,39 @@ int main(void) {
             board_temp_deg_c);        // 8: for verifying board temperature calibration
         #endif
       }
+      #elif defined(OLED_DISPLAY)
+        if (main_loop_counter % 25 == 0) { // Send data periodically every 125 ms
+          char tempstr[10];
+          ssd1306_Fill(Black); //clear buffer
+
+          ssd1306_SetCursor(0,0);
+          ssd1306_WriteString("BattADC: ", Font_7x10, White);
+          snprintf(tempstr, sizeof(tempstr), "%d", adc_buffer.batt1);
+          ssd1306_WriteString(tempstr, Font_7x10, White);
+
+          ssd1306_SetCursor(0, 13);
+          ssd1306_WriteString("BattV: ", Font_7x10, White);
+          snprintf(tempstr, sizeof(tempstr), "%d", batVoltageCalib);
+          ssd1306_WriteString(tempstr, Font_7x10, White);
+
+          ssd1306_SetCursor(0, 26);
+          ssd1306_WriteString("TempADC: ", Font_7x10, White);
+          snprintf(tempstr, sizeof(tempstr), "%d", board_temp_adcFilt);
+          ssd1306_WriteString(tempstr, Font_7x10, White);
+
+          ssd1306_SetCursor(0, 39);
+          ssd1306_WriteString("Temp: ", Font_7x10, White);
+          snprintf(tempstr, sizeof(tempstr), "%d", board_temp_deg_c);
+          ssd1306_WriteString(tempstr, Font_7x10, White);
+
+          ssd1306_SetCursor(0, 52);
+          ssd1306_WriteString("Current: ", Font_7x10, White);
+          snprintf(tempstr, sizeof(tempstr), "%d", dc_curr);
+          ssd1306_WriteString(tempstr, Font_7x10, White);
+
+          ssd1306_UpdateScreen();
+        }
+      #endif
     #endif
 
     // ####### FEEDBACK SERIAL OUT #######

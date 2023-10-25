@@ -32,7 +32,11 @@
 #include "comms.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
-#include "hd44780.h"
+  #ifdef OLED_DISPLAY
+    #include "ssd1306.h"
+  #else
+    #include "hd44780.h"
+#endif
 #endif
 
 /* =========================== Variable Definitions =========================== */
@@ -107,8 +111,10 @@ uint8_t  timeoutFlgSerial = 0;          // Timeout Flag for Rx Serial command: 0
 uint8_t  ctrlModReqRaw = CTRL_MOD_REQ;
 uint8_t  ctrlModReq    = CTRL_MOD_REQ;  // Final control mode request 
 
-#if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
-LCD_PCF8574_HandleTypeDef lcd;
+#if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD) 
+  #ifndef OLED_DISPLAY
+  LCD_PCF8574_HandleTypeDef lcd;
+  #endif
 #endif
 
 #ifdef VARIANT_TRANSPOTTER
@@ -362,14 +368,26 @@ void Input_Init(void) {
   #endif
 
   #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
+    #ifdef OLED_DISPLAY
     I2C_Init();
     HAL_Delay(50);
+    ssd1306_Init();
+    ssd1306_SetCursor(0,0);
+    ssd1306_WriteString("HOVER FOC", Font_11x18, White );
+    ssd1306_SetCursor(0, 14);
+    ssd1306_WriteString("OLED support by Elliott", Font_7x10, White);
+    ssd1306_SetCursor(0, 26);
+    ssd1306_WriteString("Starting...", Font_7x10, White);
+    ssd1306_UpdateScreen();
+
+  #else
+    
     lcd.pcf8574.PCF_I2C_ADDRESS = 0x27;
     lcd.pcf8574.PCF_I2C_TIMEOUT = 5;
     lcd.pcf8574.i2c             = hi2c2;
     lcd.NUMBER_OF_LINES         = NUMBER_OF_LINES_2;
     lcd.type                    = TYPE0;
-
+   
     if(LCD_Init(&lcd)!=LCD_OK) {
         // error occured
         //TODO while(1);
@@ -385,6 +403,7 @@ void Input_Init(void) {
     #endif
     LCD_SetLocation(&lcd,  0, 1); LCD_WriteString(&lcd, "Initializing...");
   #endif
+  #endif
 
   #if defined(VARIANT_TRANSPOTTER) && defined(SUPPORT_LCD)
     LCD_ClearDisplay(&lcd);
@@ -397,6 +416,7 @@ void Input_Init(void) {
     LCD_SetLocation(&lcd, 14, 0); LCD_WriteString(&lcd, "m)");
   #endif
 }
+
 
 /**
   * @brief  Disable Rx Errors detection interrupts on UART peripheral (since we do not want DMA to be stopped)
