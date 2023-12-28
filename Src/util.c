@@ -51,6 +51,8 @@ extern uint8_t buzzerCount;             // global variable for the buzzer counts
 extern uint8_t buzzerFreq;              // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern;           // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 
+uint8_t congressMode = 0;
+
 extern uint8_t enable;                  // global variable for motor enable
 
 extern uint8_t nunchuk_data[6];
@@ -873,6 +875,13 @@ void readInputRaw(void) {
         for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
           ibusR_captured_value[(i/2)] = CLAMP(commandR.channels[i] + (commandR.channels[i+1] << 8) - 1000, 0, INPUT_MAX); // 1000-2000 -> 0-1000
         }
+        // Enable pedestrian mode
+        if(ibusR_captured_value[6] == 1000) {
+          congressMode = 1;
+        } else {
+          congressMode = 0;
+        }
+   
         input1[inIdx].raw = (ibusR_captured_value[0] - 500) * 2;
         input2[inIdx].raw = (ibusR_captured_value[1] - 500) * 2; 
       #else
@@ -1687,10 +1696,13 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t
     int16_t prodSpeed;
     int16_t prodSteer;
     int32_t tmp;
-
-    prodSpeed   = (int16_t)((rtu_speed * (int16_t)SPEED_COEFFICIENT) >> 14);
-    prodSteer   = (int16_t)((rtu_steer * (int16_t)STEER_COEFFICIENT) >> 14);
-
+    if (congressMode == 0) { 
+      prodSpeed   = (int16_t)((rtu_speed * (int16_t)SPEED_COEFFICIENT) >> 14);
+      prodSteer   = (int16_t)((rtu_steer * (int16_t)STEER_COEFFICIENT) >> 14);
+    } else {
+      prodSpeed   = (int16_t)((rtu_speed * (int16_t)(SPEED_COEFFICIENT / 2)) >> 14);
+      prodSteer   = (int16_t)((rtu_steer * (int16_t)(STEER_COEFFICIENT / 2)) >> 14);
+    }
     tmp         = prodSpeed - prodSteer;  
     tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
     *rty_speedR = (int16_t)(tmp >> 4);        // Convert from fixed-point to int 
