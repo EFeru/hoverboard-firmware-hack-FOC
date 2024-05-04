@@ -53,7 +53,7 @@
 // ############################### INPUT ###############################
 
 // ###### CONTROL VIA UART (serial) ######
-//#define CONTROL_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used!
+#define CONTROL_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used!
 #define CONTROL_BAUD       19200    // control via usart from eg an Arduino or raspberry
 // for Arduino, use void loop(void){ Serial.write((uint8_t *) &steer, sizeof(steer)); Serial.write((uint8_t *) &speed, sizeof(speed));delay(20); }
 
@@ -65,13 +65,13 @@
 // ###### CONTROL VIA RC REMOTE PWM ######
 // left sensor board cable. Connect PA2 to channel 1 and PA3 to channel 2 on receiver.
 // Channel 1: steering, Channel 2: speed.
-#define CONTROL_PWM                 // use RC PWM as input. disable DEBUG_SERIAL_USART2!
-#define PWM_DEADBAND 100            // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+//#define CONTROL_PWM                 // use RC PWM as input. disable DEBUG_SERIAL_USART2!
+//#define PWM_DEADBAND 100            // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
 // Min / Max values of each channel (use DEBUG to determine these values)
-#define PWM_CH1_MAX 1000            // (0 - 1000)
-#define PWM_CH1_MIN -1000           // (-1000 - 0)
-#define PWM_CH2_MAX 500             // (0 - 1000)
-#define PWM_CH2_MIN -800            // (-1000 - 0)
+//#define PWM_CH1_MAX 1000            // (0 - 1000)
+//#define PWM_CH1_MIN -1000           // (-1000 - 0)
+//#define PWM_CH2_MAX 500             // (0 - 1000)
+//#define PWM_CH2_MIN -800            // (-1000 - 0)
 
 
 
