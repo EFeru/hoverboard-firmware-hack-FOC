@@ -109,12 +109,20 @@ void DMA1_Channel1_IRQHandler(void) {
   // Get Left motor currents
   curL_phaA = (int16_t)(offsetrlA - adc_buffer.rlA);
   curL_phaB = (int16_t)(offsetrlB - adc_buffer.rlB);
-  curL_DC   = (int16_t)(offsetdcl - adc_buffer.dcl);
+  #if defined(LEFT_DC_CUR_PIN) && defined(LEFT_DC_CUR_PORT)
+    curL_DC   = (int16_t)(offsetdcl - adc_buffer.dcl);
+  #else
+    curL_DC = 0;
+  #endif
   
   // Get Right motor currents
   curR_phaB = (int16_t)(offsetrrB - adc_buffer.rrB);
   curR_phaC = (int16_t)(offsetrrC - adc_buffer.rrC);
-  curR_DC   = (int16_t)(offsetdcr - adc_buffer.dcr);
+  #if defined(RIGHT_DC_CUR_PIN) && defined(RIGHT_DC_CUR_PORT)
+    curR_DC   = (int16_t)(offsetdcr - adc_buffer.dcr);
+  #else
+    curR_DC = 0;
+  #endif
 
   // Disable PWM when current limit is reached (current chopping)
   // This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
@@ -140,11 +148,21 @@ void DMA1_Channel1_IRQHandler(void) {
       }
     }
     if (buzzerTimer % buzzerFreq == 0 && (buzzerIdx <= buzzerCount || buzzerCount == 0)) {
-      HAL_GPIO_TogglePin(BUZZER_PORT, BUZZER_PIN);
+      #if defined(BUZZER_PIN) && defined(BUZZER_PORT)
+        HAL_GPIO_TogglePin(BUZZER_PORT, BUZZER_PIN);
+      #endif
+      #if LED_AS_BUZZER
+        HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_ON_LEVEL);
+      #endif
     }
   } else if (buzzerPrev) {
+    #if defined(BUZZER_PIN) && defined(BUZZER_PORT)
       HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, GPIO_PIN_RESET);
-      buzzerPrev = 0;
+    #endif
+    #if LED_AS_BUZZER
+      HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_OFF_LEVEL);
+    #endif
+    buzzerPrev = 0;
   }
 
   // Adjust pwm_margin depending on the selected Control Type

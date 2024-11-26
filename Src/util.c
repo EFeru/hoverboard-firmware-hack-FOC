@@ -1542,17 +1542,20 @@ void saveConfig() {
 }
 
 
-void poweroff(void) {
+void poweroff(void)
+{
   enable = 0;
   #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   printf("-- Motors disabled --\r\n");
   #endif
-  buzzerCount = 0;  // prevent interraction with beep counter
-  buzzerPattern = 0;
-  for (int i = 0; i < 8; i++) {
-    buzzerFreq = (uint8_t)i;
-    HAL_Delay(100);
-  }
+  #if defined(BUZZER_PIN) && defined(BUZZER_PORT)
+    buzzerCount = 0;  // prevent interraction with beep counter
+    buzzerPattern = 0;
+    for (int i = 0; i < 8; i++) {
+      buzzerFreq = (uint8_t)i;
+      HAL_Delay(100);
+    }
+  #endif
   saveConfig();
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_RESET);
   while(1) {}
