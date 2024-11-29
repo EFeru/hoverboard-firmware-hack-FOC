@@ -7,6 +7,7 @@
 
 #include "config.h"
 
+#if BOARD_VARIANT == 3
 
 #define LEFT_HALL_U_PIN         GPIO_PIN_0
 #define LEFT_HALL_V_PIN         GPIO_PIN_1
@@ -138,7 +139,7 @@
 #define PPM_PIN             GPIO_PIN_11
 #define PPM_PORT            GPIOC
 #elif defined(CONTROL_PPM_RIGHT)
-  #error "CONTROL_PPM_RIGHT not supported!"
+  #error "CONTROL_PPM_RIGHT not supported for BOARD_VARIANT = 3 !"
 //#define PPM_PIN             GPIO_PIN_11
 //#define PPM_PORT            GPIOB
 #endif
@@ -156,17 +157,13 @@
 #endif
 
 #if defined(SUPPORT_BUTTONS_LEFT)
-  #error "SUPPORT_BUTTONS_LEFT not supported!"
-//#define BUTTON1_PIN         GPIO_PIN_2
-//#define BUTTON1_PORT        GPIOA
-//#define BUTTON2_PIN         GPIO_PIN_3
-//#define BUTTON2_PORT        GPIOA
-//#elif defined(SUPPORT_BUTTONS_RIGHT)
-//#define BUTTON1_PIN         GPIO_PIN_10
-//#define BUTTON1_PORT        GPIOB
-//#define BUTTON2_PIN         GPIO_PIN_11
-//#define BUTTON2_PORT        GPIOB
+  #error "SUPPORT_BUTTONS_LEFT not supported for BOARD_VARIANT = 3 !"
 #endif
 
+#if defined(DEBUG_SERIAL_USART2)
+  #error "DEBUG_SERIAL_USART2 not supported for BOARD_VARIANT = 3 !"
+#endif
+
+#endif
 
 #endif // __BOARD_1_H__

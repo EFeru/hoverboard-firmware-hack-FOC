@@ -35,7 +35,6 @@ BAT   PC2 CH12   L_RX PA3 CH03
 pb10 usart3 dma1 channel2/3
 */
 
-#include "defines.h"
 #include "config.h"
 #include "setup.h"
 
@@ -604,7 +603,8 @@ void MX_TIM_Init(void) {
   __HAL_TIM_ENABLE(&htim_right);
 }
 
-void MX_ADC1_Init(void) {
+__weak void MX_ADC1_Init(void)
+{
   ADC_MultiModeTypeDef multimode;
   ADC_ChannelConfTypeDef sConfig;
 
@@ -675,7 +675,8 @@ void MX_ADC1_Init(void) {
 }
 
 /* ADC2 init function */
-void MX_ADC2_Init(void) {
+__weak void MX_ADC2_Init(void)
+{
   ADC_ChannelConfTypeDef sConfig;
 
   __HAL_RCC_ADC2_CLK_ENABLE();
