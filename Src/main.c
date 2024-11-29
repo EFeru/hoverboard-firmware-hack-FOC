@@ -208,7 +208,7 @@ int main(void) {
   HAL_ADC_Start(&hadc2);
 
   poweronMelody();
-  HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_ON_LEVEL);
   
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
   int16_t board_temp_adcFilt  = adc_buffer.temp;
@@ -234,7 +234,9 @@ int main(void) {
       rtP_Left.i_max = rtP_Right.i_max = (MULTI_MODE_M1_I_MOT_MAX * A2BIT_CONV) << 4;
     }
 
-    printf("Drive mode %i selected: max_speed:%i acc_rate:%i \r\n", drive_mode, max_speed, rate);
+    #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+      printf("Drive mode %i selected: max_speed:%i acc_rate:%i \r\n", drive_mode, max_speed, rate);
+    #endif
   #endif
 
   // Loop until button is released

@@ -35,7 +35,6 @@ BAT   PC2 CH12   L_RX PA3 CH03
 pb10 usart3 dma1 channel2/3
 */
 
-#include "defines.h"
 #include "config.h"
 #include "setup.h"
 
@@ -386,9 +385,11 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pin = RIGHT_HALL_W_PIN;
   HAL_GPIO_Init(RIGHT_HALL_W_PORT, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Pin = CHARGER_PIN;
-  HAL_GPIO_Init(CHARGER_PORT, &GPIO_InitStruct);
+  #if defined(CHARGER_PIN) && defined(CHARGER_PORT)
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Pin = CHARGER_PIN;
+    HAL_GPIO_Init(CHARGER_PORT, &GPIO_InitStruct);
+  #endif
 
   #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
   GPIO_InitStruct.Pin = BUTTON1_PIN;
@@ -409,26 +410,35 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pin = LED_PIN;
   HAL_GPIO_Init(LED_PORT, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = BUZZER_PIN;
-  HAL_GPIO_Init(BUZZER_PORT, &GPIO_InitStruct);
+  #if defined(BUZZER_PIN) && defined(BUZZER_PORT)
+    GPIO_InitStruct.Pin = BUZZER_PIN;
+    HAL_GPIO_Init(BUZZER_PORT, &GPIO_InitStruct);
+  #endif
 
+  #if defined(OFF_PRESET)
+    HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, OFF_PRESET);
+  #endif  
   GPIO_InitStruct.Pin = OFF_PIN;
   HAL_GPIO_Init(OFF_PORT, &GPIO_InitStruct);
 
 
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 
-  GPIO_InitStruct.Pin = LEFT_DC_CUR_PIN;
-  HAL_GPIO_Init(LEFT_DC_CUR_PORT, &GPIO_InitStruct);
-
+  #if defined(LEFT_DC_CUR_PIN) && defined(LEFT_DC_CUR_PORT)
+    GPIO_InitStruct.Pin = LEFT_DC_CUR_PIN;
+    HAL_GPIO_Init(LEFT_DC_CUR_PORT, &GPIO_InitStruct);
+  #endif
+  
   GPIO_InitStruct.Pin = LEFT_U_CUR_PIN;
   HAL_GPIO_Init(LEFT_U_CUR_PORT, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = LEFT_V_CUR_PIN;
   HAL_GPIO_Init(LEFT_V_CUR_PORT, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = RIGHT_DC_CUR_PIN;
-  HAL_GPIO_Init(RIGHT_DC_CUR_PORT, &GPIO_InitStruct);
+  #if defined(RIGHT_DC_CUR_PIN) && defined(RIGHT_DC_CUR_PORT)
+    GPIO_InitStruct.Pin = RIGHT_DC_CUR_PIN;
+    HAL_GPIO_Init(RIGHT_DC_CUR_PORT, &GPIO_InitStruct);
+  #endif
 
   GPIO_InitStruct.Pin = RIGHT_U_CUR_PIN;
   HAL_GPIO_Init(RIGHT_U_CUR_PORT, &GPIO_InitStruct);
@@ -439,12 +449,14 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pin = DCLINK_PIN;
   HAL_GPIO_Init(DCLINK_PORT, &GPIO_InitStruct);
 
-  //Analog in
-  #if !defined(SUPPORT_BUTTONS_LEFT)
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  #if BOARD_VARIANT != 3
+    //Analog in
+    #if !defined(SUPPORT_BUTTONS_LEFT)
+      GPIO_InitStruct.Pin = GPIO_PIN_3;
+      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_2;
+      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    #endif
   #endif
 
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -591,7 +603,8 @@ void MX_TIM_Init(void) {
   __HAL_TIM_ENABLE(&htim_right);
 }
 
-void MX_ADC1_Init(void) {
+__weak void MX_ADC1_Init(void)
+{
   ADC_MultiModeTypeDef multimode;
   ADC_ChannelConfTypeDef sConfig;
 
@@ -662,7 +675,8 @@ void MX_ADC1_Init(void) {
 }
 
 /* ADC2 init function */
-void MX_ADC2_Init(void) {
+__weak void MX_ADC2_Init(void)
+{
   ADC_ChannelConfTypeDef sConfig;
 
   __HAL_RCC_ADC2_CLK_ENABLE();
