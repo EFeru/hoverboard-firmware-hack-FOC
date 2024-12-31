@@ -1,3 +1,18 @@
+
+# HoverChair
+This firmware is based on the [hoverboard-firmware-hack-FOC Repo](https://github.com/EFeru/hoverboard-firmware-hack-FOC/) has only been slightly adapted.
+
+
+<table>
+  <tr>
+    <td><a href="HoverChair 1" title="HoverChair1" rel="noopener"><img src="/docs/pictures/hoverChair_1.png"></a></td>
+    <td><a href="HoverChair_2" title="HoverChair 2" rel="noopener"><img src="/docs/pictures/hoverChair_2.png"></a></td>
+  </tr>
+</table>
+
+# ReadMe of the original repo:  
+
+
 # hoverboard-firmware-hack-FOC
 [![Build status](https://github.com/EFeru/hoverboard-firmware-hack-FOC/actions/workflows/build_on_commit.yml/badge.svg)](https://github.com/EFeru/hoverboard-firmware-hack-FOC/actions/workflows/build_on_commit.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -22,21 +37,6 @@ Table of Contents
 
 #### For the FOC controller design, see the following repository:
  - [bldc-motor-control-FOC](https://github.com/EFeru/bldc-motor-control-FOC)
-
-#### Videos:
-<table>
-  <tr>
-    <td><a href="https://youtu.be/IgHCcj0NgWQ" title="Hovercar" rel="noopener"><img src="/docs/pictures/videos_preview/hovercar_intro.png"></a></td>
-    <td><a href="https://youtu.be/gtyqtc37r10" title="Cruise Control functionality" rel="noopener"><img src="/docs/pictures/videos_preview/cruise_control.png"></a></td>
-    <td><a href="https://youtu.be/jadD0M1VBoc" title="Hovercar pedal functionality" rel="noopener"><img src="/docs/pictures/videos_preview/hovercar_pedals.png"></a></td>
-  </tr>
-  <tr>
-    <td><a href="https://youtu.be/UnlbMrCkjnE" title="Commutation vs. FOC (constant speed)" rel="noopener"><img src="/docs/pictures/videos_preview/com_foc_const.png"></a></td> 
-    <td><a href="https://youtu.be/V-_L2w10wZk" title="Commutation vs. FOC (variable speed)" rel="noopener"><img src="/docs/pictures/videos_preview/com_foc_var.png"></a></td>       
-    <td><a href="https://youtu.be/tVj_lpsRirA" title="Reliable Serial Communication" rel="noopener"><img src="/docs/pictures/videos_preview/serial_com.png"></a></td>
-  </tr>
-</table>
-
 
 ---
 ## Hardware
