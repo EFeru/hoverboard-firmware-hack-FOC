@@ -1,0 +1,1 @@
+This software is the bridge between the hoverboard PCB in UART mode and the remote receiver, which receives the signal from the remote control over the air and is based on the https://github.com/ZZ-Cat/CRSFforArduino (V1.0.4) Repo and the hoverseriel.ino example.
