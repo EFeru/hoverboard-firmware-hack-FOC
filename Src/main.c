@@ -579,7 +579,7 @@ int main(void) {
     inactivity_timeout_counter++;
 
     // ####### INACTIVITY TIMEOUT #######
-    if (abs(cmdL) > 50 || abs(cmdR) > 50) {
+    if (abs(cmdL) > 50 || abs(cmdR) > 50 || (HAL_GPIO_ReadPin(CHARGER_PORT, CHARGER_PIN) == GPIO_PIN_SET) ) {
       inactivity_timeout_counter = 0;
     }
 
