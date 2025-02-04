@@ -29,8 +29,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
+
     - name: PlatformIO Run
       run: pio run
+
+    # Debugging step: List files in .pio/build
+    - name: Debug - List files in .pio/build
+      run: ls -R ${{github.workspace}}/.pio/build
 
     # Upload Build Artifact (updated to v4)
     - name: 'Upload Build Artifact'
