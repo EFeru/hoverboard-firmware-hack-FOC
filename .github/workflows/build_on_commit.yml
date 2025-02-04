@@ -33,7 +33,7 @@ jobs:
       run: pio run
 
     - name: 'Upload Build Artifact'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.3.1
       with:
         path: ${{github.workspace}}/.pio/build/**
         name: ${{github.event.repository.name}}_build_${{github.run_number}}
