@@ -32,10 +32,10 @@ jobs:
     - name: PlatformIO Run
       run: pio run
 
+    # Upload Build Artifact (updated to v4)
     - name: 'Upload Build Artifact'
-      uses: actions/upload-artifact@v4.3.1
+      uses: actions/upload-artifact@v4
       with:
         path: ${{github.workspace}}/.pio/build/**
         name: ${{github.event.repository.name}}_build_${{github.run_number}}
         retention-days: 5
-
