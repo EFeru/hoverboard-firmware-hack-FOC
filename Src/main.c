@@ -169,6 +169,19 @@ static uint16_t rate = RATE; // Adjustable rate to support multiple drive modes 
   static uint16_t max_speed;
 #endif
 
+void speaker_beep(uint32_t frequency, uint32_t duration)
+{
+    uint32_t half_period_us = 500000 / frequency; // полпериода в микросекундах
+    uint32_t cycles = (duration * 1000) / (half_period_us * 2);
+
+    for(uint32_t i = 0; i < cycles; i++)
+    {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);   // HIGH
+        delay_us(half_period_us);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); // LOW
+        delay_us(half_period_us);
+    }
+}
 
 int main(void) {
 
