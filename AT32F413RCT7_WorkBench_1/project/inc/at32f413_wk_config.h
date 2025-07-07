@@ -115,6 +115,10 @@ extern "C" {
 //#define DMA2_CHANNEL7_PERIPHERAL_BASE_ADDR   0
 /* add user code end dma define */
 
+/* Private defines -------------------------------------------------------------*/
+#define BUZZER_PIN    GPIO_PINS_4
+#define BUZZER_GPIO_PORT    GPIOA
+
 /* exported functions ------------------------------------------------------- */
   /* system clock config. */
   void wk_system_clock_config(void);

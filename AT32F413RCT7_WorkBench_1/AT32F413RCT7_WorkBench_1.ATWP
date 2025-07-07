@@ -14,6 +14,7 @@
             <ModeSub name="IN11" value="TRUE"/>
             <ModeSub name="IN12" value="TRUE"/>
             <ModeSub name="IN14" value="TRUE"/>
+            <ModeSub name="IN-TempSens" value="TRUE"/>
         </Mode>
         <Parameters>
             <ParametersSub name="OrdinaryTriggerSource" value="ADC12_ORDINARY_TRIG_SOFTWARE"/>
@@ -22,6 +23,8 @@
     </ADC1>
     <ADC2>
         <Mode>
+            <ModeSub name="IN2" value="TRUE"/>
+            <ModeSub name="IN3" value="TRUE"/>
             <ModeSub name="IN10" value="TRUE"/>
             <ModeSub name="IN13" value="TRUE"/>
             <ModeSub name="IN15" value="TRUE"/>
@@ -51,14 +54,6 @@
             <ParametersSub name="RealBaudRate" value="115108"/>
         </Parameters>
     </USART1>
-    <USART2>
-        <Mode>
-            <ModeSub name="Mode" value="Asynchronous"/>
-        </Mode>
-        <Parameters>
-            <ParametersSub name="RealBaudRate" value="115108"/>
-        </Parameters>
-    </USART2>
     <USART3>
         <Mode>
             <ModeSub name="Mode" value="Asynchronous"/>
@@ -73,9 +68,13 @@
         <CRM_IRQHandler>0;0;0;0;0</CRM_IRQHandler>
         <ADC1_2_IRQHandler>0;0;0;0;0</ADC1_2_IRQHandler>
         <USART1_IRQHandler>0;0;0;0;0</USART1_IRQHandler>
-        <USART2_IRQHandler>0;0;0;0;0</USART2_IRQHandler>
         <USART3_IRQHandler>0;0;0;0;0</USART3_IRQHandler>
     </NVIC>
+    <GPIO>
+        <Signal SignalName="GPIO_Output" PinName="PA4">
+            <Parameters name="Label" value="BUZZER"/>
+        </Signal>
+    </GPIO>
     <ClockConfiguration>
         <rtcsel>0</rtcsel>
         <hext>8.000000</hext>
@@ -100,8 +99,8 @@
         <PinSub pinname="PC2" signalname="ADC1_IN12" signaltype="2"/>
         <PinSub pinname="PC3" signalname="ADC2_IN13" signaltype="2"/>
         <PinSub pinname="PA0/WKUP" signalname="ADC1_IN0" signaltype="2"/>
-        <PinSub pinname="PA2" signalname="USART2_TX" signaltype="2"/>
-        <PinSub pinname="PA3" signalname="USART2_RX" signaltype="2"/>
+        <PinSub pinname="PA2" signalname="ADC2_IN2" signaltype="2"/>
+        <PinSub pinname="PA3" signalname="ADC2_IN3" signaltype="2"/>
         <PinSub pinname="PA4" signalname="GPIO_Output" signaltype="3"/>
         <PinSub pinname="PC4" signalname="ADC1_IN14" signaltype="2"/>
         <PinSub pinname="PC5" signalname="ADC2_IN15" signaltype="2"/>
