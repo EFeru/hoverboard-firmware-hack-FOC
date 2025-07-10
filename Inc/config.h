@@ -6,21 +6,14 @@
 
 // ############################### VARIANT SELECTION ###############################
 // PlatformIO: uncomment desired variant in platformio.ini
+
 // Keil uVision: select desired variant from the Target drop down menu (to the right of the Load button)
+
 // Ubuntu: define the desired build variant here if you want to use make in console
 // or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_NUNCHUK". Select only one at a time.
-#if !defined(PLATFORMIO)
-  //#define VARIANT_ADC         // Variant for control via ADC input
-  //#define VARIANT_USART       // Variant for Serial control via USART3 input
-  //#define VARIANT_NUNCHUK     // Variant for Nunchuk controlled vehicle build
-  //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
-  #define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
-  //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
-  //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
-  //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
-  //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
-  //#define VARIANT_SKATEBOARD  // Variant for SKATEBOARD build
-#endif
+//#if !defined(PLATFORMIO)
+//  #define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
+//#endif
 // ########################### END OF VARIANT SELECTION ############################
 
 
@@ -87,8 +80,6 @@
 #define BAT_LVL1                (350 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // Red blink:    fast beep. Your battery is almost empty. Charge now! [V*100/cell]. In this case 3.50 V/cell
 #define BAT_DEAD                (337 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE    // All leds off: undervoltage poweroff. (while not driving) [V*100/cell]. In this case 3.37 V/cell
 // ######################## END OF BATTERY ###############################
-
-
 
 // ############################### TEMPERATURE ###############################
 /* Board overheat detection: the sensor is inside the STM/GD chip.
@@ -254,163 +245,9 @@
 // #define DEBUG_SERIAL_PROTOCOL        // uncomment this to send user commands to the board, change parameters and print specific signals (see comms.c for the user commands)
 // ########################### END OF DEBUG SERIAL ############################
 
-
-
 // ############################### DEBUG LCD ###############################
 // #define DEBUG_I2C_LCD                // standard 16x2 or larger text-lcd via i2c-converter on right sensor board cable
 // ########################### END OF DEBUG LCD ############################
-
-
-
-// ################################# VARIANT_ADC SETTINGS ############################
-#ifdef VARIANT_ADC
-/* CONTROL VIA TWO POTENTIOMETERS
- * Connect potis to left sensor board cable (0 to 3.3V) (do NOT use the red 15V wire!)
- *
- * Auto-calibration of the ADC Limit to finds the Minimum, Maximum, and Middle for the ADC input
- * Procedure:
- * - press the power button for more than 5 sec and release after the beep sound
- * - move the potentiometers freely to the min and max limits repeatedly
- * - release potentiometers to the resting postion
- * - press the power button to confirm or wait for the 20 sec timeout
- * The Values will be saved to flash. Values are persistent if you flash with platformio. To erase them, make a full chip erase.
- *
- * After calibration you can optionally write the values to the following defines
- * Procedure:
- * - connect gnd, rx and tx of a usb-uart converter in 3.3V mode to the right sensor board cable (do NOT use the red 15V wire!)
- * - readout values using a serial terminal in 115200 baud rate
- * - turn the potis to minimum position, write value in1 to PRI_INPUT1 MIN and value in2 to PRI_INPUT2 MIN
- * - turn the potis to maximum position, write value in1 to PRI_INPUT1 MAX and value in2 to PRI_INPUT2 MAX
- * - for middle resting potis: Let the potis in the middle resting position, write value in1 to PRI_INPUT1 MID and value in2 to PRI_INPUT2 MID
-*/
-  #define CONTROL_ADC           0         // use ADC as input. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
-
-  // #define DUAL_INPUTS                     //  ADC*(Primary) + UART(Auxiliary). Uncomment this to use Dual-inputs
-  #define PRI_INPUT1            3, 0, 0, 4095, 0      // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #define PRI_INPUT2            3, 0, 0, 4095, 0      // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #ifdef DUAL_INPUTS
-    #define FLASH_WRITE_KEY     0x1101    // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    // #define SIDEBOARD_SERIAL_USART3 1
-    #define CONTROL_SERIAL_USART3 1       // right sensor board cable. Number indicates priority for dual-input. Disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-    #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-    #define AUX_INPUT1          3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define AUX_INPUT2          3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #else
-    #define FLASH_WRITE_KEY     0x1001    // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-  #endif
-
-  // #define TANK_STEERING                   // use for tank steering, each input controls each wheel 
-  // #define ADC_ALTERNATE_CONNECT           // use to swap ADC inputs
-  // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
-  // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
-#endif
-// ############################# END OF VARIANT_ADC SETTINGS #########################
-
-
-
-// ############################ VARIANT_USART SETTINGS ############################
-#ifdef VARIANT_USART
-  // #define SIDEBOARD_SERIAL_USART2 0
-  #define CONTROL_SERIAL_USART2  0    // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
-
-  // #define SIDEBOARD_SERIAL_USART3 0
-  // #define CONTROL_SERIAL_USART3  0    // right sensor board cable. Number indicates priority for dual-input. Disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-  // #define FEEDBACK_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
- 
-  // #define DUAL_INPUTS                 //  UART*(Primary) + SIDEBOARD(Auxiliary). Uncomment this to use Dual-inputs
-  #define PRI_INPUT1             3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #define PRI_INPUT2             3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #ifdef DUAL_INPUTS
-    #define FLASH_WRITE_KEY      0x1102  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    // #define SIDEBOARD_SERIAL_USART2 1   // left sideboard
-    #define SIDEBOARD_SERIAL_USART3 1   // right sideboard
-    #define AUX_INPUT1           3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define AUX_INPUT2           3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #else
-    #define FLASH_WRITE_KEY      0x1002  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-  #endif
-
-  // #define TANK_STEERING              // use for tank steering, each input controls each wheel 
-  // #define SUPPORT_BUTTONS_LEFT       // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
-  // #define SUPPORT_BUTTONS_RIGHT      // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
-#endif
-// ######################## END OF VARIANT_USART SETTINGS #########################
-
-
-
-// ################################# VARIANT_NUNCHUK SETTINGS ############################
-#ifdef VARIANT_NUNCHUK
-  /* on Right sensor cable
-   * keep cable short, use shielded cable, use ferrits, stabalize voltage in nunchuk,
-   * use the right one of the 2 types of nunchuks, add i2c pullups.
-   * use original nunchuk. most clones does not work very well.
-   * Recommendation: Nunchuk Breakout Board https://github.com/Jan--Henrik/hoverboard-breakout
-  */
-  #define CONTROL_NUNCHUK         0       // use nunchuk as input. Number indicates priority for dual-input. Disable FEEDBACK_SERIAL_USART3, DEBUG_SERIAL_USART3!
-
-  // #define DUAL_INPUTS                     // Nunchuk*(Primary) + UART(Auxiliary). Uncomment this to use Dual-inputs
-  #define PRI_INPUT1              2, -1024, 0, 1024, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #define PRI_INPUT2              2, -1024, 0, 1024, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #ifdef DUAL_INPUTS
-    #define FLASH_WRITE_KEY       0x1103  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    // #define SIDEBOARD_SERIAL_USART2 1
-    #define CONTROL_SERIAL_USART2 1       // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-    #define FEEDBACK_SERIAL_USART2        // left sensor board cable, disable if ADC or PPM is used!
-    #define AUX_INPUT1            3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define AUX_INPUT2            3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #else
-    #define FLASH_WRITE_KEY       0x1003  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    #define DEBUG_SERIAL_USART2           // left sensor cable debug
-  #endif
-
-  // # maybe good for ARMCHAIR #
-  #define FILTER                  3276    //  0.05f
-  #define SPEED_COEFFICIENT       8192    //  0.5f
-  #define STEER_COEFFICIENT       62259   // -0.2f
-  // #define SUPPORT_BUTTONS                 // Define for Nunchuk buttons support
-#endif
-// ############################# END OF VARIANT_NUNCHUK SETTINGS #########################
-
-
-
-// ################################# VARIANT_PPM SETTINGS ##############################
-#ifdef VARIANT_PPM
-/* ###### CONTROL VIA RC REMOTE ######
- * Right sensor board cable. Channel 1: steering, Channel 2: speed.
- * https://gist.github.com/peterpoetzi/1b63a4a844162196613871767189bd05
-*/
-  // #define DUAL_INPUTS                     // ADC*(Primary) + PPM(Auxiliary). Uncomment this to use Dual-inputs
-  #ifdef DUAL_INPUTS
-    #define FLASH_WRITE_KEY       0x1104  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    #define CONTROL_ADC           0       // use ADC as input. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
-    #define CONTROL_PPM_RIGHT     1       // use PPM-Sum as input on the RIGHT cable. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART3!
-    #define PRI_INPUT1            3,     0, 0, 4095,   0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define PRI_INPUT2            3,     0, 0, 4095,   0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define AUX_INPUT1            3, -1000, 0, 1000, 100  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define AUX_INPUT2            3, -1000, 0, 1000, 100  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #else
-    #define FLASH_WRITE_KEY       0x1004  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    // #define CONTROL_PPM_LEFT      0       // use PPM-Sum as input on the LEFT cable. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART2!
-    #define CONTROL_PPM_RIGHT     0       // use PPM-Sum as input on the RIGHT cable. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART3!
-    #define PRI_INPUT1            3, -1000, 0, 1000, 100  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define PRI_INPUT2            3, -1000, 0, 1000, 100  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #endif
-  #define PPM_NUM_CHANNELS        6       // total number of PPM channels to receive, even if they are not used.
-
-  // #define TANK_STEERING                   // use for tank steering, each input controls each wheel 
-  // #define SUPPORT_BUTTONS                 // Define for PPM buttons support
-  // #define SUPPORT_BUTTONS_LEFT            // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
-  // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
-
-  #if defined(CONTROL_PPM_RIGHT) && !defined(DUAL_INPUTS)
-    #define DEBUG_SERIAL_USART2           // left sensor cable debug
-  #elif defined(CONTROL_PPM_LEFT) && !defined(DUAL_INPUTS)
-    #define DEBUG_SERIAL_USART3           // right sensor cable debug
-  #endif
-#endif
-// ############################# END OF VARIANT_PPM SETTINGS ############################
 
 
 // ################################# VARIANT_PWM SETTINGS ##############################
@@ -455,182 +292,12 @@
 
 
 
-// ################################# VARIANT_IBUS SETTINGS ##############################
-#ifdef VARIANT_IBUS
-/* CONTROL VIA RC REMOTE WITH FLYSKY IBUS PROTOCOL 
-* Connected to Right sensor board cable. Channel 1: steering, Channel 2: speed.
-*/
-  #define CONTROL_IBUS                    // use IBUS as input. Number indicates priority for dual-input.
-  #define IBUS_NUM_CHANNELS       14      // total number of IBUS channels to receive, even if they are not used.
-  #define IBUS_LENGTH             0x20
-  #define IBUS_COMMAND            0x40
-  #define USART3_BAUD             115200
-
-  // #define DUAL_INPUTS                     // ADC*(Primary) + iBUS(Auxiliary). Uncomment this to use Dual-inputs
-  #ifdef DUAL_INPUTS
-    #define FLASH_WRITE_KEY       0x1106  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    #define CONTROL_ADC           0       // use ADC as input. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
-    #define CONTROL_SERIAL_USART3 1       // use RC iBUS input on the RIGHT cable. Number indicates priority for dual-input. Disable DEBUG_SERIAL_USART3!
-    #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if ADC or PPM is used!
-    #define PRI_INPUT1            3,     0, 0, 4095, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define PRI_INPUT2            3,     0, 0, 4095, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define AUX_INPUT1            3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define AUX_INPUT2            3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #else
-    #define FLASH_WRITE_KEY       0x1006  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    #define CONTROL_SERIAL_USART3 0       // use RC iBUS input on the RIGHT cable, disable if ADC or PPM is used!
-    #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if ADC or PPM is used!
-    #define PRI_INPUT1            3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-    #define PRI_INPUT2            3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #endif
-
-  // #define TANK_STEERING                // use for tank steering, each input controls each wheel 
-
-  #if defined(CONTROL_SERIAL_USART3) && !defined(DUAL_INPUTS)
-    #define DEBUG_SERIAL_USART2           // left sensor cable debug
-  #elif defined(DEBUG_SERIAL_USART2) && !defined(DUAL_INPUTS)
-    #define DEBUG_SERIAL_USART3           // right sensor cable debug
-  #endif
-#endif
-// ############################# END OF VARIANT_IBUS SETTINGS ############################
-
-
-
-// ############################ VARIANT_HOVERCAR SETTINGS ############################
-#ifdef VARIANT_HOVERCAR
-  #define FLASH_WRITE_KEY         0x1107  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-  #undef  CTRL_MOD_REQ
-  #define CTRL_MOD_REQ            VLT_MODE  // HOVERCAR works best in TORQUE Mode. VOLTAGE mode is preffered when freewheeling is not desired when throttle is released.
-  #define CONTROL_ADC             0         // use ADC as input. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
-  #define SIDEBOARD_SERIAL_USART3 1         // Rx from right sensor board: to use photosensors as buttons. Number indicates priority for dual-input. Comment-out if sideboard is not used!
-  #define FEEDBACK_SERIAL_USART3            // Tx to   right sensor board: for LED battery indication. Comment-out if sideboard is not used!
-
-  #define DUAL_INPUTS                       // ADC*(Primary) + Sideboard_R(Auxiliary). Uncomment this to use Dual-inputs
-  #define PRI_INPUT1              1,  1000, 0, 2500, 0  // Pedal Brake        TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #define PRI_INPUT2              1,   500, 0, 2200, 0  // Pedal Accel        TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #define AUX_INPUT1              2, -1000, 0, 1000, 0  // Sideboard Steer    TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #define AUX_INPUT2              2, -1000, 0, 1000, 0  // Sideboard Speed    TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-
-  #define SPEED_COEFFICIENT       16384     // 1.0f
-  #define STEER_COEFFICIENT       8192      // 0.5f Only active in Sideboard input
-  // #define ADC_ALTERNATE_CONNECT             // use to swap ADC inputs
-  // #define INVERT_R_DIRECTION                // Invert rotation of right motor
-  // #define INVERT_L_DIRECTION                // Invert rotation of left motor
-  // #define DEBUG_SERIAL_USART3               // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-
-  // Extra functionality
-  // #define CRUISE_CONTROL_SUPPORT            // [-] Flag to enable Cruise Control support. Activation/Deactivation is done by sideboard button or Brake pedal press.
-  // #define STANDSTILL_HOLD_ENABLE            // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
-  // #define ELECTRIC_BRAKE_ENABLE             // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
-  // #define ELECTRIC_BRAKE_MAX    100         // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
-  // #define ELECTRIC_BRAKE_THRES  120         // (0, 500) Threshold below at which the electric brake starts engaging.
-
-  #define MULTI_MODE_DRIVE                  // This option enables the selection of 3 driving modes at start-up using combinations of Brake and Throttle pedals (see below)
-  #ifdef MULTI_MODE_DRIVE
-      // BEGINNER MODE:     Power ON + Brake [released] + Throttle [released or pressed]
-      #define MULTI_MODE_DRIVE_M1_MAX   175
-      #define MULTI_MODE_DRIVE_M1_RATE  250
-      #define MULTI_MODE_M1_I_MOT_MAX   4
-      #define MULTI_MODE_M1_N_MOT_MAX   30
-
-      // INTERMEDIATE MODE: Power ON + Brake [pressed] + Throttle [released]
-      #define MULTI_MODE_DRIVE_M2_MAX   500
-      #define MULTI_MODE_DRIVE_M2_RATE  300
-      #define MULTI_MODE_M2_I_MOT_MAX   8
-      #define MULTI_MODE_M2_N_MOT_MAX   80
-
-      // ADVANCED MODE:    Power ON + Brake [pressed] + Throttle [pressed]
-      #define MULTI_MODE_DRIVE_M3_MAX   1000
-      #define MULTI_MODE_DRIVE_M3_RATE  450
-      #define MULTI_MODE_M3_I_MOT_MAX   I_MOT_MAX
-      #define MULTI_MODE_M3_N_MOT_MAX   N_MOT_MAX
-  #endif
-
-#endif
-
 // Multiple tap detection: default DOUBLE Tap on Brake pedal (4 pulses)
 #define MULTIPLE_TAP_NR           2 * 2       // [-] Define tap number: MULTIPLE_TAP_NR = number_of_taps * 2, number_of_taps = 1 (for single taping), 2 (for double tapping), 3 (for triple tapping), etc...
 #define MULTIPLE_TAP_HI           600         // [-] Multiple tap detection High hysteresis threshold
 #define MULTIPLE_TAP_LO           200         // [-] Multiple tap detection Low hysteresis threshold
 #define MULTIPLE_TAP_TIMEOUT      2000        // [ms] Multiple tap detection Timeout period. The taps need to happen within this time window to be accepted.
 // ######################## END OF VARIANT_HOVERCAR SETTINGS #########################
-
-
-
-// ############################ VARIANT_HOVERBOARD SETTINGS ############################
-// Communication:         [DONE]
-// Balancing controller:  [TODO]
-#ifdef VARIANT_HOVERBOARD
-  #define FLASH_WRITE_KEY     0x1008          // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-  #define SIDEBOARD_SERIAL_USART2 1           // left sensor board cable. Number indicates priority for dual-input. Disable if ADC or PPM is used! 
-  #define FEEDBACK_SERIAL_USART2
-  #define SIDEBOARD_SERIAL_USART3 0           // right sensor board cable. Number indicates priority for dual-input. Disable if I2C (nunchuk or lcd) is used!
-  #define FEEDBACK_SERIAL_USART3
-
-  // If an iBUS RC receiver is connected to either Left Sideboard (AUX_INPUT) or Right Sideboard (PRI_INPUT)
-  // PRIMARY INPUT:          TYPE, MIN, MID, MAX, DEADBAND /* TYPE: 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect */
-  #define PRI_INPUT1          3, -1000, 0, 1000, 0  // Priority Sideboard can be used to send commands via an iBUS Receiver connected to the sideboard
-  #define PRI_INPUT2          3, -1000, 0, 1000, 0  // Priority Sideboard can be used to send commands via an iBUS Receiver connected to the sideboard
-  #define AUX_INPUT1          3, -1000, 0, 1000, 0  // not used
-  #define AUX_INPUT2          3, -1000, 0, 1000, 0  // not used
-#endif
-// ######################## END OF VARIANT_HOVERBOARD SETTINGS #########################
-
-
-
-// ################################# VARIANT_TRANSPOTTER SETTINGS ############################
-//TODO ADD VALIDATION
-#ifdef VARIANT_TRANSPOTTER
-  #define FLASH_WRITE_KEY     0x1009    // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-  #define CONTROL_GAMETRAK
-  #define SUPPORT_LCD
-  // #define SUPPORT_NUNCHUK
-  #define GAMETRAK_CONNECTION_NORMAL    // for normal wiring according to the wiki instructions
-  // #define GAMETRAK_CONNECTION_ALTERNATE // use this define instead if you messed up the gametrak ADC wiring (steering is speed, and length of the wire is steering)
-  #define ROT_P               1.2       // P coefficient for the direction controller. Positive / Negative values to invert gametrak steering direction.
-  // during nunchuk control (only relevant when activated)
-  #define SPEED_COEFFICIENT   14746     // 0.9f - higher value == stronger. 0.0 to ~2.0?
-  #define STEER_COEFFICIENT   8192      // 0.5f - higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
-  #define INVERT_R_DIRECTION            // Invert right motor
-  #define INVERT_L_DIRECTION            // Invert left motor
-  #define PRI_INPUT1          2, -1000, 0, 1000, 0  // dummy input, TRANSPOTTER does not use input limitations
-  #define PRI_INPUT2          2, -1000, 0, 1000, 0  // dummy input, TRANSPOTTER does not use input limitations
-#endif
-// ############################# END OF VARIANT_TRANSPOTTER SETTINGS ########################
-
-
-// ################################# VARIANT_SKATEBOARD SETTINGS ##############################
-#ifdef VARIANT_SKATEBOARD
-/* ###### CONTROL VIA RC REMOTE ######
- * right sensor board cable. Connect PB10 to channel 1 and PB11 to channel 2 on receiver.
- * Channel 1: steering, Channel 2: speed.
-*/
-  #define FLASH_WRITE_KEY     0x1010    // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-  #undef  CTRL_MOD_REQ
-  #define CTRL_MOD_REQ        TRQ_MODE  // SKATEBOARD works best in TORQUE Mode
-  // #define CONTROL_PWM_LEFT    0         // use RC PWM as input on the LEFT cable. Number indicates priority for dual-input. Disable DEBUG_SERIAL_USART2!
-  #define CONTROL_PWM_RIGHT   0         // use RC PWM as input on the RIGHT cable.  Number indicates priority for dual-input. Disable DEBUG_SERIAL_USART3!
-
-  #define PRI_INPUT1          0, -1000, 0, 1000,   0    // Disabled. TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #define PRI_INPUT2          2,  -800, 0,  700, 100    // Active.   TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  #define INPUT_BRK           -400      // (-1000 - 0) Change this value to adjust the braking amount
-
-  #define FILTER              6553      // 0.1f [-] fixdt(0,16,16) lower value == softer filter [0, 65535] = [0.0 - 1.0].
-  #define SPEED_COEFFICIENT   16384     // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
-  #define STEER_COEFFICIENT   0         // 1.0f [-] fixdt(1,16,14) higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14. If you do not want any steering, set it to 0.
-  #define INVERT_R_DIRECTION
-  #define INVERT_L_DIRECTION
-  // #define SUPPORT_BUTTONS_LEFT       // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
-  // #define SUPPORT_BUTTONS_RIGHT      // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
-  // #define STANDSTILL_HOLD_ENABLE     // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
-
-  #ifdef CONTROL_PWM_RIGHT
-    #define DEBUG_SERIAL_USART2         // left sensor cable debug
-  #else
-    #define DEBUG_SERIAL_USART3         // right sensor cable debug
-  #endif
-#endif
-// ############################# END OF VARIANT_SKATEBOARD SETTINGS ############################
 
 
 

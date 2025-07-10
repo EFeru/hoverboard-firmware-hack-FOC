@@ -653,8 +653,8 @@ void updateCurSpdLim(void) {
 
   #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
   // cur_spd_valid: 0 = No limit changed, 1 = Current limit changed, 2 = Speed limit changed, 3 = Both limits changed
-  printf("Limits (%i)\r\nCurrent: fixdt:%li factor%i i_max:%i \r\nSpeed: fixdt:%li factor:%i n_max:%i\r\n",
-          cur_spd_valid, input1_fixdt, cur_factor, rtP_Left.i_max, input2_fixdt, spd_factor, rtP_Left.n_max);
+printf("Limits (%i)\r\nCurrent: fixdt:%li factor:%i i_max:%i \r\nSpeed: fixdt:%li factor:%i n_max:%i\r\n",
+       cur_spd_valid, (long)input1_fixdt, cur_factor, rtP_Left.i_max, (long)input2_fixdt, spd_factor, rtP_Left.n_max);
   #endif
 
 #endif

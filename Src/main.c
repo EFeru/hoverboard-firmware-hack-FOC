@@ -169,6 +169,12 @@ static uint16_t rate = RATE; // Adjustable rate to support multiple drive modes 
   static uint16_t max_speed;
 #endif
 
+void delay_us(uint32_t us)
+{
+    uint32_t start = SysTick->VAL;
+    while((start - SysTick->VAL) < us);
+}
+
 void speaker_beep(uint32_t frequency, uint32_t duration)
 {
     uint32_t half_period_us = 500000 / frequency; // полпериода в микросекундах
