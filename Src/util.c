@@ -1097,16 +1097,12 @@ void usart2_rx_check(void)
   #endif
 
   #if defined(DEBUG_SERIAL_USART2)
-  uint8_t ptr_debug[SERIAL_BUFFER_SIZE];
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_L[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      memcpy(&ptr_debug[0], &rx_buffer_L[old_pos], rx_buffer_L_len - old_pos);    // First copy data from the end of buffer
-      if (pos > 0) {                                                    // Check and continue with beginning of buffer
-        memcpy(&ptr_debug[rx_buffer_L_len - old_pos], &rx_buffer_L[0], pos);                              // Copy remaining data
-      }
-      usart_process_debug(ptr_debug, rx_buffer_L_len - old_pos + pos);        // Process data
+      usart_process_debug(&rx_buffer_L[old_pos], rx_buffer_L_len - old_pos);        // Process data
+      usart_process_debug(&rx_buffer_L[0], pos);        // Process data
     }
   }
   #endif // DEBUG_SERIAL_USART2
@@ -1169,17 +1165,12 @@ void usart3_rx_check(void)
   #endif
 
   #if defined(DEBUG_SERIAL_USART3)
-  uint8_t ptr_debug[SERIAL_BUFFER_SIZE];
-
   if (pos != old_pos) {                                                 // Check change in received data
     if (pos > old_pos) {                                                // "Linear" buffer mode: check if current position is over previous one
       usart_process_debug(&rx_buffer_R[old_pos], pos - old_pos);        // Process data
     } else {                                                            // "Overflow" buffer mode
-      memcpy(&ptr_debug[0], &rx_buffer_R[old_pos], rx_buffer_R_len - old_pos);    // First copy data from the end of buffer
-      if (pos > 0) {                                                    // Check and continue with beginning of buffer
-        memcpy(&ptr_debug[rx_buffer_R_len - old_pos], &rx_buffer_R[0], pos);                              // Copy remaining data
-      }
-      usart_process_debug(ptr_debug, rx_buffer_R_len - old_pos + pos);        // Process data
+      usart_process_debug(&rx_buffer_R[old_pos], rx_buffer_R_len - old_pos);        // Process data
+      usart_process_debug(&rx_buffer_R[old_pos], pos);                           // Process data
     }
   }
   #endif // DEBUG_SERIAL_USART3
@@ -1235,7 +1226,36 @@ void usart3_rx_check(void)
 void usart_process_debug(uint8_t *userCommand, uint32_t len)
 {
   #ifdef DEBUG_SERIAL_PROTOCOL
-    handle_input(userCommand, len);
+    static uint8_t debug_buffer[SERIAL_BUFFER_SIZE];
+    static size_t pos = 0;
+    static enum {
+      WAIT_START,
+      IN_FRAME
+    } state = WAIT_START;
+
+    for (size_t i = 0; i < len; i++) {
+      if (state == WAIT_START) {
+        pos = 0;
+      }
+      if (userCommand[i] == '$') {
+        state = IN_FRAME;
+      }
+      if (state != IN_FRAME) {
+        continue;
+      }
+
+      debug_buffer[pos++] = userCommand[i];
+      if (userCommand[i] == '\n' || userCommand[i] == '\r') {
+        state = WAIT_START;
+        handle_input(debug_buffer, pos);
+        continue;
+      }
+      
+      if (pos >= SERIAL_BUFFER_SIZE) {
+        state = WAIT_START;
+        pos = 0;
+      }
+    }
   #endif
 }
 
