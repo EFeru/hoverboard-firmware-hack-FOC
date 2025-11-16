@@ -98,6 +98,10 @@ extern volatile uint16_t pwm_captured_ch1_value;
 extern volatile uint16_t pwm_captured_ch2_value;
 #endif
 
+#if defined(VARIANT_LIFTLINE)
+volatile int32_t distL_mm = 0;
+volatile int32_t distR_mm = 0;
+#endif
 
 //------------------------------------------------------------------------
 // Global variables set here in main.c
@@ -125,7 +129,15 @@ typedef struct{
   int16_t   speedL_meas;
   int16_t   batVoltage;
   int16_t   boardTemp;
+  #if defined(VARIANT_LIFTLINE)
+  int16_t  posR_cm;    // nouvelle position moteur droit (en cm)
+  int16_t  posL_cm;    // nouvelle position moteur gauche (en cm)
+  int16_t dcCurrL;   // left_dc_curr
+  int16_t dcCurrR;   // right_dc_curr
+  #endif
+  #if !defined(VARIANT_LIFTLINE)
   uint16_t  cmdLed;
+  #endif
   uint16_t  checksum;
 } SerialFeedback;
 static SerialFeedback Feedback;
@@ -249,6 +261,13 @@ int main(void) {
   #endif
 
   while(1) {
+    #if defined(VARIANT_LIFTLINE) // Calculate distance travelled in mm
+    int32_t deltaL = (int32_t)rtY_Left.n_mot  * WHEEL_CIRCUMFERENCE_MM * DELAY_IN_MAIN_LOOP / 60000;
+    int32_t deltaR = (int32_t)rtY_Right.n_mot * WHEEL_CIRCUMFERENCE_MM * DELAY_IN_MAIN_LOOP / 60000;
+    distL_mm += deltaL;
+    distR_mm += deltaR;
+    #endif
+
     if (buzzerTimer - buzzerTimer_prev > 16*DELAY_IN_MAIN_LOOP) {   // 1 ms = 16 ticks buzzerTimer
 
     readCommand();                        // Read Command: input1[inIdx].cmd, input2[inIdx].cmd
@@ -516,21 +535,37 @@ int main(void) {
         Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
         Feedback.batVoltage	    = (int16_t)batVoltageCalib;
         Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
-
-        #if defined(FEEDBACK_SERIAL_USART2)
+        #if defined(VARIANT_LIFTLINE)
+          Feedback.posR_cm      = (int16_t)(distR_mm / 10);  // position in cm
+          Feedback.posL_cm      = (int16_t)(distL_mm / 10);  // position in cm
+          Feedback.dcCurrL      = (int16_t)left_dc_curr;
+          Feedback.dcCurrR      = (int16_t)right_dc_curr;
+        #endif
+          #if defined(FEEDBACK_SERIAL_USART2)
           if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
+            #if !defined(VARIANT_LIFTLINE)
             Feedback.cmdLed     = (uint16_t)sideboard_leds_L;
             Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
                                            ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
-
+            #endif
+            #if defined(VARIANT_LIFTLINE)
+            Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                           ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.posR_cm ^ Feedback.posL_cm ^ Feedback.dcCurrL ^ Feedback.dcCurrR);
+            #endif
             HAL_UART_Transmit_DMA(&huart2, (uint8_t *)&Feedback, sizeof(Feedback));
           }
         #endif
         #if defined(FEEDBACK_SERIAL_USART3)
           if(__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
+            #if !defined(VARIANT_LIFTLINE)
             Feedback.cmdLed     = (uint16_t)sideboard_leds_R;
             Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
                                            ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
+            #endif
+            #if defined(VARIANT_LIFTLINE)
+            Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas 
+                                           ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.posR_cm ^ Feedback.posL_cm ^ Feedback.dcCurrL ^ Feedback.dcCurrR);
+            #endif
 
             HAL_UART_Transmit_DMA(&huart3, (uint8_t *)&Feedback, sizeof(Feedback));
           }

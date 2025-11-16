@@ -45,8 +45,8 @@ byte incomingBytePrev;
 
 typedef struct{
    uint16_t start;
-   int16_t  steer;
-   int16_t  speed;
+   int16_t  speedR;
+   int16_t  speedL;
    uint16_t checksum;
 } SerialCommand;
 SerialCommand Command;
@@ -59,6 +59,10 @@ typedef struct{
    int16_t  speedL_meas;
    int16_t  batVoltage;
    int16_t  boardTemp;
+   int16_t posR_cm;    // nouvelle position moteur droit (en cm)
+   int16_t posL_cm;    // nouvelle position moteur gauche (en cm)   
+   int16_t dcCurrR;   // right_dc_curr 
+   int16_t dcCurrL;   // left_dc_curr
    uint16_t cmdLed;
    uint16_t checksum;
 } SerialFeedback;
@@ -76,13 +80,13 @@ void setup()
 }
 
 // ########################## SEND ##########################
-void Send(int16_t uSteer, int16_t uSpeed)
+void Send(int16_t uSpeedR, int16_t uSpeedL)
 {
   // Create command
   Command.start    = (uint16_t)START_FRAME;
-  Command.steer    = (int16_t)uSteer;
-  Command.speed    = (int16_t)uSpeed;
-  Command.checksum = (uint16_t)(Command.start ^ Command.steer ^ Command.speed);
+  Command.speedR    = (int16_t)uSpeedR;
+  Command.speedL    = (int16_t)uSpeedL;
+  Command.checksum = (uint16_t)(Command.start ^ Command.speedR ^ Command.speedL);
 
   // Write to Serial
   HoverSerial.write((uint8_t *) &Command, sizeof(Command)); 
@@ -121,7 +125,7 @@ void Receive()
     if (idx == sizeof(SerialFeedback)) {
         uint16_t checksum;
         checksum = (uint16_t)(NewFeedback.start ^ NewFeedback.cmd1 ^ NewFeedback.cmd2 ^ NewFeedback.speedR_meas ^ NewFeedback.speedL_meas
-                            ^ NewFeedback.batVoltage ^ NewFeedback.boardTemp ^ NewFeedback.cmdLed);
+                            ^ NewFeedback.batVoltage ^ NewFeedback.boardTemp ^ NewFeedback.posR_cm ^ NewFeedback.posL_cm ^ NewFeedback.dcCurrR ^ NewFeedback.dcCurrL);
 
         // Check validity of the new data
         if (NewFeedback.start == START_FRAME && checksum == NewFeedback.checksum) {
@@ -136,6 +140,10 @@ void Receive()
             Serial.print(" 5: ");  Serial.print(Feedback.batVoltage);
             Serial.print(" 6: ");  Serial.print(Feedback.boardTemp);
             Serial.print(" 7: ");  Serial.println(Feedback.cmdLed);
+            Serial.print(" 8: ");  Serial.println(Feedback.posR_cm);
+            Serial.print(" 9: ");  Serial.println(Feedback.posL_cm);
+            Serial.print("10: ");  Serial.println(Feedback.dcCurrL);
+            Serial.print("11: ");  Serial.println(Feedback.dcCurrR);
         } else {
           Serial.println("Non-valid data skipped");
         }
@@ -162,7 +170,7 @@ void loop(void)
   // Send commands
   if (iTimeSend > timeNow) return;
   iTimeSend = timeNow + TIME_SEND;
-  Send(0, iTest);
+  Send(iTest, iTest);
 
   // Calculate test command signal
   iTest += iStep;
@@ -172,7 +180,7 @@ void loop(void)
     iStep = -iStep;
 
   // Blink the LED
-  digitalWrite(LED_BUILTIN, (timeNow%2000)<1000);
+  //digitalWrite(LED_BUILTIN, (timeNow%2000)<1000);
 }
 
 // ########################## END ##########################
