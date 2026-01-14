@@ -84,13 +84,13 @@ void PPM_Init(void) {
 
   #if defined(CONTROL_PPM_LEFT)  
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
   #endif
 
   #if defined(CONTROL_PPM_RIGHT)  
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
   #endif
 
@@ -200,15 +200,15 @@ void PWM_Init(void) {
 
   #ifdef CONTROL_PWM_LEFT
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
   #endif
 
   #ifdef CONTROL_PWM_RIGHT
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
   #endif
 
