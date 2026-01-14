@@ -13,7 +13,7 @@ jobs:
 
     steps:
     # Get required packages
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
         release: '9-2019-q4'
@@ -33,7 +33,7 @@ jobs:
       run: pio run
 
     - name: 'Upload Build Artifact'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         path: ${{github.workspace}}/.pio/build/**
         name: ${{github.event.repository.name}}_build_${{github.run_number}}
