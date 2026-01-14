@@ -141,7 +141,8 @@ Of course the firmware can be further customized for other needs or projects.
 
 <a/>
 
-- **Telegram Community:** If you are an enthusiast join our [Hooover Telegram Group](https://t.me/joinchat/BHWO_RKu2LT5ZxEkvUB8uw)
+- **Telegram Community:** The telegram group was closed by the owners, but no problem, we already launched a copy on matrix which is better than telegram anyways :)
+- **Matrix Community:** [Join the new matrix group here](https://matrix.to/#/#hooover:brunner.ninja) (we imported all old telegram messages from the past 5+ years including pictures there)
 
 ---
 ## Stargazers
