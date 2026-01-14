@@ -138,7 +138,7 @@ Of course the firmware can be further customized for other needs or projects.
 - **Hoverboard driver for ROS:** [https://github.com/alex-makarov/hoverboard-driver](https://github.com/alex-makarov/hoverboard-driver)
 - **Ongoing OneWheel project:** [https://forum.esk8.news/t/yet-another-hoverboard-to-onewheel-project/60979/14](https://forum.esk8.news/t/yet-another-hoverboard-to-onewheel-project/60979/14)
 - **ST Community:** [Custom FOC motor control](https://community.st.com/s/question/0D50X0000B28qTDSQY/custom-foc-control-current-measurement-dma-timer-interrupt-needs-review)
-
+- **Android app for flashed hoverborad with remote control and interface** [Usb connection required](https://github.com/elioscordo/hoverdroid)
 <a/>
 
 - **Telegram Community:** The telegram group was closed by the owners, but no problem, we already launched a copy on matrix which is better than telegram anyways :)
