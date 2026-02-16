@@ -21,11 +21,10 @@
 // #define VARIANT_HOVERCAR    // Variant for HOVERCAR build
 // #define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
 // #define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build
+// #define VARIANT_REMOTE_UART_BUS // Variant for Serial control GEN2 protocol
 // https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter
 // https://hackaday.io/project/161891-transpotter-ng #define VARIANT_SKATEBOARD
 // // Variant for SKATEBOARD build
-#define VARIANT_REMOTE_UART_BUS // Variant for Serial control via Remote UART
-                                // Bus protocol
 #endif
 // ########################### END OF VARIANT SELECTION
 // ############################
