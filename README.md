@@ -12,6 +12,7 @@ Table of Contents
 =======================
 
 * **Wiki:** please check the wiki pages for [Getting Started](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#getting-started) and for [Troubleshooting](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#troubleshooting)
+* **⚠️ Flashing Issues?** See [BOOT0 Recovery Guide](docs/BOOT0_RECOVERY.md) if you cannot connect to the board
 * [Hardware](#hardware)
 * [FOC Firmware](#foc-firmware)
 * [Example Variants](#example-variants)

@@ -182,6 +182,13 @@ static uint16_t rate = RATE; // Adjustable rate to support multiple drive modes 
 int main(void) {
 
   HAL_Init();
+  
+  // Startup delay to allow debugger connection (prevents debug lockout)
+  // This gives ST-Link time to connect before firmware fully initializes
+  for(volatile uint32_t i = 0; i < 2000000; i++) {
+    __NOP(); // 2 second delay at 72MHz
+  }
+  
   __HAL_RCC_AFIO_CLK_ENABLE();
   HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
   /* System interrupt init*/
