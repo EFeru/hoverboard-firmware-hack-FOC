@@ -12,8 +12,9 @@ Table of Contents
 =======================
 
 * **Wiki:** please check the wiki pages for [Getting Started](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#getting-started) and for [Troubleshooting](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki#troubleshooting)
-* [Hardware](#hardware)
-* [FOC Firmware](#foc-firmware)
+ * [Hardware](#hardware)
+ * [How to Set Up](#how-to-set-up)
+ * [FOC Firmware](#foc-firmware)
 * [Example Variants](#example-variants)
 * [Projects and Links](#projects-and-links)
 * [Contributions](#contributions)
@@ -48,6 +49,73 @@ The original Hardware supports two 4-pin cables that originally were connected t
 Typically, the mainboard brain is an [STM32F103RCT6](/docs/literature/[10]_STM32F103xC_datasheet.pdf), however some mainboards feature a [GD32F103RCT6](/docs/literature/[11]_GD32F103xx-Datasheet-Rev-2.7.pdf) which is also supported by this firmware.
 
 For the reverse-engineered schematics of the mainboard, see [20150722_hoverboard_sch.pdf](/docs/20150722_hoverboard_sch.pdf)
+
+ 
+---
+## How to Set Up
+
+From a fresh machine to a talking hoverboard bridge. Two targets, in this order:
+
+1. **STM32 hoverboard** — must be flashed first, it produces the feedback the bridge reads.
+2. **Arduino Uno/Nano** — the bridge itself.
+
+All paths are relative to the repository root.
+
+### 0. Install tools (once per machine)
+
+```bash
+pip install platformio          # pio / platformio
+pip install pyserial            # only needed for pi_dummy.py
+sudo apt install stlink-tools   # st-flash, for the backup step
+sudo apt install openocd        # alternative, and needed to unlock locked F1 clones
+```
+
+Check they are on your PATH:
+
+```bash
+pio --version
+st-flash --version
+```
+
+#### Serial and USB permissions
+
+Skip if flashing and opening the port already work without `sudo`.
+
+```bash
+sudo usermod -aG dialout $USER          # for /dev/ttyACM0, then log out and back in
+
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", MODE="0666"' \
+  | sudo tee /etc/udev/rules.d/99-stlink.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+### 1. Wire the ST-Link to the hoverboard
+
+| ST-Link | Hoverboard |
+|---------|------------|
+| 3V3 | 3V3 |
+| DIO (SWDIO) | DIO (SWDIO) |
+| CLK (SWCLK) | CLK (SWCLK) |
+| GND | GND |
+
+**Do not power the hoverboard while flashing.** The ST-Link supplies `3V3`.
+
+### 2. Build and flash the hoverboard
+
+The variant is selected in [platformio.ini](/platformio.ini) via `default_envs`; leave it set to `VARIANT_USART` for this setup.
+
+```bash
+pio run                  # build VARIANT_USART
+pio run -t upload        # flash over ST-Link
+```
+
+If the target is a locked F1 clone, unlock it once and retry:
+
+```bash
+make unlock              # stm32f1x unlock 0
+pio run -t upload
+```
 
  
 ---
