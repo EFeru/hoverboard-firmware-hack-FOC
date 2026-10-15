@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h> // for abs()
+#include <stddef.h> // for offsetof()
 #include "stm32f1xx_hal.h"
 #include "defines.h"
 #include "setup.h"
@@ -122,16 +123,37 @@ extern int32_t odom_r;
 // Local variables
 //------------------------------------------------------------------------
 #if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
+// ------------------------------------------------------------------------
+// Serial feedback packet
+// ------------------------------------------------------------------------
+// The layout MUST be identical when compiled for the STM32 (32-bit core with
+// natural 4-byte alignment) and for 8-bit hosts like Arduino Nano/Uno, where
+// the compiler never inserts any padding. To achieve that:
+//   * the 32-bit counters are placed at 4-byte aligned offsets (4 and 8), so
+//     the 32-bit build adds no hidden padding bytes in the middle, and
+//   * the total packet length is a multiple of 4 (32 bytes), so there is no
+//     trailing padding either.
+// Result: sizeof(SerialFeedback) == 32 and identical field offsets on both.
+//
+// Offsets in bytes (ENABLE_ODOMETRY + ENABLE_DC_CURRENT_FEEDBACK enabled):
+//   0 start | 2 cmd1 | 4 wheelR_cnt | 8 wheelL_cnt | 12 cmd2 | 14 speedR_meas
+//  16 speedL_meas | 18 left_dc_curr | 20 right_dc_curr | 22 batVoltage
+//  24 boardTemp | 26 cmdLed | 28 reserved | 30 checksum
+//
+// NOTE: changing the set of fields changes the protocol; the host (Arduino)
+// must be compiled with the matching structure.
+// The XOR checksum is 16-bit, so for the 32-bit counters only their lower
+// 16 bits are covered (same formula as in the well-known hoverboard drivers).
 typedef struct{
   uint16_t  start;
   int16_t   cmd1;
+#ifdef ENABLE_ODOMETRY
+  int32_t   wheelR_cnt;     // offset 4  (4-byte aligned on purpose)
+  int32_t   wheelL_cnt;     // offset 8
+#endif
   int16_t   cmd2;
   int16_t   speedR_meas;
   int16_t   speedL_meas;
-#ifdef ENABLE_ODOMETRY
-  int32_t   wheelR_cnt;
-  int32_t   wheelL_cnt;
-#endif
 #ifdef ENABLE_DC_CURRENT_FEEDBACK
   int16_t   left_dc_curr;
   int16_t   right_dc_curr;
@@ -139,9 +161,19 @@ typedef struct{
   int16_t   batVoltage;
   int16_t   boardTemp;
   uint16_t  cmdLed;
+  uint16_t  reserved;       // keeps the packet 32 bytes long / 4-byte aligned
   uint16_t  checksum;
 } SerialFeedback;
 static SerialFeedback Feedback;
+
+// Compile-time guard: the packet must be 32 bytes with the standard layout.
+// This fires if a future field is added/removed without updating the hosts.
+#if defined(ENABLE_ODOMETRY) && defined(ENABLE_DC_CURRENT_FEEDBACK)
+_Static_assert(sizeof(SerialFeedback) == 32, "SerialFeedback must be 32 bytes - update Arduino/hoverserial/hoverserial.ino too!");
+_Static_assert(offsetof(SerialFeedback, wheelR_cnt) == 4, "wheelR_cnt must be at offset 4");
+_Static_assert(offsetof(SerialFeedback, wheelL_cnt) == 8, "wheelL_cnt must be at offset 8");
+_Static_assert(offsetof(SerialFeedback, checksum) == 30, "checksum must be at offset 30");
+#endif
 #endif
 #if defined(FEEDBACK_SERIAL_USART2)
 static uint8_t sideboard_leds_L;
@@ -526,19 +558,20 @@ int main(void) {
       if (main_loop_counter % 2 == 0) {    // Send data periodically every 10 ms
         Feedback.start	        = (uint16_t)SERIAL_START_FRAME;
         Feedback.cmd1           = (int16_t)input1[inIdx].cmd;
-        Feedback.cmd2           = (int16_t)input2[inIdx].cmd;
-        Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
-        Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
 #ifdef ENABLE_ODOMETRY
         Feedback.wheelR_cnt     = (int32_t)odom_r;
         Feedback.wheelL_cnt     = (int32_t)odom_l;
 #endif
+        Feedback.cmd2           = (int16_t)input2[inIdx].cmd;
+        Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
+        Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
 #ifdef ENABLE_DC_CURRENT_FEEDBACK
         Feedback.left_dc_curr   = (int16_t)left_dc_curr;
         Feedback.right_dc_curr  = (int16_t)right_dc_curr;
 #endif
         Feedback.batVoltage	    = (int16_t)batVoltageCalib;
         Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
+        Feedback.reserved       = 0;
 
         #if defined(FEEDBACK_SERIAL_USART2)
           if(__HAL_DMA_GET_COUNTER(huart2.hdmatx) == 0) {
