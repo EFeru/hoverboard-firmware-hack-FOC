@@ -114,8 +114,8 @@ int16_t cmdL;                    // global variable for Left Command
 int16_t cmdR;                    // global variable for Right Command 
 
 #ifdef ENABLE_ODOMETRY
-extern int16_t odom_l;
-extern int16_t odom_r;
+extern int32_t odom_l;
+extern int32_t odom_r;
 #endif
 
 //------------------------------------------------------------------------
@@ -129,8 +129,8 @@ typedef struct{
   int16_t   speedR_meas;
   int16_t   speedL_meas;
 #ifdef ENABLE_ODOMETRY
-  int16_t   wheelR_cnt;
-  int16_t   wheelL_cnt;
+  int32_t   wheelR_cnt;
+  int32_t   wheelL_cnt;
 #endif
 #ifdef ENABLE_DC_CURRENT_FEEDBACK
   int16_t   left_dc_curr;
@@ -530,8 +530,8 @@ int main(void) {
         Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
         Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
 #ifdef ENABLE_ODOMETRY
-        Feedback.wheelR_cnt     = (int16_t)odom_r;
-        Feedback.wheelL_cnt     = (int16_t)odom_l;
+        Feedback.wheelR_cnt     = (int32_t)odom_r;
+        Feedback.wheelL_cnt     = (int32_t)odom_l;
 #endif
 #ifdef ENABLE_DC_CURRENT_FEEDBACK
         Feedback.left_dc_curr   = (int16_t)left_dc_curr;
