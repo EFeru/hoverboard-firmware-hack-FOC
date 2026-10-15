@@ -57,6 +57,8 @@ typedef struct{
    int16_t  cmd2;
    int16_t  speedR_meas;
    int16_t  speedL_meas;
+   int16_t  wheelR_cnt;     // odometry counter from Hall sensors (right wheel), wraps at 9000 = 10 rev
+   int16_t  wheelL_cnt;     // odometry counter from Hall sensors (left wheel), wraps at 9000 = 10 rev
    int16_t  batVoltage;
    int16_t  boardTemp;
    uint16_t cmdLed;
@@ -121,6 +123,7 @@ void Receive()
     if (idx == sizeof(SerialFeedback)) {
         uint16_t checksum;
         checksum = (uint16_t)(NewFeedback.start ^ NewFeedback.cmd1 ^ NewFeedback.cmd2 ^ NewFeedback.speedR_meas ^ NewFeedback.speedL_meas
+                            ^ NewFeedback.wheelR_cnt ^ NewFeedback.wheelL_cnt
                             ^ NewFeedback.batVoltage ^ NewFeedback.boardTemp ^ NewFeedback.cmdLed);
 
         // Check validity of the new data
@@ -133,7 +136,9 @@ void Receive()
             Serial.print(" 2: ");  Serial.print(Feedback.cmd2);
             Serial.print(" 3: ");  Serial.print(Feedback.speedR_meas);
             Serial.print(" 4: ");  Serial.print(Feedback.speedL_meas);
-            Serial.print(" 5: ");  Serial.print(Feedback.batVoltage);
+            Serial.print(" 5R: "); Serial.print(Feedback.wheelR_cnt);
+            Serial.print(" 5L: "); Serial.print(Feedback.wheelL_cnt);
+            Serial.print(" 6: ");  Serial.print(Feedback.batVoltage);
             Serial.print(" 6: ");  Serial.print(Feedback.boardTemp);
             Serial.print(" 7: ");  Serial.println(Feedback.cmdLed);
         } else {

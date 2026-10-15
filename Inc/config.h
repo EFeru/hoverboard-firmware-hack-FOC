@@ -114,7 +114,7 @@
 // ######################## END OF TEMPERATURE ###############################
 
 // ############################### ODOMETRY ######################################
-// #define ENABLE_ODOMETRY                   // [-] Enable hall sensor tick counters for wheel odometry (adds wheelR_cnt / wheelL_cnt to serial feedback)
+#define ENABLE_ODOMETRY                   // [-] Enable hall sensor tick counters for wheel odometry (adds wheelR_cnt / wheelL_cnt to serial feedback)
 // ########################### END OF ODOMETRY ###################################
 
 
