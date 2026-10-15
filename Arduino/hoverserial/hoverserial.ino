@@ -51,23 +51,42 @@ typedef struct{
 } SerialCommand;
 SerialCommand Command;
 
+// IMPORTANT: this structure must match the firmware packet byte for byte.
+// Field order is chosen so that no padding is inserted on ANY platform:
+// on the 32-bit STM32 the 4-byte counters sit at 4-byte aligned offsets
+// (4 and 8), and on 8-bit AVR (Arduino Nano/Uno) the compiler inserts no
+// padding at all. The 'reserved' field keeps the total length at 32 bytes,
+// which is a multiple of 4, so there is no trailing padding either.
+//
+// Offsets in bytes:
+//   0 start | 2 cmd1 | 4 wheelR_cnt | 8 wheelL_cnt | 12 cmd2 | 14 speedR_meas
+//  16 speedL_meas | 18 left_dc_curr | 20 right_dc_curr | 22 batVoltage
+//  24 boardTemp | 26 cmdLed | 28 reserved | 30 checksum
 typedef struct{
    uint16_t start;
    int16_t  cmd1;
+   int32_t  wheelR_cnt;     // odometry counter, right wheel (Hall ticks, no wrap)
+   int32_t  wheelL_cnt;     // odometry counter, left wheel (Hall ticks, no wrap)
    int16_t  cmd2;
    int16_t  speedR_meas;
    int16_t  speedL_meas;
-   int32_t  wheelR_cnt;     // odometry counter from Hall sensors (right wheel), extended (no 9000 wrap)
-   int32_t  wheelL_cnt;     // odometry counter from Hall sensors (left wheel), extended (no 9000 wrap)
-   int16_t  left_dc_curr;   // DC link current left (extended telemetry)
-   int16_t  right_dc_curr;  // DC link current right (extended telemetry)
+   int16_t  left_dc_curr;   // DC link current left x100 (extended telemetry)
+   int16_t  right_dc_curr;  // DC link current right x100 (extended telemetry)
    int16_t  batVoltage;
    int16_t  boardTemp;
    uint16_t cmdLed;
+   uint16_t reserved;       // keeps the packet 32 bytes long / 4-byte aligned
    uint16_t checksum;
 } SerialFeedback;
 SerialFeedback Feedback;
 SerialFeedback NewFeedback;
+
+// Compile-time check that the packet really is 32 bytes on this platform.
+#if __cplusplus >= 201103L
+static_assert(sizeof(SerialFeedback) == 32, "SerialFeedback size mismatch: check the firmware packet layout");
+#else
+typedef char serial_feedback_size_check[(sizeof(SerialFeedback) == 32) ? 1 : -1];
+#endif
 
 // ########################## SETUP ##########################
 void setup() 
@@ -123,6 +142,8 @@ void Receive()
     
     // Check if we reached the end of the package
     if (idx == sizeof(SerialFeedback)) {
+        // NOTE: the XOR checksum is 16 bit wide, so for the 32-bit counters
+        // only the lower 16 bits are covered (as in the firmware).
         uint16_t checksum;
         checksum = (uint16_t)(NewFeedback.start ^ NewFeedback.cmd1 ^ NewFeedback.cmd2 ^ NewFeedback.speedR_meas ^ NewFeedback.speedL_meas
                             ^ NewFeedback.wheelR_cnt ^ NewFeedback.wheelL_cnt
