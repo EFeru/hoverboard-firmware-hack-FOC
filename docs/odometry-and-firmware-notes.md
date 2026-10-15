@@ -268,3 +268,62 @@ PWM-вход справа. Либо не используйте `#define VARIANT
   (поля wheelR_cnt/wheelL_cnt и контрольная сумма).
 - Добавлен этот документ.
 
+
+---
+
+## 6. Сравнение со старыми наработками пользователя (архивы Google Drive)
+
+Архивы пользователя (папка Google Drive) содержат несколько сборок прошивки
+с ручными правками. Ключевые наблюдения:
+
+### 6.1. Старая одометрия (zip2/zip3/zip7)
+
+Пользователь уже реализовал одометрию вручную (до появления официальной
+`ENABLE_ODOMETRY`), помечая правки комментарием `//YOU` / `// >mod`:
+
+- функции `modulo()` и `up_or_down()` — полные аналоги `hallTickModulo()` и
+  `hallTickDirection()` (та же таблица `{0,-1,-2,0,2,1}` и модуль 6);
+- счётчики `odom_l`/`odom_r` с оборачиванием на 9000;
+- поля `wheelR_cnt`/`wheelL_cnt` в `SerialFeedback` и включение их в XOR;
+- `//YOU`-маркеры в `bldc.c` и `main.c`.
+
+Отличия новой официальной версии:
+- одометрия вынесена под флаг `ENABLE_ODOMETRY` (в старой — всегда включена);
+- функции переименованы и сделаны `static`;
+- чистая интеграция в структуру feedback и checksum без ручных правок.
+
+### 6.2. Сборки
+
+| Архив | Вариант | Ток | Режим | Одометрия | Примечание |
+|---|---|---|---|---|---|
+| zip2 `hboard-luart2-rdebug-...` | VARIANT_USART (левый UART) | 15 A | SPD_MODE | ручная | левый UART управление+телеметрия, правый debug serial |
+| zip3 `hboard-lpwm2-rdebug3-...` | VARIANT_PWM (правый PWM) | 5 A | SPD_MODE | ручная | правый PWM, левый debug serial |
+| zip7 `eferu_foc_hboard-luart-rpwm-...` | VARIANT_USART + VARIANT_PWM | 15 A | SPD_MODE | ручная | **комбинированная**: левый UART + правый PWM, debug serial слева отключён |
+| zip1 `eferu_hoverboard-...-Rpwm-Luart` | VARIANT_PWM | — | SPD_MODE | нет | старая сборка без одометрии |
+
+### 6.3. Что применено в этом репозитории
+
+`Inc/config.h` приведён к комбинированной конфигурации пользователя (zip7):
+- включены **оба** варианта `VARIANT_USART` и `VARIANT_PWM`;
+- `CONTROL_SERIAL_USART2 = 1`, `FEEDBACK_SERIAL_USART2` (левый UART);
+- `CONTROL_PWM_RIGHT = 0` (правый PWM);
+- авто-`DEBUG_SERIAL_USART2` в блоке PWM закомментирован (конфликт с feedback);
+- `CTRL_MOD_REQ = SPD_MODE`, `I_MOT_MAX = 15 A`, `BAT_CELLS = 10`;
+- `ENABLE_ODOMETRY` включена (официальная реализация).
+
+`Arduino/hoverserial/hoverserial.ino` приведён к новой структуре feedback
+(с `wheelR_cnt`/`wheelL_cnt`), как в `hoverserial_odom.ino` пользователя.
+
+### 6.4. Что нового в основном репозитории относительно архивов пользователя
+
+Архивы основаны на более старой версии прошивки. В текущей `main` (4f141cb)
+появилось/изменилось:
+- официальная одометрия за флагом `ENABLE_ODOMETRY`;
+- `STARTUP_DELAY_MS` (защита от ложного включения, PR #598);
+- приоритеты прерываний (PR #596) — АЦП не прерывается;
+- отключение зуммера `BUZZER_ENABLED`;
+- исправленный консольный ввод;
+- версия v4, обновлённые ссылки сообщества;
+- Field Weakening / Phase Advance с калибровкой;
+- поддержка GD32F103.
+
