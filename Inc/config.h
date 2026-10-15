@@ -9,7 +9,15 @@
 // Keil uVision: select desired variant from the Target drop down menu (to the right of the Load button)
 // Ubuntu: define the desired build variant here if you want to use make in console
 // or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_NUNCHUK". Select only one at a time.
-#if !defined(PLATFORMIO)
+// The block below is only used when no variant was passed on the command line
+// (Keil uVision, or "make" without -D VARIANT_...). If a variant is already
+// defined (e.g. CI runs "make" with VARIANT=VARIANT_ADC, or PlatformIO passes
+// -D VARIANT_LUART_RPWM...), the block is skipped - otherwise several variants
+// would be active at once and the checks at the end of this file would raise
+// errors like "CONTROL_ADC and SERIAL_USART2 not allowed".
+#if !defined(PLATFORMIO) && !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_NUNCHUK) && \
+    !defined(VARIANT_PPM) && !defined(VARIANT_PWM) && !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && \
+    !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_SKATEBOARD)
   // ---------------------------------------------------------------------------
   // COMBINED CONFIGURATION OF THIS FORK (left cable = UART control + telemetry,
   // right cable = PWM input). Both variants are selected on purpose.
