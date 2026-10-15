@@ -9,12 +9,30 @@
 // Keil uVision: select desired variant from the Target drop down menu (to the right of the Load button)
 // Ubuntu: define the desired build variant here if you want to use make in console
 // or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_NUNCHUK". Select only one at a time.
-#if !defined(PLATFORMIO)
+// The block below is only used when no variant was passed on the command line
+// (Keil uVision, or "make" without -D VARIANT_...). If a variant is already
+// defined (e.g. CI runs "make" with VARIANT=VARIANT_ADC, or PlatformIO passes
+// -D VARIANT_LUART_RPWM...), the block is skipped - otherwise several variants
+// would be active at once and the checks at the end of this file would raise
+// errors like "CONTROL_ADC and SERIAL_USART2 not allowed".
+#if !defined(PLATFORMIO) && !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_NUNCHUK) && \
+    !defined(VARIANT_PPM) && !defined(VARIANT_PWM) && !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && \
+    !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_SKATEBOARD)
+  // ---------------------------------------------------------------------------
+  // COMBINED CONFIGURATION OF THIS FORK (left cable = UART control + telemetry,
+  // right cable = PWM input). Both variants are selected on purpose.
+  // For PlatformIO this combo is provided by the "VARIANT_LUART_RPWM" environment
+  // in platformio.ini (which passes -D VARIANT_USART -D VARIANT_PWM), because
+  // PlatformIO defines PLATFORMIO and therefore skips the block below.
+  // Note: with both variants selected, FLASH_WRITE_KEY and PRI_INPUT1/PRI_INPUT2
+  // are defined twice - the values of the VARIANT_PWM section (the later one) win,
+  // and the compiler prints 3 harmless "redefined" warnings. See docs/building-hex.md.
+  // ---------------------------------------------------------------------------
   //#define VARIANT_ADC         // Variant for control via ADC input
-  //#define VARIANT_USART       // Variant for Serial control via USART3 input
+  #define VARIANT_USART       // Variant for Serial control via USART3 input
   //#define VARIANT_NUNCHUK     // Variant for Nunchuk controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
-  //#define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
+  #define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
   //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
   //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
@@ -114,7 +132,8 @@
 // ######################## END OF TEMPERATURE ###############################
 
 // ############################### ODOMETRY ######################################
-// #define ENABLE_ODOMETRY                   // [-] Enable hall sensor tick counters for wheel odometry (adds wheelR_cnt / wheelL_cnt to serial feedback)
+#define ENABLE_ODOMETRY                   // [-] Enable hall sensor tick counters for wheel odometry (adds wheelR_cnt / wheelL_cnt to serial feedback)
+#define ENABLE_DC_CURRENT_FEEDBACK        // [-] Also send left/right DC link current in serial feedback (extended telemetry, as in user's archives)
 // ########################### END OF ODOMETRY ###################################
 
 
@@ -155,7 +174,7 @@
 
 // Control selections
 #define CTRL_TYP_SEL    FOC_CTRL        // [-] Control type selection: COM_CTRL, SIN_CTRL, FOC_CTRL (default)
-#define CTRL_MOD_REQ    VLT_MODE        // [-] Control mode request: OPEN_MODE, VLT_MODE (default), SPD_MODE, TRQ_MODE. Note: SPD_MODE and TRQ_MODE are only available for CTRL_FOC!
+#define CTRL_MOD_REQ    SPD_MODE        // [-] Control mode request: OPEN_MODE, VLT_MODE (default), SPD_MODE, TRQ_MODE. Note: SPD_MODE and TRQ_MODE are only available for CTRL_FOC!
 #define DIAG_ENA        1               // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
 
 // Limitation settings
@@ -324,7 +343,7 @@
 // ############################ VARIANT_USART SETTINGS ############################
 #ifdef VARIANT_USART
   // #define SIDEBOARD_SERIAL_USART2 0
-  #define CONTROL_SERIAL_USART2  0    // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  #define CONTROL_SERIAL_USART2  1    // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
   #define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
 
   // #define SIDEBOARD_SERIAL_USART3 0
@@ -458,7 +477,7 @@
   // #define SUPPORT_BUTTONS_RIGHT           // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
 
   #if defined(CONTROL_PWM_RIGHT) && !defined(DUAL_INPUTS)
-    #define DEBUG_SERIAL_USART2           // left sensor cable debug
+    // #define DEBUG_SERIAL_USART2           // left sensor cable debug (disabled: left cable is UART feedback)
   #elif defined(CONTROL_PWM_LEFT) && !defined(DUAL_INPUTS)
     #define DEBUG_SERIAL_USART3           // right sensor cable debug
   #endif
