@@ -59,6 +59,8 @@ typedef struct{
    int16_t  speedL_meas;
    int16_t  wheelR_cnt;     // odometry counter from Hall sensors (right wheel), wraps at 9000 = 10 rev
    int16_t  wheelL_cnt;     // odometry counter from Hall sensors (left wheel), wraps at 9000 = 10 rev
+   // int16_t  left_dc_curr;  // optional: enable if firmware has ENABLE_DC_CURRENT_FEEDBACK
+   // int16_t  right_dc_curr; // optional: enable if firmware has ENABLE_DC_CURRENT_FEEDBACK
    int16_t  batVoltage;
    int16_t  boardTemp;
    uint16_t cmdLed;
