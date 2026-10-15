@@ -159,6 +159,82 @@ pio device monitor -b 115200
 
 Сборка также запускается автоматически при каждом `push`/Pull Request.
 
+### 4.1. Где именно лежит файл (пошагово)
+
+```
+github.com/marshalab/hoverboard-firmware-hack-FOC
+   → вкладка [Actions]
+      → слева workflow [Build]
+         → клик по строке запуска (например «Build #3»)
+            → на странице запуска, в самом НИЗУ, блок [Artifacts]
+               → <имя-репозитория>_build_<номер>.zip   ← скачать
+```
+
+Внутри архива — та же структура, что и в проекте:
+
+```
+.pio/build/VARIANT_LUART_RPWM/firmware.hex    ← это то, что прошиваем
+.pio/build/VARIANT_LUART_RPWM/firmware.bin
+.pio/build/<остальные окружения>/firmware.hex
+```
+
+Нюансы:
+
+* Папка `.pio` скрытая — в архиве это видно только в 7-Zip/WinRAR или в
+  проводнике с включённым показом скрытых элементов (macOS/Linux: `Cmd+Shift+.`
+  в Finder, `Ctrl+H` в файловом менеджере).
+* Артефакты хранятся **5 дней** (`retention-days: 5`), потом удаляются.
+* Если не хочется разбираться с zip — скачайте артефакт, распакуйте и берите
+  оттуда `firmware.hex` (файл `.bin` нужен редко).
+
+### 4.2. Если в блоке `Artifacts` пусто — читайте это
+
+В workflow путь выгрузки указывает на `.pio/build/**`. Начиная с версии
+`actions/upload-artifact@v4.4` **скрытые файлы и папки не выгружаются по
+умолчанию**, а `.pio` — скрытая папка. В логе шага `Upload Build Artifact` в этом
+случае будет предупреждение вида `No files were found with the provided path`,
+а артефакт окажется пустым/не создастся.
+
+Лечится одной строкой — добавьте `include-hidden-files: true` в шаг выгрузки
+(я не могу править `.github/workflows/*` в репозитории — GitHub отклоняет такие
+push-и без специального права `workflows`, поэтому правку нужно внести вручную):
+
+```yaml
+    - name: 'Upload Build Artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        path: |
+          .pio/build/**
+          build/*.hex
+        include-hidden-files: true
+        name: ${{github.event.repository.name}}_build_${{github.run_number}}
+        retention-days: 5
+```
+
+Как внести: на GitHub откройте
+`.github/workflows/build_on_commit.yml` → значок карандаша (`Edit this file`) →
+добавьте две строки (`path: |` с двумя путями и `include-hidden-files: true`) →
+`Commit changes` в ветку `main`.
+
+Дополнительный путь `build/*.hex` полезен ещё и потому, что сборка `make`
+в этом же workflow кладёт готовый **`build/hover.hex`** (вариант `VARIANT_ADC`) —
+не скрытая папка, попадёт в артефакт при любых настройках.
+
+### 4.3. Если вы открывали Pull Request в проект EFeru
+
+Сборки по такому PR запускаются **в репозитории EFeru**, а не в вашем форке:
+
+```
+github.com/EFeru/hoverboard-firmware-hack-FOC → [Actions] → нужный запуск
+```
+
+Для внешних контрибьюторов такие запуски сначала получают статус
+`action_required` — то есть ждут, пока сопровождающий проекта нажмёт Approve.
+Вы сами этот запуск одобрить не можете (прав на репозиторий EFeru нет), поэтому
+артефакт появится только после его одобрения (или не появится, если PR не
+примут). Если сборка нужна именно вам и прямо сейчас — это ещё один довод
+собирать локально (разделы 2–3).
+
 ---
 
 ## 5. Вариант D — онлайн-компилятор (аварийный вариант)
