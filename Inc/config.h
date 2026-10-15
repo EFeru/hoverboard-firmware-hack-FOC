@@ -115,7 +115,7 @@
 
 // ############################### ODOMETRY ######################################
 #define ENABLE_ODOMETRY                   // [-] Enable hall sensor tick counters for wheel odometry (adds wheelR_cnt / wheelL_cnt to serial feedback)
-// #define ENABLE_DC_CURRENT_FEEDBACK        // [-] Also send left/right DC link current in serial feedback (extended telemetry, as in user's archives)
+#define ENABLE_DC_CURRENT_FEEDBACK        // [-] Also send left/right DC link current in serial feedback (extended telemetry, as in user's archives)
 // ########################### END OF ODOMETRY ###################################
 
 
