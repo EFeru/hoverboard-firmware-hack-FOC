@@ -142,7 +142,10 @@ pio device monitor -b 115200
 1. В своём форке: `Settings → Actions → General → Actions permissions` →
    выбрать **Allow all actions and reusable workflows** → `Save`.
    (По умолчанию на форках Actions выключены — именно поэтому сборок нет.)
-2. Запустить сборку. Workflow срабатывает на **любой push и любой Pull Request**,
+2. Запустить сборку. Самое простое — после правки из раздела 4.2 в workflow
+   появляется кнопка `Run workflow` (триггер `workflow_dispatch`), и коммитить
+   больше ничего не нужно. Если кнопки нет, workflow срабатывает на
+   **любой push и любой Pull Request**,
    поэтому достаточно сделать любой коммит, например отредактировать файл прямо
    на GitHub (`Actions` → workflow **Build** → `Run workflow` появляется только
    если в workflow добавлен триггер `workflow_dispatch` — см. врезку ниже).
@@ -213,8 +216,12 @@ push-и без специального права `workflows`, поэтому �
 
 Как внести: на GitHub откройте
 `.github/workflows/build_on_commit.yml` → значок карандаша (`Edit this file`) →
-добавьте две строки (`path: |` с двумя путями и `include-hidden-files: true`) →
-`Commit changes` в ветку `main`.
+выделите всё (Ctrl+A) → вставьте готовый файл целиком из
+[`docs/patched-build_on_commit.yml`](patched-build_on_commit.yml) →
+`Commit changes` в ветку `main`. В этом готовом файле уже есть и
+`include-hidden-files: true`, и кнопка ручного запуска `workflow_dispatch`
+(то есть после него сборку можно запускать без лишних коммитов), а путь выгрузки
+сужен до самих прошивок (`.pio/build/*/firmware.*` и `build/*.hex`).
 
 Дополнительный путь `build/*.hex` полезен ещё и потому, что сборка `make`
 в этом же workflow кладёт готовый **`build/hover.hex`** (вариант `VARIANT_ADC`) —
