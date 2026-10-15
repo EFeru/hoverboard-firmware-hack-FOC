@@ -1,0 +1,76 @@
+# Готовый workflow для копирования в `.github/workflows/build_on_commit.yml`
+#
+# Зачем этот файл: сборку в облаке GitHub (Actions) нужно запускать вручную
+# (кнопкой «Run workflow») и складывать hex в артефакт так, чтобы скрытая папка
+# `.pio` в него попадала. Ниже — исправленная версия штатного workflow.
+#
+# Как применить (браузер, без git):
+#   1. Откройте на GitHub файл `.github/workflows/build_on_commit.yml`
+#      (ветка main) и запомните его содержимое — на всякий случай.
+#   2. Нажмите значок карандаша (Edit this file).
+#   3. Выделите всё (Ctrl+A) и вставьте содержимое из блока ниже (без строк
+#      этого комментария — только YAML начиная со `name: Build`).
+#   4. Внизу: Commit changes… → сообщение, например
+#      «ci: manual run + include hidden files in artifact» → Commit changes
+#      (коммит в main).
+#   5. Вкладка Actions → workflow Build → справа кнопка «Run workflow» →
+#      ветка main → Run workflow.
+#   6. Через 5–15 минут в том же запуске внизу появится блок Artifacts:
+#      `<репозиторий>_build_<номер>.zip`. Внутри — firmware.hex.
+#
+# Что изменилось относительно штатного файла:
+#   * добавлен `workflow_dispatch` — включает кнопку ручного запуска;
+#   * в шаге выгрузки артефакта добавлен `include-hidden-files: true`
+#     (с actions/upload-artifact@v4.4 скрытые файлы и папки по умолчанию
+#     не выгружаются, а `.pio` — скрытая папка, из-за этого артефакт
+#     получался пустым);
+#   * путь выгрузки сужен до самих прошивок: `.pio/build/*/firmware.*`
+#     плюс `build/*.hex` (результат сборки через `make`).
+#
+# ---------------------------------------------------------------------------
+# Скопируйте отсюда и ниже:
+
+name: Build
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+  workflow_dispatch:        # ручной запуск из вкладки Actions
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    # Get required packages
+    - uses: actions/checkout@v4
+    - uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '9-2019-q4'
+
+    # Build with make
+    - name: make
+      env:
+        VARIANT: VARIANT_ADC
+      run: make
+
+    # Build with Platformio
+    - name: PlatformIO Install
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    - name: PlatformIO Run
+      run: pio run
+
+    - name: 'Upload Build Artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        path: |
+          .pio/build/*/firmware.*
+          build/*.hex
+        include-hidden-files: true
+        name: ${{github.event.repository.name}}_build_${{github.run_number}}
+        retention-days: 5
