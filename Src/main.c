@@ -114,8 +114,8 @@ int16_t cmdL;                    // global variable for Left Command
 int16_t cmdR;                    // global variable for Right Command 
 
 #ifdef ENABLE_ODOMETRY
-extern int16_t odom_l;
-extern int16_t odom_r;
+extern int32_t odom_l;
+extern int32_t odom_r;
 #endif
 
 //------------------------------------------------------------------------
@@ -129,8 +129,12 @@ typedef struct{
   int16_t   speedR_meas;
   int16_t   speedL_meas;
 #ifdef ENABLE_ODOMETRY
-  int16_t   wheelR_cnt;
-  int16_t   wheelL_cnt;
+  int32_t   wheelR_cnt;
+  int32_t   wheelL_cnt;
+#endif
+#ifdef ENABLE_DC_CURRENT_FEEDBACK
+  int16_t   left_dc_curr;
+  int16_t   right_dc_curr;
 #endif
   int16_t   batVoltage;
   int16_t   boardTemp;
@@ -526,8 +530,12 @@ int main(void) {
         Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
         Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
 #ifdef ENABLE_ODOMETRY
-        Feedback.wheelR_cnt     = (int16_t)odom_r;
-        Feedback.wheelL_cnt     = (int16_t)odom_l;
+        Feedback.wheelR_cnt     = (int32_t)odom_r;
+        Feedback.wheelL_cnt     = (int32_t)odom_l;
+#endif
+#ifdef ENABLE_DC_CURRENT_FEEDBACK
+        Feedback.left_dc_curr   = (int16_t)left_dc_curr;
+        Feedback.right_dc_curr  = (int16_t)right_dc_curr;
 #endif
         Feedback.batVoltage	    = (int16_t)batVoltageCalib;
         Feedback.boardTemp	    = (int16_t)board_temp_deg_c;
@@ -538,6 +546,9 @@ int main(void) {
             Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas
 #ifdef ENABLE_ODOMETRY
                                            ^ Feedback.wheelR_cnt ^ Feedback.wheelL_cnt
+#endif
+#ifdef ENABLE_DC_CURRENT_FEEDBACK
+                                           ^ Feedback.left_dc_curr ^ Feedback.right_dc_curr
 #endif
                                            ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
@@ -550,6 +561,9 @@ int main(void) {
             Feedback.checksum   = (uint16_t)(Feedback.start ^ Feedback.cmd1 ^ Feedback.cmd2 ^ Feedback.speedR_meas ^ Feedback.speedL_meas
 #ifdef ENABLE_ODOMETRY
                                            ^ Feedback.wheelR_cnt ^ Feedback.wheelL_cnt
+#endif
+#ifdef ENABLE_DC_CURRENT_FEEDBACK
+                                           ^ Feedback.left_dc_curr ^ Feedback.right_dc_curr
 #endif
                                            ^ Feedback.batVoltage ^ Feedback.boardTemp ^ Feedback.cmdLed);
 
