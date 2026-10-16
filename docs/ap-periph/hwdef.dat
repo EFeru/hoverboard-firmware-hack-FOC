@@ -1,0 +1,112 @@
+# hwdef for the hoverboard sideboard (STM32F103C8T6 / GD32F103C8T6) as a
+# DroneCAN peripheral running ArduPilot AP_Periph.
+#
+# Derived from: libraries/AP_HAL_ChibiOS/hwdef/f103-periph/hwdef.inc
+#               libraries/AP_HAL_ChibiOS/hwdef/iomcu_f103_8MHz/hwdef.dat
+# Docs: https://github.com/marshalab/hoverboard-firmware-hack-FOC/blob/main/docs/ap-periph-sideboard.md
+#
+# NOTE: this board has NO crystal -> requires ardupilot-sideboard.patch
+#       (adds an HSI clock branch to common/stm32f1_mcuconf.h).
+#       The patch also frees PB4 (LED5) by disabling JTAG, and optionally
+#       remaps CAN to PB8/PB9 (see the "CAN remap" switch below).
+
+MCU STM32F103 STM32F103xB
+
+# marker macro used by ardupilot-sideboard.patch (no side effects in stock code)
+define HAL_BOARD_HOVERBOARD_SB
+
+# board id: reuse the existing F103 peripheral id so that no new entry is
+# needed in Tools/AP_Bootloader/board_types.txt
+APJ_BOARD_ID AP_HW_F103_PERIPH
+
+# setup build for a peripheral firmware
+env AP_PERIPH 1
+
+# --- flash layout -----------------------------------------------------------
+# the "assume the 128k flash part" policy of f103-periph: most STM32F103C8
+# chips really have 128K, clones/GD32F103C8 have 64K and will NOT fit
+FLASH_SIZE_KB 128
+FLASH_RESERVE_START_KB 25      # 23k bootloader + 2k parameters
+STORAGE_FLASH_PAGE 23
+define HAL_STORAGE_SIZE 800
+
+# --- clock ------------------------------------------------------------------
+# crystal-less board: value only keeps the generator happy, the real
+# configuration comes from the HSI branch added by the patch
+OSCILLATOR_HZ 8000000
+define CH_CFG_ST_FREQUENCY 1000
+
+# --- CAN --------------------------------------------------------------------
+# Option 1 (default): stock CAN1 pins, no remap needed, all 5 LEDs stay usable.
+#                     Requires soldering 2 wires to the MCU pins.
+PA11 CAN_RX CAN
+PA12 CAN_TX CAN
+
+# Option 2: CAN on the LED-board connectors (easier soldering), requires:
+#   1) uncomment the two lines below,
+#   2) uncomment "AFIO_MAPR_CAN_REMAP_REMAP2" in the patch,
+#   3) remove the base resistor (or the transistor) of the LED2/LED3 channels,
+#      otherwise the base-emitter diode clamps the CANRX line.
+# PB8 CAN_RX CAN
+# PB9 CAN_TX CAN
+
+define HAL_CAN_POOL_SIZE 2500
+define HAL_CAN_RX_QUEUE_SIZE 32
+
+# --- LED key outputs (Q7..Q11) - usable as relays / DroneCAN hardpoints -----
+# GPIO numbers are what RELAYx_PIN on the node refers to.
+PA0  LED1 OUTPUT LOW GPIO(81)
+PB9  LED2 OUTPUT LOW GPIO(82)      # taken if CAN is remapped to PB8/PB9
+PB8  LED3 OUTPUT LOW GPIO(83)      # taken if CAN is remapped to PB8/PB9
+PB5  LED4 OUTPUT LOW GPIO(84)
+PB4  LED5 OUTPUT LOW GPIO(85)      # JTAG pin, freed by the patch
+
+# --- inputs -----------------------------------------------------------------
+PA4  SENSOR1 INPUT PULLUP GPIO(86)     # optical interrupter 1
+PC14 SENSOR2 INPUT PULLUP GPIO(87)     # optical interrupter 2
+PC15 AUX1_PU INPUT PULLUP GPIO(88)     # free input with pull-up
+PB11 AUX3_PU INPUT PULLUP GPIO(89)     # AUX3 pad (GD board: PB10)
+
+# --- MPU-6050 (I2C0), optional ---------------------------------------------
+# v1 keeps the IMU disabled to save flash (AP_Periph for F103 is ~100k).
+# To enable: define AP_PERIPH_IMU_ENABLED 1 and uncomment the four lines below.
+PB6 I2C1_SCL I2C1
+PB7 I2C1_SDA I2C1
+I2C_ORDER I2C1
+#define IMU Invensense I2C:0:0x68 ROTATION_NONE
+
+define HAL_USE_I2C TRUE
+define STM32_I2C_USE_I2C1 TRUE
+define HAL_I2C_CLEAR_ON_TIMEOUT 0
+define HAL_I2C_INTERNAL_MASK 0
+
+# --- DroneCAN features ------------------------------------------------------
+define AP_RELAY_ENABLED 1
+define AP_PERIPH_RELAY_ENABLED 1          # uavcan.equipment.hardpoint.Command
+# define AP_PERIPH_IMU_ENABLED 1           # publish ahrs.RawIMU (PX4 consumers)
+# define AP_PERIPH_NOTIFY_ENABLED 1        # lights/buzzer messages (needs RGB mapping)
+
+# --- size / integration settings, same as f103-periph -----------------------
+define HAL_UART_NODMA
+define SERIAL_BUFFERS_SIZE 512
+define CH_CFG_ST_TIMEDELTA 0
+define PORT_INT_REQUIRED_STACK 64
+define DMA_RESERVE_SIZE 0
+define HAL_USE_ADC FALSE
+define STM32_ADC_USE_ADC1 FALSE
+define HAL_DISABLE_ADC_DRIVER TRUE
+define __FPU_PRESENT 0
+define HAL_GYROFFT_ENABLED 0
+MAIN_STACK 0x800
+PROCESS_STACK 0x800
+
+# UART of the 4-pin cable (USART2 = PA2/PA3 on the STM sideboard) as debug
+# console - handy while bringing the board up. Costs a couple of KB of flash;
+# comment out when tight.
+STDOUT_SERIAL SD1
+STDOUT_BAUDRATE 115200
+SERIAL_ORDER USART2
+PA2 USART2_TX USART2 SPEED_HIGH NODMA
+PA3 USART2_RX USART2 SPEED_HIGH NODMA
+
+# AUX UART (USART1 = PA9/PA10, the iBUS receiver input) is unused for now.
