@@ -1,0 +1,86 @@
+# GitHub Actions: build AP_Periph firmware + CAN bootloader for the hoverboard
+# sideboard (STM32F103C8T6) and upload the ready-to-flash files.
+#
+# Put this file in the NEW repository as: .github/workflows/build.yml
+# Repository layout expected by this workflow:
+#   hwdef/HoverboardSB-F103/hwdef.dat
+#   hwdef/HoverboardSB-F103/hwdef-bl.dat
+#   patches/ardupilot-sideboard.patch
+#   .github/workflows/build.yml
+#
+# Run: Actions -> "Build AP_Periph (hoverboard sideboard)" -> Run workflow
+
+name: Build AP_Periph (hoverboard sideboard)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+env:
+  BOARD: HoverboardSB-F103
+  # ArduPilot tag or branch to build against. Change if the patch does not apply.
+  AP_VERSION: ArduPilot-4.6.3
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 150
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clone ArduPilot (${{ env.AP_VERSION }})
+        run: |
+          git clone --depth 1 --branch "${AP_VERSION}" \
+            --recurse-submodules --shallow-submodules \
+            https://github.com/ArduPilot/ardupilot.git ardupilot
+
+      - name: Install build prerequisites
+        run: |
+          cd ardupilot
+          Tools/environment_install/install-prereqs-ubuntu.sh -y
+          # put the ARM toolchain on PATH for the following steps
+          ls -d /opt/gcc-arm-none-eabi-*/bin | head -1 >> "$GITHUB_PATH"
+
+      - name: Add board definition and apply patch
+        run: |
+          DIR=ardupilot/libraries/AP_HAL_ChibiOS/hwdef/${BOARD}
+          mkdir -p "$DIR"
+          cp hwdef/${BOARD}/hwdef.dat hwdef/${BOARD}/hwdef-bl.dat "$DIR/"
+          cd ardupilot
+          git apply -v ../patches/ardupilot-sideboard.patch
+
+      - name: Build AP_Periph firmware
+        run: |
+          cd ardupilot
+          ./waf configure --board "${BOARD}"
+          ./waf AP_Periph
+
+      - name: Build CAN bootloader
+        run: |
+          cd ardupilot
+          ./waf configure --board "${BOARD}"
+          python3 Tools/scripts/build_bootloaders.py "${BOARD}"
+
+      - name: Report sizes (does it fit in 128k / 64k?)
+        run: |
+          cd ardupilot
+          echo "=== firmware ==="
+          ls -l build/${BOARD}/bin/ || true
+          echo "=== bootloader ==="
+          ls -l Tools/bootloaders/ || true
+          echo "=== app area = 128k - 25k = 103k (105472 bytes) ==="
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ap-periph-${{ env.BOARD }}
+          path: |
+            ardupilot/build/${{ env.BOARD }}/bin/AP_Periph.bin
+            ardupilot/build/${{ env.BOARD }}/bin/AP_Periph.apj
+            ardupilot/build/${{ env.BOARD }}/bin/AP_Periph.elf
+            ardupilot/Tools/bootloaders/${{ env.BOARD }}_bl.bin
+          if-no-files-found: warn
+          include-hidden-files: true

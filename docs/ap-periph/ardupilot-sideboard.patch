@@ -1,0 +1,97 @@
+Subject: [PATCH] add hoverboard sideboard (STM32F103C8, crystal-less) support
+
+Adds three small changes so that the hoverboard sideboard runs AP_Periph:
+
+1. stm32f1_mcuconf.h: the board has no crystal, so add an HSI clock branch
+   (HSI/2 * 16 = 64 MHz) and disable HSE for boards that define
+   HAL_BOARD_HOVERBOARD_SB.
+2. AP_Periph.cpp / AP_Bootloader.cpp: for the same boards, free the JTAG pins
+   (PB3/PB4 - PB4 is LED5 on the sideboard) by switching SWJ_CFG to
+   "JTAG disabled, SWD enabled", and optionally remap CAN1 to PB8/PB9
+   (the LED-board connectors) with AFIO_MAPR_CAN_REMAP_REMAP2.
+
+Apply from the ArduPilot root:
+    git apply ../patches/ardupilot-sideboard.patch
+
+diff --git a/libraries/AP_HAL_ChibiOS/hwdef/common/stm32f1_mcuconf.h b/libraries/AP_HAL_ChibiOS/hwdef/common/stm32f1_mcuconf.h
+--- a/libraries/AP_HAL_ChibiOS/hwdef/common/stm32f1_mcuconf.h
++++ b/libraries/AP_HAL_ChibiOS/hwdef/common/stm32f1_mcuconf.h
+@@ -33,7 +33,7 @@
+ #define STM32_NO_INIT                       FALSE
+ #define STM32_HSI_ENABLED                   TRUE
+ #define STM32_LSI_ENABLED                   FALSE
+-#if defined(AP_IOMCU_BOOTLOADER)
++#if defined(AP_IOMCU_BOOTLOADER) || defined(HAL_BOARD_HOVERBOARD_SB)
+ #define STM32_HSE_ENABLED                   FALSE
+ #else
+ #define STM32_HSE_ENABLED                   TRUE
+@@ -42,7 +42,22 @@
+ #define STM32_LSE_ENABLED                   FALSE
+ 
+-#if defined(AP_IOMCU_BOOTLOADER)
++#if defined(HAL_BOARD_HOVERBOARD_SB)
++// Hoverboard sideboard has no crystal: run from the internal oscillator,
++// PLL source = HSI/2 (4 MHz) * 16 = 64 MHz.
++#define STM32_SW                            STM32_SW_PLL
++#define STM32_PLLSRC                        STM32_PLLSRC_HSI
++#define STM32_PLLXTPRE                      STM32_PLLXTPRE_DIV1
++#define STM32_PLLMUL_VALUE                  16
++#define STM32_PPRE1                         STM32_PPRE1_DIV2
++#define STM32_PPRE2                         STM32_PPRE2_DIV1
++#define STM32_ADCPRE                        STM32_ADCPRE_DIV8
++#define STM32_HPRE                          STM32_HPRE_DIV1
++#elif defined(AP_IOMCU_BOOTLOADER)
+ // Match the legacy PX4IO loader: HSI/2 * 6 works with every IOMCU crystal.
+ #define STM32_SW                            STM32_SW_PLL
+ #define STM32_PLLSRC                        STM32_PLLSRC_HSI
+diff --git a/Tools/AP_Periph/AP_Periph.cpp b/Tools/AP_Periph/AP_Periph.cpp
+--- a/Tools/AP_Periph/AP_Periph.cpp
++++ b/Tools/AP_Periph/AP_Periph.cpp
+@@ -128,6 +128,19 @@ void AP_Periph_FW::init()
+ #ifdef HAL_BOARD_AP_PERIPH_ZUBAXGNSS
+     // setup remapping register for ZubaxGNSS
+     uint32_t mapr = AFIO->MAPR;
+     mapr &= ~AFIO_MAPR_SWJ_CFG;
+     mapr |= AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
+     AFIO->MAPR = mapr | AFIO_MAPR_CAN_REMAP_REMAP2 | AFIO_MAPR_SPI3_REMAP;
+ #endif
+ 
++#ifdef HAL_BOARD_HOVERBOARD_SB
++    // hoverboard sideboard: JTAG off (frees PB3/PB4, PB4 is LED5), SWD stays on.
++    // Uncomment the CAN remap below when CAN is wired to the LED-board
++    // connectors: with REMAP2 CANRX = PB8, CANTX = PB9.
++    uint32_t mapr = AFIO->MAPR;
++    mapr &= ~AFIO_MAPR_SWJ_CFG;
++    mapr |= AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
++    // mapr |= AFIO_MAPR_CAN_REMAP_REMAP2;
++    AFIO->MAPR = mapr;
++#endif
++
+ #if HAL_LOGGING_ENABLED
+     logger.init(g.log_bitmask, log_structure, ARRAY_SIZE(log_structure));
+ #endif
+diff --git a/Tools/AP_Bootloader/AP_Bootloader.cpp b/Tools/AP_Bootloader/AP_Bootloader.cpp
+--- a/Tools/AP_Bootloader/AP_Bootloader.cpp
++++ b/Tools/AP_Bootloader/AP_Bootloader.cpp
+@@ -90,6 +90,19 @@ int main(void)
+ #ifdef HAL_BOARD_AP_PERIPH_ZUBAXGNSS
+     // setup remapping register for ZubaxGNSS
+     uint32_t mapr = AFIO->MAPR;
+     mapr &= ~AFIO_MAPR_SWJ_CFG;
+     mapr |= AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
+     AFIO->MAPR = mapr | AFIO_MAPR_CAN_REMAP_REMAP2 | AFIO_MAPR_SPI3_REMAP;
+ #endif
+ 
++#ifdef HAL_BOARD_HOVERBOARD_SB
++    // hoverboard sideboard: must match AP_Periph.cpp, otherwise the CAN
++    // bootloader listens on the wrong pins (see ardupilot-sideboard.patch)
++    uint32_t mapr = AFIO->MAPR;
++    mapr &= ~AFIO_MAPR_SWJ_CFG;
++    mapr |= AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
++    // mapr |= AFIO_MAPR_CAN_REMAP_REMAP2;
++    AFIO->MAPR = mapr;
++#endif
++
+ #if HAL_FLASH_PROTECTION
+     stm32_flash_unprotect_flash();
+ #endif
