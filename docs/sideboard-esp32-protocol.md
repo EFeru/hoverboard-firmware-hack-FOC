@@ -258,6 +258,10 @@ compid, msgid[3]) + payload + CRC 2 байта; подпись +13 байт, е�
 
 ## 7. Итог
 
+> Реализация этого вывода — в [`docs/sideboard-sensor/`](sideboard-sensor/PROTOCOL.md):
+> вариант `VARIANT_SENSOR` с протоколом **SBSP v1** (roll/pitch + gyro, команды
+> светодиодов, оптические датчики, частота 1…200 Гц с сохранением в флеш).
+
 1. **Sideboard ↔ ESP32 — свой протокол, штатный** (`SerialSideboard` 14 B вниз,
    `SerialFeedback` 18 B вверх, 115200, XOR, LED-кадр не реже ~2 Гц, штатно
    20–50 Гц). Ничего не переписываем.

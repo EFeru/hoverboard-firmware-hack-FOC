@@ -1,0 +1,563 @@
+/**
+  * This file is part of the hoverboard-sideboard-hack project (sensor variant).
+  * Based on hoverboard-sideboard-hack-GD by Emanuel FERU (GPLv3).
+  *
+  * SBSP v1 - SideBoard Sensor Protocol implementation.
+  * See docs/sideboard-sensor/PROTOCOL.md for the wire format.
+  */
+
+#include <string.h>
+#include "gd32f1x0.h"
+#include "systick.h"
+#include "defines.h"
+#include "config.h"
+#include "setup.h"
+#include "util.h"
+#include "sensor_proto.h"
+
+#ifdef SERIAL_SENSOR
+
+/* Data owned by other modules of this project */
+extern MPU_Data mpu;                    /* Inc/defines.h */
+extern uint32_t main_loop_counter;      /* Src/util.c   */
+
+/* Defined here, set in Src/mpu6050.c when a new DMP sample arrives */
+volatile uint8_t mpu_new_sample = 0U;
+
+/* ------------------------------ local state ------------------------------ */
+static sbsp_settings_t cfg;
+static uint8_t  settings_loaded;        /* 1 = configuration came from flash */
+static uint16_t rate_hz;                /* 0 = streaming disabled */
+static uint16_t decim_div = 1U;         /* 200 Hz / rate_hz */
+static uint16_t decim_cnt;
+static uint8_t  sample_due;
+static uint8_t  seq_ctr;
+
+static uint16_t boot_cnt;               /* send INFO once, ~500 ms after power-up */
+static uint8_t  boot_cnt_done;
+static uint16_t hb_cnt;                 /* optional heartbeat at low rates */
+static uint8_t  info_pending;
+static uint8_t  ack_pending;
+static uint8_t  ack_type;
+static uint8_t  ack_result;
+static uint8_t  save_pending;           /* flash write is done from the main loop, not from the ISR */
+static uint8_t  ack_after_save;
+
+static uint8_t  tx_buffer[SBSP_MAX_FRAME];
+
+static uint8_t  led_req_mask;           /* last mask from the host */
+static uint8_t  led_req_blink;          /* toggle period in 100 ms units, 0 = steady */
+static uint16_t blink_cnt;
+static uint8_t  blink_state = 1U;
+
+static uint8_t  rx_state, rx_type, rx_len, rx_idx;
+static uint8_t  rx_payload[SBSP_MAX_PAYLOAD];
+static uint16_t rx_idle_cnt;
+
+/* ------------------------------ helpers ------------------------------ */
+static uint8_t crc8_byte(uint8_t crc, uint8_t b)
+{
+    uint8_t i;
+
+    crc ^= b;
+    for (i = 0U; i < 8U; i++) {
+        crc = (uint8_t)((crc & 0x80U) ? ((uint8_t)(crc << 1) ^ 0x07U) : (uint8_t)(crc << 1));
+    }
+    return crc;
+}
+
+static uint8_t crc8(const uint8_t *p, uint8_t n)
+{
+    uint8_t crc = 0x00U;
+
+    while (n--) {
+        crc = crc8_byte(crc, *p++);
+    }
+    return crc;
+}
+
+static uint16_t crc16_ccitt(const uint8_t *p, uint8_t n)
+{
+    uint16_t crc = 0xFFFFU;
+    uint8_t  i;
+
+    while (n--) {
+        crc ^= (uint16_t)((uint16_t)(*p++) << 8);
+        for (i = 0U; i < 8U; i++) {
+            crc = (uint16_t)((crc & 0x8000U) ? ((uint16_t)(crc << 1) ^ 0x1021U) : (uint16_t)(crc << 1));
+        }
+    }
+    return crc;
+}
+
+static uint8_t rx_crc_check(uint8_t type, uint8_t len, const uint8_t *payload, uint8_t crc_rx)
+{
+    uint8_t crc = 0x00U;
+    uint8_t i;
+
+    crc = crc8_byte(crc, type);
+    crc = crc8_byte(crc, len);
+    for (i = 0U; i < len; i++) {
+        crc = crc8_byte(crc, payload[i]);
+    }
+    return (uint8_t)(crc == crc_rx);
+}
+
+static void put_u16(uint8_t *p, uint16_t v)
+{
+    p[0] = (uint8_t)(v & 0xFFU);
+    p[1] = (uint8_t)(v >> 8);
+}
+
+static void put_i16(uint8_t *p, int16_t v)
+{
+    put_u16(p, (uint16_t)v);
+}
+
+static uint16_t tick_ms(void)
+{
+    unsigned long t = 0U;
+    get_tick_count_ms(&t);
+    return (uint16_t)(t & 0xFFFFU);
+}
+
+/* ------------------------------ flash settings ------------------------------ */
+#ifdef SBSP_USE_FLASH
+static uint8_t settings_valid(const sbsp_settings_t *s)
+{
+    if (s->magic != SBSP_SETTINGS_MAGIC) {
+        return 0U;
+    }
+    if (s->version != SBSP_SETTINGS_VERSION) {
+        return 0U;
+    }
+    if (s->crc16 != crc16_ccitt((const uint8_t *)s, (uint8_t)SBSP_CRC_LEN)) {
+        return 0U;
+    }
+    return 1U;
+}
+
+static uint8_t settings_load(void)
+{
+    const sbsp_settings_t *s = (const sbsp_settings_t *)SBSP_SETTINGS_ADDR;
+
+    if (!settings_valid(s)) {
+        return 0U;
+    }
+    cfg = *s;
+    return 1U;
+}
+
+static uint8_t settings_save(void)
+{
+    const sbsp_settings_t *s = (const sbsp_settings_t *)SBSP_SETTINGS_ADDR;
+    const uint32_t *w;
+    uint8_t  ok = 1U;
+    uint8_t  i;
+
+    cfg.magic   = SBSP_SETTINGS_MAGIC;
+    cfg.version = SBSP_SETTINGS_VERSION;
+    cfg.crc16   = crc16_ccitt((const uint8_t *)&cfg, (uint8_t)SBSP_CRC_LEN);
+    w           = (const uint32_t *)&cfg;
+
+    __disable_irq();
+    fmc_unlock();
+    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGERR);
+    if (fmc_page_erase(SBSP_SETTINGS_ADDR) != FMC_READY) {
+        ok = 0U;
+    }
+    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGERR);
+    for (i = 0U; i < 4U; i++) {
+        if (fmc_word_program(SBSP_SETTINGS_ADDR + ((uint32_t)i << 2), w[i]) != FMC_READY) {
+            ok = 0U;
+        }
+        fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGERR);
+    }
+    fmc_lock();
+    __enable_irq();
+
+    if (ok && !settings_valid(s)) {             /* read back what we just wrote */
+        ok = 0U;
+    }
+    return ok;
+}
+#else   /* SBSP_USE_FLASH not defined: RAM-only configuration, the host re-sends it */
+static uint8_t settings_load(void)
+{
+    return 0U;
+}
+static uint8_t settings_save(void)
+{
+    return 0U;
+}
+#endif  /* SBSP_USE_FLASH */
+
+/* ------------------------------ TX ------------------------------ */
+static uint8_t tx_idle(void)
+{
+    return (uint8_t)(dma_transfer_number_get(USART1_TX_DMA_CH) == 0U);
+}
+
+static void tx_frame(uint8_t type, const uint8_t *payload, uint8_t len)
+{
+    tx_buffer[0] = SBSP_SOF0;
+    tx_buffer[1] = SBSP_SOF1;
+    tx_buffer[2] = type;
+    tx_buffer[3] = len;
+    if (len > 0U) {
+        memcpy(&tx_buffer[4], payload, len);
+    }
+    tx_buffer[4U + len] = crc8(&tx_buffer[2], (uint8_t)(len + 2U));
+
+    dma_channel_disable(USART1_TX_DMA_CH);
+    DMA_CHCNT(USART1_TX_DMA_CH)   = (uint32_t)(len + 5U);
+    DMA_CHMADDR(USART1_TX_DMA_CH) = (uint32_t)tx_buffer;
+    dma_channel_enable(USART1_TX_DMA_CH);
+}
+
+static void send_info(void)
+{
+    uint8_t p[7];
+
+    p[0] = SBSP_SETTINGS_VERSION;
+    p[1] = cfg.id;
+    put_u16(&p[2], rate_hz);
+    p[4] = cfg.mode;
+    p[5] = led_req_mask;
+    p[6] = settings_loaded;
+
+    tx_frame(SBSP_MSG_INFO, p, 7U);
+}
+
+static void send_ack(void)
+{
+    uint8_t p[2];
+
+    p[0] = ack_type;
+    p[1] = ack_result;
+    tx_frame(SBSP_MSG_ACK, p, 2U);
+}
+
+static void send_data(void)
+{
+    uint8_t p[SBSP_MAX_PAYLOAD];
+    uint8_t n = 0U;
+
+    p[n] = seq_ctr++;                                                   n++;
+    p[n] = sensor_proto_status_bits();                                  n++;
+    put_u16(&p[n], tick_ms());                                          n = (uint8_t)(n + 2U);
+    put_i16(&p[n], mpu.euler.roll);                                     n = (uint8_t)(n + 2U);
+    put_i16(&p[n], mpu.euler.pitch);                                    n = (uint8_t)(n + 2U);
+    put_i16(&p[n], mpu.gyro.z);                                         n = (uint8_t)(n + 2U);
+
+    if (cfg.mode & SBSP_MODE_EXT) {
+        put_i16(&p[n], mpu.euler.yaw);                                  n = (uint8_t)(n + 2U);
+        put_i16(&p[n], mpu.gyro.x);                                     n = (uint8_t)(n + 2U);
+        put_i16(&p[n], mpu.gyro.y);                                     n = (uint8_t)(n + 2U);
+        put_i16(&p[n], mpu.accel.x);                                    n = (uint8_t)(n + 2U);
+        put_i16(&p[n], mpu.accel.y);                                    n = (uint8_t)(n + 2U);
+        put_i16(&p[n], mpu.accel.z);                                    n = (uint8_t)(n + 2U);
+        tx_frame(SBSP_MSG_DATA_EXT, p, n);
+    } else {
+        tx_frame(SBSP_MSG_DATA, p, n);
+    }
+}
+
+/* ------------------------------ commands ------------------------------ */
+/* NOTE: called from the USART IDLE interrupt (Src/gd32f1x0_it.c -> usart1_rx_check()).
+ * Therefore no flash access here: everything heavy is deferred to sensor_proto_poll(). */
+static void handle_command(uint8_t type, const uint8_t *p, uint8_t len)
+{
+    uint8_t  result = SBSP_OK;
+    uint16_t r;
+
+    if (save_pending) {
+        return;                             /* busy with a flash write: drop, the host will retry */
+    }
+
+    switch (type) {
+    case SBSP_MSG_SET_RATE:
+        if (len != 3U) {
+            result = SBSP_ERR_BAD_VALUE;
+            break;
+        }
+        r = (uint16_t)((uint16_t)p[0] | ((uint16_t)p[1] << 8));
+        if (r == 0U) {                      /* stop streaming */
+            rate_hz   = 0U;
+            decim_div = 0U;
+            decim_cnt = 0U;
+        } else if ((r > 200U) || ((200U % r) != 0U)) {
+            result = SBSP_ERR_BAD_VALUE;    /* only divisors of 200 are exact */
+            break;
+        } else {
+            rate_hz   = r;
+            decim_div = (uint16_t)(200U / r);
+            decim_cnt = 0U;
+        }
+        cfg.rate_hz = rate_hz;
+        if (p[2] != 0U) {
+            save_pending   = 1U;            /* written to flash from the main loop */
+            ack_after_save = 1U;
+        }
+        break;
+
+    case SBSP_MSG_SET_MODE:
+        if (len != 1U) {
+            result = SBSP_ERR_BAD_VALUE;
+            break;
+        }
+        cfg.mode = (uint8_t)(p[0] & (SBSP_MODE_EXT | SBSP_MODE_LED_SLAVE | SBSP_MODE_HEARTBEAT));
+        break;
+
+    case SBSP_MSG_LED:
+        if (len != 2U) {
+            result = SBSP_ERR_BAD_VALUE;
+            break;
+        }
+        led_req_mask  = (uint8_t)(p[0] & 0x1FU);
+        led_req_blink = p[1];
+        blink_cnt     = 0U;
+        blink_state   = 1U;
+        break;
+
+    case SBSP_MSG_SET_ID:
+        if ((len != 1U) || (p[0] > 15U)) {
+            result = SBSP_ERR_BAD_VALUE;
+            break;
+        }
+        cfg.id = p[0];
+        break;
+
+    case SBSP_MSG_SAVE:
+        if (len != 0U) {
+            result = SBSP_ERR_BAD_VALUE;
+            break;
+        }
+        cfg.rate_hz = rate_hz;
+        save_pending   = 1U;
+        ack_after_save = 1U;
+        break;
+
+    case SBSP_MSG_GET_INFO:
+        info_pending = 1U;
+        return;                             /* answered with INFO, not with ACK */
+
+    default:
+        result = SBSP_ERR_UNKNOWN_CMD;
+        break;
+    }
+
+    ack_type    = type;
+    ack_result  = result;
+    ack_pending = 1U;
+}
+
+/* ------------------------------ RX ------------------------------ */
+void sensor_proto_rx_bytes(const uint8_t *data, uint32_t len)
+{
+    uint32_t i;
+    uint8_t  b;
+
+    for (i = 0U; i < len; i++) {
+        b = data[i];
+        rx_idle_cnt = 0U;
+
+        switch (rx_state) {
+        case 0U:                                        /* wait for SOF0 */
+            if (b == SBSP_SOF0) {
+                rx_state = 1U;
+            }
+            break;
+        case 1U:                                        /* wait for SOF1 */
+            rx_state = (b == SBSP_SOF1) ? 2U : 0U;
+            break;
+        case 2U:                                        /* type */
+            rx_type  = b;
+            rx_state = 3U;
+            break;
+        case 3U:                                        /* len */
+            if (b > SBSP_MAX_PAYLOAD) {
+                rx_state = 0U;
+            } else {
+                rx_len   = b;
+                rx_idx   = 0U;
+                rx_state = (b > 0U) ? 4U : 5U;
+            }
+            break;
+        case 4U:                                        /* payload */
+            rx_payload[rx_idx++] = b;
+            if (rx_idx >= rx_len) {
+                rx_state = 5U;
+            }
+            break;
+        case 5U:                                        /* CRC-8, then dispatch */
+            if (rx_crc_check(rx_type, rx_len, rx_payload, b)) {
+                handle_command(rx_type, rx_payload, rx_len);
+            }
+            rx_state = 0U;
+            break;
+        default:
+            rx_state = 0U;
+            break;
+        }
+    }
+}
+
+/* ------------------------------ public API ------------------------------ */
+void sensor_proto_init(void)
+{
+    uint8_t loaded = settings_load();
+
+    settings_loaded = loaded;
+    if (!loaded) {
+        cfg.magic    = SBSP_SETTINGS_MAGIC;
+        cfg.version  = SBSP_SETTINGS_VERSION;
+        cfg.id       = SBSP_DEFAULT_ID;
+        cfg.mode     = SBSP_DEFAULT_MODE;
+        cfg.rate_hz  = SBSP_DEFAULT_RATE_HZ;
+        cfg.led_mask = 0U;
+    }
+
+    if ((cfg.rate_hz == 0U) || (cfg.rate_hz > 200U) || ((200U % cfg.rate_hz) != 0U)) {
+        cfg.rate_hz = SBSP_DEFAULT_RATE_HZ;
+    }
+    rate_hz   = cfg.rate_hz;
+    decim_div = (uint16_t)((rate_hz > 0U) ? (200U / rate_hz) : 0U);
+
+    led_req_mask  = cfg.led_mask;
+    led_req_blink = 0U;
+    seq_ctr       = 0U;
+    info_pending  = 0U;
+    ack_pending   = 0U;
+    boot_cnt      = 0U;
+    boot_cnt_done = 0U;
+    hb_cnt        = 0U;
+    save_pending  = 0U;
+    ack_after_save = 0U;
+}
+
+uint8_t *sensor_proto_tx_buffer(void)
+{
+    return tx_buffer;
+}
+
+uint16_t sensor_proto_tx_buffer_size(void)
+{
+    return (uint16_t)sizeof(tx_buffer);
+}
+
+void sensor_proto_poll(void)
+{
+    /* 0) deferred flash write of the configuration (main loop context only) */
+    if (save_pending) {
+        save_pending = 0U;
+        if (settings_save()) {
+            settings_loaded = 1U;
+        } else {
+            ack_result = SBSP_ERR_FLASH;
+        }
+        if (ack_after_save) {
+            ack_after_save = 0U;
+            ack_pending    = 1U;
+        }
+    }
+
+    /* 1) new DMP sample: decimate down to the configured rate */
+    if (mpu_new_sample) {
+        mpu_new_sample = 0U;
+        if (rate_hz != 0U) {
+            if (decim_div <= 1U) {
+                sample_due = 1U;
+            } else if (++decim_cnt >= decim_div) {
+                decim_cnt  = 0U;
+                sample_due = 1U;
+            }
+        }
+    }
+
+    /* 2) announce ourselves once after power-up */
+    if (!boot_cnt_done) {
+        if (++boot_cnt >= 500U) {
+            boot_cnt_done = 1U;
+            info_pending  = 1U;
+        }
+    }
+
+    /* 3) optional heartbeat at low rates (liveness for the host) */
+    if ((cfg.mode & SBSP_MODE_HEARTBEAT) && (rate_hz != 0U) && (rate_hz <= 5U)) {
+        if (++hb_cnt >= 500U) {
+            hb_cnt     = 0U;
+            sample_due = 1U;
+        }
+    }
+
+    /* 4) partial RX frame timeout */
+    if (rx_state != 0U) {
+        if (++rx_idle_cnt > 20U) {
+            rx_state = 0U;
+        }
+    }
+
+    /* 5) transmit: replies first, then data */
+    if (tx_idle()) {
+        if (info_pending) {
+            info_pending = 0U;
+            send_info();
+        } else if (ack_pending) {
+            ack_pending = 0U;
+            send_ack();
+        } else if (sample_due) {
+            sample_due = 0U;
+            send_data();
+        }
+    }
+}
+
+void sensor_proto_leds(void)
+{
+    uint8_t mask;
+    uint8_t st;
+
+    if (cfg.mode & SBSP_MODE_LED_SLAVE) {
+        /* The host owns the LEDs; hold the last state if it goes quiet. */
+        mask = led_req_mask;
+        if (led_req_blink != 0U) {
+            if (++blink_cnt >= ((uint16_t)led_req_blink * 100U)) {
+                blink_cnt   = 0U;
+                blink_state = (uint8_t)(!blink_state);
+            }
+            if (!blink_state) {
+                mask = 0U;
+            }
+        }
+    } else {
+        /* Local diagnostics: IMU / optical inputs / stream / settings source */
+        st   = sensor_proto_status_bits();
+        mask = 0U;
+        if (st & SBSP_ST_MPU_OK) {
+            mask |= LED1_SET;                       /* IMU ok: LED1 steady */
+        } else if ((main_loop_counter % 250U) < 125U) {
+            mask |= LED1_SET;                       /* IMU error: LED1 blinks */
+        }
+        if (st & SBSP_ST_SENSOR1) {
+            mask |= LED2_SET;
+        }
+        if (st & SBSP_ST_SENSOR2) {
+            mask |= LED3_SET;
+        }
+        if (rate_hz != 0U) {
+            mask |= LED4_SET;                       /* streaming enabled */
+        }
+        if (settings_loaded) {
+            mask |= LED5_SET;                       /* settings came from flash */
+        }
+    }
+
+    if (mask & LED1_SET) { gpio_bit_set(LED1_GPIO_Port, LED1_Pin); } else { gpio_bit_reset(LED1_GPIO_Port, LED1_Pin); }
+    if (mask & LED2_SET) { gpio_bit_set(LED2_GPIO_Port, LED2_Pin); } else { gpio_bit_reset(LED2_GPIO_Port, LED2_Pin); }
+    if (mask & LED3_SET) { gpio_bit_set(LED3_GPIO_Port, LED3_Pin); } else { gpio_bit_reset(LED3_GPIO_Port, LED3_Pin); }
+    if (mask & LED4_SET) { gpio_bit_set(LED4_GPIO_Port, LED4_Pin); } else { gpio_bit_reset(LED4_GPIO_Port, LED4_Pin); }
+    if (mask & LED5_SET) { gpio_bit_set(LED5_GPIO_Port, LED5_Pin); } else { gpio_bit_reset(LED5_GPIO_Port, LED5_Pin); }
+}
+
+#endif /* SERIAL_SENSOR */
