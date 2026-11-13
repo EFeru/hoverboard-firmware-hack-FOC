@@ -44,6 +44,7 @@ extern P    rtP_Left;
 extern DW   rtDW_Right;                 /* Observable states */
 extern ExtU rtU_Right;                  /* External inputs */
 extern ExtY rtY_Right;                  /* External outputs */
+extern P    rtP_Right;
 // ###############################################################################
 
 static int16_t pwm_margin;              /* This margin allows to have a window in the PWM signal for proper FOC Phase currents measurement */
@@ -67,6 +68,41 @@ static uint8_t  buzzerIdx   = 0;
 
 uint8_t        enable       = 0;        // initially motors are disabled for SAFETY
 static uint8_t enableFin    = 0;
+
+#ifdef VARIANT_UARTBUS
+// Per motor enable and control mode, set by the bus (uartbus.c): every motor is an axis of its own there.
+// enableL/R = 0: the gates of that motor are off (disarmed, it coasts), the other one keeps running
+volatile uint8_t enableL     = 0;
+volatile uint8_t enableR     = 0;
+volatile uint8_t ctrlModReqL = CTRL_MOD_REQ;
+volatile uint8_t ctrlModReqR = CTRL_MOD_REQ;
+// Hall step counters for the bus position (32 bit, never wrap in practice), in the motor's own direction: +1 per
+// hall step in the direction the controller measures as positive n_mot
+volatile int32_t hallPosL    = 0;
+volatile int32_t hallPosR    = 0;
+static int8_t    hallPrevL   = -1;
+static int8_t    hallPrevR   = -1;
+
+static void hallCount(uint8_t hall, int8_t *prev, volatile int32_t *cnt) {
+  if (hall == 0 || hall == 7) return;           // invalid hall state (not connected / short): no step
+  int8_t p = rtConstP.vec_hallToPos_Value[hall];
+  if (*prev >= 0) {
+    int8_t d = (int8_t)(p - *prev);
+    if (d == 1 || d == -5) (*cnt)++;            // same rule as the controller's direction detection
+    else if (d == -1 || d == 5) (*cnt)--;       // a jump of 2 or 3 positions (missed step) is not counted
+  }
+  *prev = p;
+}
+  #define MOTOR_ENA_L   enableL
+  #define MOTOR_ENA_R   enableR
+  #define CTRL_MOD_L    ctrlModReqL
+  #define CTRL_MOD_R    ctrlModReqR
+#else
+  #define MOTOR_ENA_L   1
+  #define MOTOR_ENA_R   1
+  #define CTRL_MOD_L    ctrlModReq
+  #define CTRL_MOD_R    ctrlModReq
+#endif
 
 static const uint16_t pwm_res  = 64000000 / 2 / PWM_FREQ; // = 2000
 
@@ -135,13 +171,13 @@ void DMA1_Channel1_IRQHandler(void) {
 
   // Disable PWM when current limit is reached (current chopping)
   // This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
-  if(ABS(curL_DC) > curDC_max || enable == 0) {
+  if(ABS(curL_DC) > curDC_max || enable == 0 || !MOTOR_ENA_L) {
     LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     LEFT_TIM->BDTR |= TIM_BDTR_MOE;
   }
 
-  if(ABS(curR_DC)  > curDC_max || enable == 0) {
+  if(ABS(curR_DC)  > curDC_max || enable == 0 || !MOTOR_ENA_R) {
     RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
@@ -167,7 +203,7 @@ void DMA1_Channel1_IRQHandler(void) {
 #endif
 
   // Adjust pwm_margin depending on the selected Control Type
-  if (rtP_Left.z_ctrlTypSel == FOC_CTRL) {
+  if (rtP_Left.z_ctrlTypSel == FOC_CTRL || rtP_Right.z_ctrlTypSel == FOC_CTRL) {   // the bus can select the type per motor
     pwm_margin = 110;
   } else {
     pwm_margin = 0;
@@ -195,8 +231,8 @@ void DMA1_Channel1_IRQHandler(void) {
     uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
 
     /* Set motor inputs here */
-    rtU_Left.b_motEna     = enableFin;
-    rtU_Left.z_ctrlModReq = ctrlModReq;  
+    rtU_Left.b_motEna     = enableFin && MOTOR_ENA_L;
+    rtU_Left.z_ctrlModReq = CTRL_MOD_L;
     rtU_Left.r_inpTgt     = pwml;
     rtU_Left.b_hallA      = hall_ul;
     rtU_Left.b_hallB      = hall_vl;
@@ -227,6 +263,10 @@ void DMA1_Channel1_IRQHandler(void) {
     wp_l_prev = wheel_pos;
 #endif
 
+#ifdef VARIANT_UARTBUS
+    hallCount((uint8_t)((hall_ul << 2) + (hall_vl << 1) + hall_wl), &hallPrevL, &hallPosL);  // bus position (left)
+#endif
+
     /* Apply commands */
     LEFT_TIM->LEFT_TIM_U    = (uint16_t)CLAMP(ul + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
     LEFT_TIM->LEFT_TIM_V    = (uint16_t)CLAMP(vl + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
@@ -241,8 +281,8 @@ void DMA1_Channel1_IRQHandler(void) {
     uint8_t hall_wr = !(RIGHT_HALL_W_PORT->IDR & RIGHT_HALL_W_PIN);
 
     /* Set motor inputs here */
-    rtU_Right.b_motEna      = enableFin;
-    rtU_Right.z_ctrlModReq  = ctrlModReq;
+    rtU_Right.b_motEna      = enableFin && MOTOR_ENA_R;
+    rtU_Right.z_ctrlModReq  = CTRL_MOD_R;
     rtU_Right.r_inpTgt      = pwmr;
     rtU_Right.b_hallA       = hall_ur;
     rtU_Right.b_hallB       = hall_vr;
@@ -271,6 +311,10 @@ void DMA1_Channel1_IRQHandler(void) {
     wheel_pos = rtConstP.vec_hallToPos_Value[encoding];
     odom_r = hallTickModulo(odom_r - hallTickDirection(wp_r_prev, wheel_pos), 9000);
     wp_r_prev = wheel_pos;
+#endif
+
+#ifdef VARIANT_UARTBUS
+    hallCount((uint8_t)((hall_ur << 2) + (hall_vr << 1) + hall_wr), &hallPrevR, &hallPosR);  // bus position (right)
 #endif
 
     /* Apply commands */

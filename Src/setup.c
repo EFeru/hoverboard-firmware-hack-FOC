@@ -54,7 +54,7 @@ DMA_HandleTypeDef hdma_usart3_tx;
 volatile adc_buf_t adc_buffer;
 
 
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2)
  /* USART2 init function */
  void UART2_Init(void)
 {
@@ -80,7 +80,7 @@ volatile adc_buf_t adc_buffer;
 }
 #endif
 
-#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
 /* USART3 init function */
 void UART3_Init(void)
 {
@@ -107,8 +107,8 @@ void UART3_Init(void)
 }
 #endif
 
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
-    defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2) || \
+    defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -126,7 +126,11 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PA3     ------> USART2_RX 
     */
     GPIO_InitStruct.Pin = GPIO_PIN_2;
+    #if defined(UARTBUS_SERIAL_USART2) && defined(UARTBUS_TX_OPEN_DRAIN)
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;     // bus: open drain, the boards share the master's RX line (pull-up at the master)
+    #else
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    #endif
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -181,7 +185,11 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PB11     ------> USART3_RX 
     */
     GPIO_InitStruct.Pin = GPIO_PIN_10;
+    #if defined(UARTBUS_SERIAL_USART3) && defined(UARTBUS_TX_OPEN_DRAIN)
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;     // bus: open drain, the boards share the master's RX line (pull-up at the master)
+    #else
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    #endif
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 

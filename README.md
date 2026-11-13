@@ -115,6 +115,7 @@ To explore the controller without a Matlab/Simulink installation click on the li
 - **VARIANT_HOVERBOARD**: The mainboard reads the two sideboards data. The sideboards need to be flashed with the hacked version. The balancing controller is **not** yet implemented.
 - **VARIANT_TRANSPOTTER**: This is for transpotter build, which is a hoverboard based transportation system. For more details on how to build it check [here](https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter) and [here](https://hackaday.io/project/161891-transpotter-ng).
 - **VARIANT_SKATEBOARD**: This is for skateboard build, controlled using an RC remote with PWM signal connected to the right sensor cable.
+- **VARIANT_UARTBUS**: The motors are controlled over the RemoteUartBus and ODrive CANSimple-over-UART bus protocol of the [Gen2.x GD32](https://github.com/RoboDurden/Hoverboard-Firmware-Hack-Gen2.x-GD32) / MM32 split-board firmwares (right sensor cable by default). The board has two bus ids, one per motor, so a master drives it like two split boards. See [docs/uartbus.md](/docs/uartbus.md).
 
 Of course the firmware can be further customized for other needs or projects.
 

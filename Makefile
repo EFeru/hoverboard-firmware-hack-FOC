@@ -40,6 +40,7 @@ Src/setup.c \
 Src/control.c \
 Src/comms.c \
 Src/util.c \
+Src/uartbus.c \
 Src/main.c \
 Src/bldc.c \
 Src/eeprom.c \
@@ -120,6 +121,12 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
 
 ifneq ($(VARIANT), )
 CFLAGS += -D $(VARIANT)
+endif
+
+# VARIANT_UARTBUS: bus protocols, default both. One only:
+# make -e VARIANT=VARIANT_UARTBUS REMOTE=REMOTE_CANSIMPLE   (or REMOTE=REMOTE_UARTBUS)
+ifneq ($(REMOTE), )
+CFLAGS += $(addprefix -D ,$(REMOTE))
 endif
 
 
