@@ -30,6 +30,7 @@
 #include "BLDC_controller.h"
 #include "rtwtypes.h"
 #include "comms.h"
+#include "uartbus.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
@@ -140,7 +141,7 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
 static uint16_t timeoutCntADC = ADC_PROTECT_TIMEOUT;  // Timeout counter for ADC Protection
 #endif
 
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2)
 static uint8_t  rx_buffer_L[SERIAL_BUFFER_SIZE];      // USART Rx DMA circular buffer
 static uint32_t rx_buffer_L_len = ARRAY_LEN(rx_buffer_L);
 #endif
@@ -154,7 +155,7 @@ SerialSideboard Sideboard_L_raw;
 static uint32_t Sideboard_L_len = sizeof(Sideboard_L);
 #endif
 
-#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
 static uint8_t  rx_buffer_R[SERIAL_BUFFER_SIZE];      // USART Rx DMA circular buffer
 static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
 #endif
@@ -282,17 +283,17 @@ void Input_Init(void) {
     PWM_Init();
   #endif
 
-  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2)
     UART2_Init();
   #endif
-  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
     UART3_Init();
   #endif
-  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2)
     HAL_UART_Receive_DMA(&huart2, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));
     UART_DisableRxErrors(&huart2);
   #endif
-  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
     HAL_UART_Receive_DMA(&huart3, (uint8_t *)rx_buffer_R, sizeof(rx_buffer_R));
     UART_DisableRxErrors(&huart3);
   #endif
@@ -404,8 +405,8 @@ void Input_Init(void) {
   * @param  huart: UART handle.
   * @retval None
   */
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
-    defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2) || \
+    defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
 void UART_DisableRxErrors(UART_HandleTypeDef *huart)
 {  
   CLEAR_BIT(huart->Instance->CR1, USART_CR1_PEIE);    /* Disable PE (Parity Error) interrupts */  
@@ -1090,7 +1091,7 @@ void readCommand(void) {
  */
 void usart2_rx_check(void)
 {
-  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)  
+  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2)  
   static uint32_t old_pos;
   uint32_t pos;
   pos = rx_buffer_L_len - __HAL_DMA_GET_COUNTER(huart2.hdmarx);         // Calculate current position in buffer
@@ -1125,6 +1126,17 @@ void usart2_rx_check(void)
   }
   #endif // CONTROL_SERIAL_USART2
 
+  #ifdef UARTBUS_SERIAL_USART2
+  if (pos != old_pos) {                                                 // Check change in received data
+    if (pos > old_pos) {                                                // "Linear" buffer mode
+      uartbusRx(&rx_buffer_L[old_pos], pos - old_pos);                 // Process data: the bus parser takes any chunk of bytes
+    } else {                                                            // "Overflow" buffer mode
+      uartbusRx(&rx_buffer_L[old_pos], rx_buffer_L_len - old_pos);
+      uartbusRx(&rx_buffer_L[0], pos);
+    }
+  }
+  #endif // UARTBUS_SERIAL_USART2
+
   #ifdef SIDEBOARD_SERIAL_USART2
   uint8_t *ptr;	
   if (pos != old_pos) {                                                 // Check change in received data
@@ -1143,7 +1155,7 @@ void usart2_rx_check(void)
   }
   #endif // SIDEBOARD_SERIAL_USART2
 
-  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2)
   old_pos = pos;                                                        // Update old position
   if (old_pos == rx_buffer_L_len) {                                     // Check and manually update if we reached end of buffer
     old_pos = 0;
@@ -1158,7 +1170,7 @@ void usart2_rx_check(void)
  */
 void usart3_rx_check(void)
 {
-  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
   static uint32_t old_pos;
   uint32_t pos;  
   pos = rx_buffer_R_len - __HAL_DMA_GET_COUNTER(huart3.hdmarx);         // Calculate current position in buffer
@@ -1193,6 +1205,17 @@ void usart3_rx_check(void)
   }
   #endif // CONTROL_SERIAL_USART3
 
+  #ifdef UARTBUS_SERIAL_USART3
+  if (pos != old_pos) {                                                 // Check change in received data
+    if (pos > old_pos) {                                                // "Linear" buffer mode
+      uartbusRx(&rx_buffer_R[old_pos], pos - old_pos);                 // Process data: the bus parser takes any chunk of bytes
+    } else {                                                            // "Overflow" buffer mode
+      uartbusRx(&rx_buffer_R[old_pos], rx_buffer_R_len - old_pos);
+      uartbusRx(&rx_buffer_R[0], pos);
+    }
+  }
+  #endif // UARTBUS_SERIAL_USART3
+
   #ifdef SIDEBOARD_SERIAL_USART3
   uint8_t *ptr;
   if (pos != old_pos) {                                                 // Check change in received data
@@ -1211,7 +1234,7 @@ void usart3_rx_check(void)
   }
   #endif // SIDEBOARD_SERIAL_USART3
 
-  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
   old_pos = pos;                                                        // Update old position
   if (old_pos == rx_buffer_R_len) {                                     // Check and manually update if we reached end of buffer
     old_pos = 0;

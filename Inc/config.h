@@ -20,6 +20,7 @@
   //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
   //#define VARIANT_SKATEBOARD  // Variant for SKATEBOARD build
+  //#define VARIANT_UARTBUS     // Variant for the RemoteUartBus / CANSimple-over-UART bus: one bus id per motor
 #endif
 // ########################### END OF VARIANT SELECTION ############################
 
@@ -646,20 +647,65 @@
 
 
 
+// ################################# VARIANT_UARTBUS SETTINGS ##############################
+#ifdef VARIANT_UARTBUS
+/* ###### CONTROL VIA THE REMOTEUARTBUS AND CANSIMPLE OVER UART ######
+ * The bus protocol of the split-board firmwares Hoverboard-Firmware-Hack-Gen2.x-GD32 (REMOTE_UARTBUS / REMOTE_CANSIMPLE)
+ * and Hoverboard-Firmware-Hack-Gen2.x-MM32: v1 frames (start byte '/') and ODrive CANSimple frames (start byte 0xA5),
+ * both are read at the same time. There each board drives one motor and has one slave id; this board drives two, so it
+ * has two ids: UARTBUS_ID_LEFT addresses the left motor, UARTBUS_ID_RIGHT the right one, each with its own arm state,
+ * control mode, set point and watchdog. The CANSimple broadcast id 63 reaches both.
+ * The motors start disarmed (gates off, coasting): a master arms an axis with CANSimple Set_Axis_State 8
+ * (CLOSED_LOOP_CONTROL) or with a v1 command frame that has state bit 64 clear.
+ * Protocol, units and wiring: docs/uartbus.md
+ */
+  #define FLASH_WRITE_KEY       0x1011   // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
+  #define PRI_INPUT1            0, -1000, 0, 1000, 0   // Disabled: the commands come from the bus. TYPE, MIN, MID, MAX, DEADBAND
+  #define PRI_INPUT2            0, -1000, 0, 1000, 0   // Disabled
+  // Protocols on the bus, both by default (comment one out). From make, one of them only:
+  //   make -e VARIANT=VARIANT_UARTBUS REMOTE=REMOTE_CANSIMPLE      (or REMOTE=REMOTE_UARTBUS)
+  #if !defined(REMOTE_UARTBUS) && !defined(REMOTE_CANSIMPLE)
+    #define REMOTE_UARTBUS               // RemoteUartBus v1 frames (start byte '/'), 15 byte telemetry reply
+    #define REMOTE_CANSIMPLE             // ODrive CANSimple over UART (start byte 0xA5)
+  #endif
+  #define UARTBUS_SERIAL_USART3          // bus on the right sensor board cable (PB10 TX, PB11 RX, 5 V tolerant). Left cable: UARTBUS_SERIAL_USART2 (PA2 TX, PA3 RX, 3.3 V only!)
+  #define UARTBUS_ID_LEFT       0        // bus id (v1 slave id / CANSimple node id) of the LEFT motor,  0..62
+  #define UARTBUS_ID_RIGHT      1        // bus id of the RIGHT motor, 0..62, not the same as UARTBUS_ID_LEFT
+  #define UARTBUS_BAUD          115200   // bus baud rate
+  #define UARTBUS_TX_OPEN_DRAIN          // TX open drain, so several boards can share the master's RX line (the master RX then needs a pull-up). Comment out for push-pull TX
+  #define UARTBUS_TIMEOUT_MS    500      // [ms] an armed motor without a set point for this long gets command 0 (position mode: holds where it is). CANSimple: watchdog_timeout
+  #define UARTBUS_HALL_STEPS    90       // hall steps per motor turn (6 per pole pair; a hoverboard hub motor has 15 pole pairs). CANSimple positions are in turns
+  #define UARTBUS_TORQUE_CONST  0.34f    // [Nm/A] motor torque constant, converts the CANSimple torques (Nm) to the motor current
+  #define UARTBUS_VEL_LIMIT     3.0f     // [turns/s] default vel_limit: top speed of the position mode and of CANSimple Set_Input_Vel (v1 speed frames: N_MOT_MAX only)
+  #define UARTBUS_POS_GAIN      5.0f     // [(turns/s)/turn] default pos_gain of the position mode (speed set point = pos_gain * position error)
+  #undef  BEEPS_BACKWARD
+  #define BEEPS_BACKWARD        0        // no beeping when a motor turns backwards (the master decides the directions)
+  // #define DEBUG_SERIAL_USART2         // left sensor cable debug (only with the bus on USART3)
+#endif
+// ############################# END OF VARIANT_UARTBUS SETTINGS ############################
+
+
+
 // ########################### UART SETIINGS ############################
-#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || \
-    defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2) || \
+    defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
   #define SERIAL_START_FRAME      0xABCD                  // [-] Start frame definition for serial commands
   #define SERIAL_BUFFER_SIZE      64                      // [bytes] Size of Serial Rx buffer. Make sure it is always larger than the structure size
   #define SERIAL_TIMEOUT          160                     // [-] Serial timeout duration for the received data. 160 ~= 0.8 sec. Calculation: 0.8 sec / 0.005 sec
 #endif
-#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
+#if defined(UARTBUS_SERIAL_USART2) && !defined(USART2_BAUD)
+  #define USART2_BAUD             UARTBUS_BAUD
+#endif
+#if defined(UARTBUS_SERIAL_USART3) && !defined(USART3_BAUD)
+  #define USART3_BAUD             UARTBUS_BAUD
+#endif
+#if defined(FEEDBACK_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART2)
   #ifndef USART2_BAUD
     #define USART2_BAUD           115200                  // UART2 baud rate (long wired cable)
   #endif
   #define USART2_WORDLENGTH       UART_WORDLENGTH_8B      // UART_WORDLENGTH_8B or UART_WORDLENGTH_9B
 #endif
-#if defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+#if defined(FEEDBACK_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(UARTBUS_SERIAL_USART3)
   #ifndef USART3_BAUD
     #define USART3_BAUD           115200                  // UART3 baud rate (short wired cable)
   #endif
@@ -693,8 +739,37 @@
 
 // ############################### VALIDATE SETTINGS ###############################
 #if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_PWM) && \
-    !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_SKATEBOARD)
+    !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_SKATEBOARD) && \
+    !defined(VARIANT_UARTBUS)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
+#endif
+
+#if defined(UARTBUS_SERIAL_USART2) || defined(UARTBUS_SERIAL_USART3)
+  #if !defined(VARIANT_UARTBUS)
+    #error UARTBUS_SERIAL_USARTx needs VARIANT_UARTBUS.
+  #endif
+  #if defined(UARTBUS_SERIAL_USART2) && defined(UARTBUS_SERIAL_USART3)
+    #error UARTBUS_SERIAL_USART2 and UARTBUS_SERIAL_USART3 not allowed, choose one.
+  #endif
+  #if defined(UARTBUS_SERIAL_USART2) && (defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(DEBUG_SERIAL_USART2) || \
+                                         defined(CONTROL_ADC) || defined(CONTROL_PPM_LEFT) || defined(CONTROL_PWM_LEFT) || defined(SUPPORT_BUTTONS_LEFT))
+    #error UARTBUS_SERIAL_USART2 needs the left sensor board cable for itself.
+  #endif
+  #if defined(UARTBUS_SERIAL_USART3) && (defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(DEBUG_SERIAL_USART3) || \
+                                         defined(CONTROL_NUNCHUK) || defined(CONTROL_PPM_RIGHT) || defined(CONTROL_PWM_RIGHT) || defined(DEBUG_I2C_LCD) || defined(SUPPORT_BUTTONS_RIGHT))
+    #error UARTBUS_SERIAL_USART3 needs the right sensor board cable for itself.
+  #endif
+  #if UARTBUS_ID_LEFT == UARTBUS_ID_RIGHT || UARTBUS_ID_LEFT < 0 || UARTBUS_ID_LEFT > 62 || UARTBUS_ID_RIGHT < 0 || UARTBUS_ID_RIGHT > 62
+    #error UARTBUS_ID_LEFT and UARTBUS_ID_RIGHT must be two different ids 0..62 (63 is the CANSimple broadcast).
+  #endif
+  #if !defined(REMOTE_UARTBUS) && !defined(REMOTE_CANSIMPLE)
+    #error VARIANT_UARTBUS needs REMOTE_UARTBUS and/or REMOTE_CANSIMPLE.
+  #endif
+#elif defined(VARIANT_UARTBUS)
+  #error VARIANT_UARTBUS needs UARTBUS_SERIAL_USART2 or UARTBUS_SERIAL_USART3.
+#endif
+#if (defined(REMOTE_UARTBUS) || defined(REMOTE_CANSIMPLE)) && !defined(VARIANT_UARTBUS)
+  #error REMOTE_UARTBUS / REMOTE_CANSIMPLE need VARIANT_UARTBUS.
 #endif
 
 

@@ -30,6 +30,7 @@
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 #include "comms.h"
+#include "uartbus.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
@@ -352,7 +353,10 @@ int main(void) {
       }
       #endif
 
-      #if defined(TANK_STEERING) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_SKATEBOARD) 
+      #if defined(VARIANT_UARTBUS)
+        // One bus id per motor: each command comes from the bus, without the filter, rate limiter and mixer above
+        uartbusUpdate(&cmdL, &cmdR);
+      #elif defined(TANK_STEERING) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_SKATEBOARD) 
         // Tank steering (no mixing)
         cmdL = steer; 
         cmdR = speed;
@@ -603,6 +607,11 @@ int main(void) {
     if (abs(cmdL) > 50 || abs(cmdR) > 50) {
       inactivity_timeout_counter = 0;
     }
+    #ifdef VARIANT_UARTBUS
+      if (uartbusActive()) {            // a bus master has a motor armed and keeps sending set points
+        inactivity_timeout_counter = 0;
+      }
+    #endif
 
     #if defined(CRUISE_CONTROL_SUPPORT) || defined(STANDSTILL_HOLD_ENABLE)
       if ((abs(rtP_Left.n_cruiseMotTgt)  > 50 && rtP_Left.b_cruiseCtrlEna) || 
