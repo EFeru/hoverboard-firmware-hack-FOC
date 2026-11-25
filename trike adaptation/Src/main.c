@@ -200,7 +200,7 @@ static void trikeApplyDriveMode(uint8_t mode) {
   } else {
     rate = TRIKE_MODE_M3_RATE;
     rtP_Left.i_max = rtP_Right.i_max = (TRIKE_MODE_M3_I_MOT_MAX * A2BIT_CONV) << 4;
-    rtP_Left.n_max = rtP_Right.n_max = TRIKE_MODE_M3_N_MOT_MAX;
+    rtP_Left.n_max = rtP_Right.n_max = TRIKE_MODE_M3_N_MOT_MAX << 4;
     rtP_Left.b_fieldWeakEna = rtP_Right.b_fieldWeakEna = 1;
   }
 }
