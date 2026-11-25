@@ -584,15 +584,17 @@
   #define TRIKE_MODE_M1_CMD_MAX       500
   #define TRIKE_MODE_M1_RATE           300
   #define TRIKE_MODE_M1_I_MOT_MAX        8
-  #define TRIKE_MODE_M1_N_MOT_MAX       80
+  // Speed limits for nominal 8-inch wheel (203.2 mm), rpm; verify using loaded rolling circumference.
+  // 15 / 25 / 45 km/h correspond approximately to 391 / 652 / 1174 wheel-motor rpm.
+  #define TRIKE_MODE_M1_N_MOT_MAX      391
   #define TRIKE_MODE_M2_CMD_MAX      1000
   #define TRIKE_MODE_M2_RATE           450
   #define TRIKE_MODE_M2_I_MOT_MAX       I_MOT_MAX
-  #define TRIKE_MODE_M2_N_MOT_MAX       1000
+  #define TRIKE_MODE_M2_N_MOT_MAX      652
   #define TRIKE_MODE_M3_CMD_MAX      1000
   #define TRIKE_MODE_M3_RATE           450
   #define TRIKE_MODE_M3_I_MOT_MAX       I_MOT_MAX
-  #define TRIKE_MODE_M3_N_MOT_MAX       32767
+  #define TRIKE_MODE_M3_N_MOT_MAX     1174
 
   // Один аналоговый вход газа. input1 отключён, input2 — Hall throttle на ADC.
   #define CONTROL_ADC             0
