@@ -8,6 +8,6 @@
 - Adaptation branch: `trike-adaptation`
 - Adaptation path: `trike adaptation/`
 
-Внутри каталога сохранена автономная копия исходных каталогов и файлов, необходимых для сборки и разработки: `Inc`, `Src`, `Drivers`, `MDK-ARM`, `Arduino`, `docs`, `platformio.ini`, `Makefile`, startup, linker script и LICENSE.
+Внутри каталога сохранена автономная копия исходных каталогов и файлов, необходимых для сборки и разработки: `Inc`, `Src`, `Drivers`, `MDK-ARM`, `Arduino`, `docs`, `platformio.ini`, `Makefile`, startup, linker script и LICENSE. Оригинальный корневой README исходного проекта сохранён отдельно как `EFERU_README.md`; проектный `README.md` заменён документацией TRIKE.
 
 На первом этапе исходные файлы прошивки скопированы без функциональных изменений. Это контрольная точка для дальнейшей адаптации; она не является TRIKE firmware и не должна прошиваться как готовая версия.
