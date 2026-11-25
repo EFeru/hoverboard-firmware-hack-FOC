@@ -577,6 +577,14 @@
   #undef  CTRL_MOD_REQ
   #define CTRL_MOD_REQ            TRQ_MODE
 
+  // Ограничение скорости по номинальному наружному диаметру колеса 8" (203 мм).
+  // 30 км/ч соответствует примерно 784 об/мин; уточнить по фактической окружности
+  // нагруженного колеса. N_MOT_MAX остаётся общим пределом для обоих FOC-каналов.
+  #define TRIKE_WHEEL_DIAMETER_MM  203
+  #define TRIKE_SPEED_LIMIT_KMH    30
+  #undef  N_MOT_MAX
+  #define N_MOT_MAX ((TRIKE_SPEED_LIMIT_KMH * 1000000 * 113) / (60 * 355 * TRIKE_WHEEL_DIAMETER_MM))
+
   // Один аналоговый вход газа. input1 отключён, input2 — Hall throttle на ADC.
   #define CONTROL_ADC             0
   #define PRI_INPUT1              0, 0, 0, 4095, 0
