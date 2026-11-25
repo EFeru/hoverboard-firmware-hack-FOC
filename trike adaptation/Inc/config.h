@@ -577,13 +577,22 @@
   #undef  CTRL_MOD_REQ
   #define CTRL_MOD_REQ            TRQ_MODE
 
-  // Ограничение скорости по номинальному наружному диаметру колеса 8" (203 мм).
-  // 30 км/ч соответствует примерно 784 об/мин; уточнить по фактической окружности
-  // нагруженного колеса. N_MOT_MAX остаётся общим пределом для обоих FOC-каналов.
-  #define TRIKE_WHEEL_DIAMETER_MM  203
-  #define TRIKE_SPEED_LIMIT_KMH    30
-  #undef  N_MOT_MAX
-  #define N_MOT_MAX ((TRIKE_SPEED_LIMIT_KMH * 1000000 * 113) / (60 * 355 * TRIKE_WHEEL_DIAMETER_MM))
+  // Режимы TRIKE наследуют профили HOVERCAR M2/M3.
+  // M3 не получает искусственный скоростной отсекатель: n_max выставляется
+  // в максимальное представимое значение Q4 (2047.9 rpm), а не в 0.
+  #define TRIKE_MODE_DEFAULT          1
+  #define TRIKE_MODE_M1_CMD_MAX       500
+  #define TRIKE_MODE_M1_RATE           300
+  #define TRIKE_MODE_M1_I_MOT_MAX        8
+  #define TRIKE_MODE_M1_N_MOT_MAX       80
+  #define TRIKE_MODE_M2_CMD_MAX      1000
+  #define TRIKE_MODE_M2_RATE           450
+  #define TRIKE_MODE_M2_I_MOT_MAX       I_MOT_MAX
+  #define TRIKE_MODE_M2_N_MOT_MAX       1000
+  #define TRIKE_MODE_M3_CMD_MAX      1000
+  #define TRIKE_MODE_M3_RATE           450
+  #define TRIKE_MODE_M3_I_MOT_MAX       I_MOT_MAX
+  #define TRIKE_MODE_M3_N_MOT_MAX       32767
 
   // Один аналоговый вход газа. input1 отключён, input2 — Hall throttle на ADC.
   #define CONTROL_ADC             0
