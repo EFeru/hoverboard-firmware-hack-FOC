@@ -229,6 +229,14 @@ static int16_t trikeBrakeCommand(uint16_t speedBlend) {
 }
 #endif
 
+static uint8_t motorsReadyForEnable(void) {
+  #ifdef VARIANT_TRIKE
+  return ((!rtY_Left.z_errCode || !rtY_Right.z_errCode) && !trikeBrakeActive);
+  #else
+  return (!rtY_Left.z_errCode && !rtY_Right.z_errCode);
+  #endif
+}
+
 
 int main(void) {
 
@@ -327,16 +335,8 @@ int main(void) {
 
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-      #ifdef VARIANT_TRIKE
-      if (enable == 0 && (!rtY_Left.z_errCode || !rtY_Right.z_errCode) &&
-      #else
-      if (enable == 0 && !rtY_Left.z_errCode && !rtY_Right.z_errCode &&
-      #endif
-          ABS(input1[inIdx].cmd) < 50 && ABS(input2[inIdx].cmd) < 50
-          #ifdef VARIANT_TRIKE
-          && !trikeBrakeActive
-          #endif
-          ){
+      if (enable == 0 && motorsReadyForEnable() &&
+          ABS(input1[inIdx].cmd) < 50 && ABS(input2[inIdx].cmd) < 50){
         beepShort(6);                     // make 2 beeps indicating the motor enable
         beepShort(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
