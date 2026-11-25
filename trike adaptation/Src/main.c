@@ -178,6 +178,57 @@ static uint16_t rate = RATE; // Adjustable rate to support multiple drive modes 
   static uint16_t max_speed;
 #endif
 
+#ifdef VARIANT_TRIKE
+// Состояние рекуперативного тормоза в формате Q16.
+static uint32_t trikeBrakeLevelFixdt;
+static uint32_t trikeBrakeLastTick;
+static uint8_t trikeBrakeActive;
+
+// Обновление рампы: 1 с на нарастание и 0,5 с на снятие рекуперации.
+static void trikeBrakeUpdate(void) {
+  uint32_t now = HAL_GetTick();
+  uint32_t elapsed = now - trikeBrakeLastTick;
+  if (elapsed == 0) {
+    return;
+  }
+  trikeBrakeLastTick = now;
+
+  uint8_t switchPressed =
+      (HAL_GPIO_ReadPin(TRIKE_BRAKE_PORT, TRIKE_BRAKE_PIN) == TRIKE_BRAKE_ACTIVE_LEVEL);
+  uint32_t maxLevel = ((uint32_t)TRIKE_BRAKE_MAX) << 16;
+  uint32_t rampTime = switchPressed ? TRIKE_BRAKE_RAMP_MS : TRIKE_BRAKE_RELEASE_MS;
+  uint64_t delta = (((uint64_t)maxLevel * elapsed) + (rampTime / 2U)) / rampTime;
+
+  if (switchPressed) {
+    uint64_t next = (uint64_t)trikeBrakeLevelFixdt + delta;
+    trikeBrakeLevelFixdt = (next > maxLevel) ? maxLevel : (uint32_t)next;
+  } else {
+    trikeBrakeLevelFixdt = (delta >= trikeBrakeLevelFixdt)
+        ? 0U : trikeBrakeLevelFixdt - (uint32_t)delta;
+  }
+
+  // Пока рекуперация не снята полностью, газ остаётся заблокированным.
+  trikeBrakeActive = (switchPressed || trikeBrakeLevelFixdt != 0U);
+}
+
+// Рекуперация всегда направлена против фактического вращения колёс.
+static int16_t trikeBrakeCommand(uint16_t speedBlend) {
+  uint32_t level = trikeBrakeLevelFixdt >> 16;
+  uint32_t magnitude = (level * speedBlend) >> 15;
+  if (magnitude > TRIKE_BRAKE_MAX) {
+    magnitude = TRIKE_BRAKE_MAX;
+  }
+
+  if (speedAvg > 0) {
+    return -(int16_t)magnitude;
+  }
+  if (speedAvg < 0) {
+    return (int16_t)magnitude;
+  }
+  return 0;
+}
+#endif
+
 
 int main(void) {
 
@@ -214,6 +265,11 @@ int main(void) {
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);   // Activate Latch
   Input_Lim_Init();   // Input Limitations Init
   Input_Init();       // Input Init
+  #ifdef VARIANT_TRIKE
+  trikeBrakeLevelFixdt = 0;
+  trikeBrakeActive = 0;
+  trikeBrakeLastTick = HAL_GetTick();
+  #endif
 
   HAL_ADC_Start(&hadc1);
   HAL_ADC_Start(&hadc2);
@@ -264,11 +320,18 @@ int main(void) {
 
     readCommand();                        // Read Command: input1[inIdx].cmd, input2[inIdx].cmd
     calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
+    #ifdef VARIANT_TRIKE
+    trikeBrakeUpdate();
+    #endif
 
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-      if (enable == 0 && !rtY_Left.z_errCode && !rtY_Right.z_errCode && 
-          ABS(input1[inIdx].cmd) < 50 && ABS(input2[inIdx].cmd) < 50){
+      if (enable == 0 && !rtY_Left.z_errCode && !rtY_Right.z_errCode &&
+          ABS(input1[inIdx].cmd) < 50 && ABS(input2[inIdx].cmd) < 50
+          #ifdef VARIANT_TRIKE
+          && !trikeBrakeActive
+          #endif
+          ){
         beepShort(6);                     // make 2 beeps indicating the motor enable
         beepShort(4); HAL_Delay(100);
         steerFixdt = speedFixdt = 0;      // reset filters
@@ -279,7 +342,7 @@ int main(void) {
       }
 
       // ####### VARIANT_HOVERCAR #######
-      #if defined(VARIANT_HOVERCAR) || defined(VARIANT_SKATEBOARD) || defined(ELECTRIC_BRAKE_ENABLE)
+      #if defined(VARIANT_HOVERCAR) || defined(VARIANT_SKATEBOARD) || defined(VARIANT_TRIKE) || defined(ELECTRIC_BRAKE_ENABLE)
         uint16_t speedBlend;                                        // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
         speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50); // speedBlend [0,1] is within [10 rpm, 60rpm]
       #endif
@@ -332,6 +395,15 @@ int main(void) {
       filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
       steer = (int16_t)(steerFixdt >> 16);  // convert fixed-point to integer
       speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer
+
+      #ifdef VARIANT_TRIKE
+      // Цифровой передний тормоз имеет приоритет над газом.
+      // При отпускании тормоза рекуперация плавно спадает, газ до этого заблокирован.
+      if (trikeBrakeActive) {
+        speed = trikeBrakeCommand(speedBlend);
+        steer = 0;
+      }
+      #endif
 
       // ####### VARIANT_HOVERCAR #######
       #ifdef VARIANT_HOVERCAR
