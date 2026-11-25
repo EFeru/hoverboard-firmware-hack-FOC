@@ -66,7 +66,14 @@ static uint8_t  buzzerPrev  = 0;
 static uint8_t  buzzerIdx   = 0;
 
 uint8_t        enable       = 0;        // initially motors are disabled for SAFETY
-static uint8_t enableFin    = 0;
+#ifdef VARIANT_TRIKE
+static uint8_t enableLeftFin = 0;
+static uint8_t enableRightFin = 0;
+static uint8_t faultLeftLatched = 0;
+static uint8_t faultRightLatched = 0;
+#else
+static uint8_t enableFin = 0;
+#endif
 
 static const uint16_t pwm_res  = 64000000 / 2 / PWM_FREQ; // = 2000
 
@@ -185,8 +192,23 @@ void DMA1_Channel1_IRQHandler(void) {
   }
   OverrunFlag = true;
 
-  /* Make sure to stop BOTH motors in case of an error */
+  #ifdef VARIANT_TRIKE
+  // Ошибка диагностики относится к своему мотору: блокируем только этот канал.
+  // Флаг защёлкивается до перезапуска MCU, чтобы мотор не включился сам после
+  // кратковременного исчезновения ошибки. Общие аварии по-прежнему управляются
+  // глобальным enable и штатными защитами.
+  if (rtY_Left.z_errCode) {
+    faultLeftLatched = 1;
+  }
+  if (rtY_Right.z_errCode) {
+    faultRightLatched = 1;
+  }
+  enableLeftFin = enable && !faultLeftLatched;
+  enableRightFin = enable && !faultRightLatched;
+  #else
+  /* Стандартные варианты: ошибка любого мотора отключает оба канала. */
   enableFin = enable && !rtY_Left.z_errCode && !rtY_Right.z_errCode;
+  #endif
  
   // ========================= LEFT MOTOR ============================ 
     // Get hall sensors values
@@ -195,7 +217,11 @@ void DMA1_Channel1_IRQHandler(void) {
     uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
 
     /* Set motor inputs here */
+    #ifdef VARIANT_TRIKE
+    rtU_Left.b_motEna     = enableLeftFin;
+    #else
     rtU_Left.b_motEna     = enableFin;
+    #endif
     rtU_Left.z_ctrlModReq = ctrlModReq;  
     rtU_Left.r_inpTgt     = pwml;
     rtU_Left.b_hallA      = hall_ul;
@@ -241,7 +267,11 @@ void DMA1_Channel1_IRQHandler(void) {
     uint8_t hall_wr = !(RIGHT_HALL_W_PORT->IDR & RIGHT_HALL_W_PIN);
 
     /* Set motor inputs here */
+    #ifdef VARIANT_TRIKE
+    rtU_Right.b_motEna      = enableRightFin;
+    #else
     rtU_Right.b_motEna      = enableFin;
+    #endif
     rtU_Right.z_ctrlModReq  = ctrlModReq;
     rtU_Right.r_inpTgt      = pwmr;
     rtU_Right.b_hallA       = hall_ur;
