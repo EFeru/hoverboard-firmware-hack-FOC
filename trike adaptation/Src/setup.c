@@ -390,6 +390,15 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pin = CHARGER_PIN;
   HAL_GPIO_Init(CHARGER_PORT, &GPIO_InitStruct);
 
+  #ifdef VARIANT_TRIKE
+  // Передний тормоз: кнопка замыкает PB11 (UART_R_RXD) на GND.
+  // Внутренняя подтяжка задаёт безопасный неактивный уровень при разомкнутом контакте.
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pin = TRIKE_BRAKE_PIN;
+  HAL_GPIO_Init(TRIKE_BRAKE_PORT, &GPIO_InitStruct);
+  #endif
+
   #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
   GPIO_InitStruct.Pin = BUTTON1_PIN;
   HAL_GPIO_Init(BUTTON1_PORT, &GPIO_InitStruct);
