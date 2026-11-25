@@ -179,6 +179,34 @@ static uint16_t rate = RATE; // Adjustable rate to support multiple drive modes 
 #endif
 
 #ifdef VARIANT_TRIKE
+// Режимы: 1 = HOVERCAR M2; 2/3 = HOVERCAR M3.
+// Пока выбран безопасный профиль M1; кнопочный выбор и Flash будут отдельным этапом.
+static uint8_t trikeDriveMode = TRIKE_MODE_DEFAULT;
+
+static void trikeApplyDriveMode(uint8_t mode) {
+  if (mode < 1U || mode > 3U) mode = TRIKE_MODE_DEFAULT;
+  trikeDriveMode = mode;
+
+  if (mode == 1U) {
+    rate = TRIKE_MODE_M1_RATE;
+    rtP_Left.i_max = rtP_Right.i_max = (TRIKE_MODE_M1_I_MOT_MAX * A2BIT_CONV) << 4;
+    rtP_Left.n_max = rtP_Right.n_max = TRIKE_MODE_M1_N_MOT_MAX << 4;
+    rtP_Left.b_fieldWeakEna = rtP_Right.b_fieldWeakEna = 0;
+  } else if (mode == 2U) {
+    rate = TRIKE_MODE_M2_RATE;
+    rtP_Left.i_max = rtP_Right.i_max = (TRIKE_MODE_M2_I_MOT_MAX * A2BIT_CONV) << 4;
+    rtP_Left.n_max = rtP_Right.n_max = TRIKE_MODE_M2_N_MOT_MAX << 4;
+    rtP_Left.b_fieldWeakEna = rtP_Right.b_fieldWeakEna = 0;
+  } else {
+    rate = TRIKE_MODE_M3_RATE;
+    rtP_Left.i_max = rtP_Right.i_max = (TRIKE_MODE_M3_I_MOT_MAX * A2BIT_CONV) << 4;
+    rtP_Left.n_max = rtP_Right.n_max = TRIKE_MODE_M3_N_MOT_MAX;
+    rtP_Left.b_fieldWeakEna = rtP_Right.b_fieldWeakEna = 1;
+  }
+}
+#endif
+
+#ifdef VARIANT_TRIKE
 // Состояние рекуперативного тормоза в формате Q16.
 static uint32_t trikeBrakeLevelFixdt;
 static uint32_t trikeBrakeLastTick;
@@ -327,6 +355,10 @@ int main(void) {
     printf("Drive mode %i selected: max_speed:%i acc_rate:%i \r\n", drive_mode, max_speed, rate);
   #endif
 
+  #ifdef VARIANT_TRIKE
+    trikeApplyDriveMode(TRIKE_MODE_DEFAULT);
+  #endif
+
   // Loop until button is released
   while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
 
@@ -420,6 +452,10 @@ int main(void) {
       speed = (int16_t)(speedFixdt >> 16);  // convert fixed-point to integer
 
       #ifdef VARIANT_TRIKE
+      // Профиль M1 ограничивает команду до 500; M2/M3 используют полную шкалу.
+      if (speed > (trikeDriveMode == 1U ? TRIKE_MODE_M1_CMD_MAX : TRIKE_MODE_M2_CMD_MAX)) {
+        speed = (trikeDriveMode == 1U ? TRIKE_MODE_M1_CMD_MAX : TRIKE_MODE_M2_CMD_MAX);
+      }
       // Цифровой передний тормоз имеет приоритет над газом.
       // При отпускании тормоза рекуперация плавно спадает, газ до этого заблокирован.
       if (trikeBrakeActive) {
