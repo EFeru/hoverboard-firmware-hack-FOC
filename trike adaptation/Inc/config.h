@@ -577,7 +577,7 @@
   #undef  CTRL_MOD_REQ
   #define CTRL_MOD_REQ            TRQ_MODE
 
-  // Режимы TRIKE наследуют профили HOVERCAR M2/M3.
+  // Базовые RATE/команда/ток наследуются из HOVERCAR M2/M3; RPM-лимиты TRIKE заданы отдельно.
   // M3 не получает искусственный скоростной отсекатель: n_max выставляется
   // в максимальное представимое значение Q4 (2047.9 rpm), а не в 0.
   #define TRIKE_MODE_DEFAULT          1
