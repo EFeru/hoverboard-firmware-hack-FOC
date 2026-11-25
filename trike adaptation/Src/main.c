@@ -267,7 +267,8 @@ int main(void) {
   Input_Init();       // Input Init
   #ifdef VARIANT_TRIKE
   trikeBrakeLevelFixdt = 0;
-  trikeBrakeActive = 0;
+  trikeBrakeActive =
+      (HAL_GPIO_ReadPin(TRIKE_BRAKE_PORT, TRIKE_BRAKE_PIN) == TRIKE_BRAKE_ACTIVE_LEVEL);
   trikeBrakeLastTick = HAL_GetTick();
   #endif
 
