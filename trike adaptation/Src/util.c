@@ -458,32 +458,69 @@ void beepShortMany(uint8_t cnt, int8_t dir) {
 }
 
 void calcAvgSpeed(void) {
-    // Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
-    speedAvg = 0;
-    #if defined(MOTOR_LEFT_ENA)
-      #if defined(INVERT_L_DIRECTION)
-        speedAvg -= rtY_Left.n_mot;
-      #else
-        speedAvg += rtY_Left.n_mot;
-      #endif
-    #endif
-    #if defined(MOTOR_RIGHT_ENA)
-      #if defined(INVERT_R_DIRECTION)
-        speedAvg += rtY_Right.n_mot;
-      #else
-        speedAvg -= rtY_Right.n_mot;
-      #endif
+  #ifdef VARIANT_TRIKE
+    // При локальном отказе учитываем скорость только работающего канала.
+    int32_t speedSum = 0;
+    uint8_t activeMotors = 0;
 
-      // Average only if both motors are enabled
-      #if defined(MOTOR_LEFT_ENA)
-        speedAvg /= 2;
-      #endif  
+    #if defined(MOTOR_LEFT_ENA)
+      if (rtU_Left.b_motEna) {
+        #ifdef INVERT_L_DIRECTION
+          speedSum -= rtY_Left.n_mot;
+        #else
+          speedSum += rtY_Left.n_mot;
+        #endif
+        activeMotors++;
+      }
     #endif
+
+    #if defined(MOTOR_RIGHT_ENA)
+      if (rtU_Right.b_motEna) {
+        #ifdef INVERT_R_DIRECTION
+          speedSum += rtY_Right.n_mot;
+        #else
+          speedSum -= rtY_Right.n_mot;
+        #endif
+        activeMotors++;
+      }
+    #endif
+
+    speedAvg = (activeMotors > 0) ? (int16_t)(speedSum / activeMotors) : 0;
+  #else
+      // Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
+      speedAvg = 0;
+      #if defined(MOTOR_LEFT_ENA)
+        #if defined(INVERT_L_DIRECTION)
+          speedAvg -= rtY_Left.n_mot;
+        #else
+          speedAvg += rtY_Left.n_mot;
+        #endif
+      #endif
+      #if defined(MOTOR_RIGHT_ENA)
+        #if defined(INVERT_R_DIRECTION)
+          speedAvg += rtY_Right.n_mot;
+        #else
+          speedAvg -= rtY_Right.n_mot;
+        #endif
+  
+        // Average only if both motors are enabled
+        #if defined(MOTOR_LEFT_ENA)
+          speedAvg /= 2;
+        #endif  
+      #endif
+  
+      // Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
+      if (SPEED_COEFFICIENT & (1 << 16)) {
+        speedAvg    = -speedAvg;
+      } 
+      speedAvgAbs   = abs(speedAvg);
+  }
+  #endif
 
     // Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
     if (SPEED_COEFFICIENT & (1 << 16)) {
       speedAvg    = -speedAvg;
-    } 
+    }
     speedAvgAbs   = abs(speedAvg);
 }
 
