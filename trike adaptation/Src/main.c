@@ -349,7 +349,11 @@ int main(void) {
       // ####### VARIANT_HOVERCAR #######
       #if defined(VARIANT_HOVERCAR) || defined(VARIANT_SKATEBOARD) || defined(VARIANT_TRIKE) || defined(ELECTRIC_BRAKE_ENABLE)
         uint16_t speedBlend;                                        // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
-        speedBlend = (uint16_t)(((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50); // speedBlend [0,1] is within [10 rpm, 60rpm]
+        #ifdef VARIANT_TRIKE
+        speedBlend = (uint16_t)(((CLAMP(speedAvgAbs, TRIKE_BRAKE_MIN_RPM, 60) - TRIKE_BRAKE_MIN_RPM) << 15) / (60 - TRIKE_BRAKE_MIN_RPM));
+        #else
+        speedBlend = (uint16_t)(((CLAMP(speedAvgAbs, 10, 60) - 10) << 15) / 50);
+        #endif
       #endif
 
       #ifdef STANDSTILL_HOLD_ENABLE
