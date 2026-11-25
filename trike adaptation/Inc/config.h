@@ -610,6 +610,7 @@
   #define TRIKE_BRAKE_RAMP_MS       1000
   #define TRIKE_BRAKE_RELEASE_MS    500
   #define TRIKE_BRAKE_MIN_RPM       10
+  #define TRIKE_BRAKE_DEBOUNCE_MS  20
 
   // Не включать sideboard, UART, радио, дисплей, круиз-контроль и электрическое
   // торможение при отпускании газа. Рекуперация запускается только входом тормоза.
