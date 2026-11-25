@@ -17,6 +17,7 @@
   //#define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
   //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
   //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
+  //#define VARIANT_TRIKE      // Variant for TRIKE build (two independent rear FOC motors)
   //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
   //#define VARIANT_SKATEBOARD  // Variant for SKATEBOARD build
@@ -567,6 +568,37 @@
 #define MULTIPLE_TAP_TIMEOUT      2000        // [ms] Multiple tap detection Timeout period. The taps need to happen within this time window to be accepted.
 // ######################## END OF VARIANT_HOVERCAR SETTINGS #########################
 
+// ############################ VARIANT_TRIKE SETTINGS ############################
+#ifdef VARIANT_TRIKE
+  // Отдельный ключ: старые калибровки HOVERCAR не должны приниматься как калибровки TRIKE.
+  #define FLASH_WRITE_KEY         0x7A31
+
+  // Нулевой запрос момента в TRQ_MODE обеспечивает свободный выбег.
+  #undef  CTRL_MOD_REQ
+  #define CTRL_MOD_REQ            TRQ_MODE
+
+  // Один аналоговый вход газа. input1 отключён, input2 — Hall throttle на ADC.
+  #define CONTROL_ADC             0
+  #define PRI_INPUT1              0, 0, 0, 4095, 0
+  #define PRI_INPUT2              3, 0, 0, 4095, 0
+
+  // Газ общий для обоих моторов; рулевого/дифференциального смешивания нет.
+  #define SPEED_COEFFICIENT       16384
+  #define STEER_COEFFICIENT       0
+
+  // Аппаратное питание Hall-ручки: штатно 5 В, не 3,3 В.
+  // Это документирующий параметр; напряжение берётся с 5-вольтовой линии платы.
+  #define TRIKE_THROTTLE_SUPPLY_VOLTAGE 5
+
+  // Не включать sideboard, UART, радио, дисплей, круиз-контроль и электрическое
+  // торможение при отпускании газа. Рекуперация от переднего тормоза реализуется
+  // отдельной логикой после назначения и проверки GPIO тормозного датчика.
+  // Направление одного механически развёрнутого мотор-колеса задаётся одним
+  // из INVERT_L_DIRECTION / INVERT_R_DIRECTION после стендовой проверки.
+#endif
+// ######################## END OF VARIANT_TRIKE SETTINGS ##########################
+
+
 
 
 // ############################ VARIANT_HOVERBOARD SETTINGS ############################
@@ -693,7 +725,7 @@
 
 // ############################### VALIDATE SETTINGS ###############################
 #if !defined(VARIANT_ADC) && !defined(VARIANT_USART) && !defined(VARIANT_NUNCHUK) && !defined(VARIANT_PPM) && !defined(VARIANT_PWM) && \
-    !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_SKATEBOARD)
+    !defined(VARIANT_IBUS) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_TRIKE) && !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_SKATEBOARD)
   #error Variant not defined! Please check platformio.ini or Inc/config.h for available variants.
 #endif
 
