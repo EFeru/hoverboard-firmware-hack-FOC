@@ -326,7 +326,11 @@ int main(void) {
 
     #ifndef VARIANT_TRANSPOTTER
       // ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
+      #ifdef VARIANT_TRIKE
+      if (enable == 0 && (!rtY_Left.z_errCode || !rtY_Right.z_errCode) &&
+      #else
       if (enable == 0 && !rtY_Left.z_errCode && !rtY_Right.z_errCode &&
+      #endif
           ABS(input1[inIdx].cmd) < 50 && ABS(input2[inIdx].cmd) < 50
           #ifdef VARIANT_TRIKE
           && !trikeBrakeActive
