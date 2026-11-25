@@ -182,6 +182,9 @@ static uint16_t rate = RATE; // Adjustable rate to support multiple drive modes 
 // Состояние рекуперативного тормоза в формате Q16.
 static uint32_t trikeBrakeLevelFixdt;
 static uint32_t trikeBrakeLastTick;
+static uint32_t trikeBrakeDebounceTick;
+static uint8_t trikeBrakeRaw;
+static uint8_t trikeBrakeDebounced;
 static uint8_t trikeBrakeActive;
 
 // Обновление рампы: 1 с на нарастание и 0,5 с на снятие рекуперации.
@@ -193,8 +196,16 @@ static void trikeBrakeUpdate(void) {
   }
   trikeBrakeLastTick = now;
 
-  uint8_t switchPressed =
+  uint8_t rawPressed =
       (HAL_GPIO_ReadPin(TRIKE_BRAKE_PORT, TRIKE_BRAKE_PIN) == TRIKE_BRAKE_ACTIVE_LEVEL);
+  if (rawPressed != trikeBrakeRaw) {
+    trikeBrakeRaw = rawPressed;
+    trikeBrakeDebounceTick = now;
+  }
+  if ((now - trikeBrakeDebounceTick) >= TRIKE_BRAKE_DEBOUNCE_MS) {
+    trikeBrakeDebounced = trikeBrakeRaw;
+  }
+  uint8_t switchPressed = trikeBrakeDebounced;
   uint32_t maxLevel = ((uint32_t)TRIKE_BRAKE_MAX) << 16;
   uint32_t rampTime = switchPressed ? TRIKE_BRAKE_RAMP_MS : TRIKE_BRAKE_RELEASE_MS;
   uint64_t delta = (((uint64_t)maxLevel * elapsed) + (rampTime / 2U)) / rampTime;
@@ -275,9 +286,12 @@ int main(void) {
   Input_Init();       // Input Init
   #ifdef VARIANT_TRIKE
   trikeBrakeLevelFixdt = 0;
-  trikeBrakeActive =
+  trikeBrakeRaw =
       (HAL_GPIO_ReadPin(TRIKE_BRAKE_PORT, TRIKE_BRAKE_PIN) == TRIKE_BRAKE_ACTIVE_LEVEL);
+  trikeBrakeDebounced = trikeBrakeRaw;
+  trikeBrakeActive = trikeBrakeDebounced;
   trikeBrakeLastTick = HAL_GetTick();
+  trikeBrakeDebounceTick = trikeBrakeLastTick;
   #endif
 
   HAL_ADC_Start(&hadc1);
