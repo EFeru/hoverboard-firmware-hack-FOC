@@ -114,7 +114,11 @@ int16_t left_dc_curr;            // global variable for Left DC Link current
 int16_t right_dc_curr;           // global variable for Right DC Link current
 int16_t dc_curr;                 // global variable for Total DC Link current 
 int16_t cmdL;                    // global variable for Left Command 
-int16_t cmdR;                    // global variable for Right Command 
+int16_t cmdR;                    // global variable for Right Command
+
+#ifdef VARIANT_TRIKE
+uint8_t trikeThrottleRangeValid;
+#endif
 
 #ifdef ENABLE_ODOMETRY
 extern int16_t odom_l;
@@ -389,6 +393,11 @@ static void trikeBrakeUpdate(void) {
 
 // Рекуперация всегда направлена против фактического вращения колёс.
 static int16_t trikeBrakeCommand(uint16_t speedBlend) {
+  // Fail closed until a valid battery-voltage sample exists; inhibit regen
+  // before the configured pack reaches its full-charge voltage.
+  if (batVoltageCalib <= 0 || batVoltageCalib >= TRIKE_REGEN_OVERVOLTAGE_CV) {
+    return 0;
+  }
   uint32_t level = trikeBrakeLevelFixdt >> 16;
   uint32_t magnitude = (level * speedBlend) >> 15;
   if (magnitude > TRIKE_BRAKE_MAX) {
@@ -407,7 +416,11 @@ static int16_t trikeBrakeCommand(uint16_t speedBlend) {
 
 static uint8_t motorsReadyForEnable(void) {
   #ifdef VARIANT_TRIKE
-  return ((!rtY_Left.z_errCode || !rtY_Right.z_errCode) && !trikeBrakeActive);
+  // Each FOC channel is latched independently in bldc.c. At least one
+  // healthy channel may run; shared input/brake faults inhibit both.
+  return ((!rtY_Left.z_errCode || !rtY_Right.z_errCode) &&
+          !timeoutFlgADC && !timeoutFlgSerial && !timeoutFlgGen &&
+          trikeThrottleRangeValid && !trikeBrakeActive);
   #else
   return (!rtY_Left.z_errCode && !rtY_Right.z_errCode);
   #endif
@@ -437,6 +450,7 @@ static uint8_t trikeCaptureThrottleZero(uint16_t *zero) {
 
 static void trikeThrottleInitCalibration(void) {
   TrikeThrottleCalibration calibration = {0};
+  trikeThrottleRangeValid = 0U;
   uint16_t zero = 0U;
   uint8_t valid = trikeConfigLoadThrottle(&calibration);
   if (!valid) {
@@ -449,12 +463,17 @@ static void trikeThrottleInitCalibration(void) {
   }
   if (!(calibration.flags & TRIKE_CAL_ZERO_VALID) || calibration.zero > 4090U)
     trikeStartupAbort();
+  if ((calibration.flags & TRIKE_CAL_RANGE_VALID) &&
+      calibration.minimum == calibration.zero &&
+      calibration.maximum > (uint32_t)calibration.zero + 500U &&
+      calibration.maximum <= 4090U) {
+    trikeThrottleRangeValid = 1U;
+  }
+
   input2[0].typ = 1U;
   input2[0].min = calibration.zero;
   input2[0].mid = 0;
-  input2[0].max = ((calibration.flags & TRIKE_CAL_RANGE_VALID) &&
-                   calibration.maximum > calibration.zero)
-                    ? calibration.maximum : 4095U;
+  input2[0].max = trikeThrottleRangeValid ? calibration.maximum : 4095U;
   input2[0].dband = 0;
 }
 #endif
@@ -914,8 +933,12 @@ int main(void) {
         printf("Powering off, battery voltage is too low\r\n");
       #endif
       poweroff();
-    } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): Motor error, disable motors
-      enable = 0;
+    } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): motor-channel fault
+      // TRIKE latches and disables only the failed FOC channel in bldc.c.
+      // Other variants retain the original common motor-disable behavior.
+      #ifndef VARIANT_TRIKE
+        enable = 0;
+      #endif
       beepCount(1, 24, 1);
     } else if (timeoutFlgADC) {                                                                       // 2 beeps (low pitch): ADC timeout
       beepCount(2, 24, 1);

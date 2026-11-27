@@ -49,6 +49,11 @@ Src/stm32f1xx_it.c \
 Src/BLDC_controller_data.c \
 Src/BLDC_controller.c
 
+# TRIKE adds its own transactional configuration module.
+ifeq ($(VARIANT),VARIANT_TRIKE)
+C_SOURCES += Src/trike_config.c
+endif
+
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32f103xe.s
@@ -127,7 +132,11 @@ endif
 # LDFLAGS
 #######################################
 # link script
+ifeq ($(VARIANT),VARIANT_TRIKE)
+LDSCRIPT = STM32F103RCTx_FLASH_TRIKE.ld
+else
 LDSCRIPT = STM32F103RCTx_FLASH.ld
+endif
 
 # libraries
 LIBS = -lc -lm -lnosys

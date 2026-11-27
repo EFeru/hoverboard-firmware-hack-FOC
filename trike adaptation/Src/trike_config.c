@@ -166,9 +166,15 @@ uint8_t trikeConfigLoadThrottle(TrikeThrottleCalibration *calibration) {
 }
 
 HAL_StatusTypeDef trikeConfigSaveThrottle(const TrikeThrottleCalibration *calibration) {
-  if (calibration == NULL || calibration->zero > 4095U ||
-      calibration->minimum > 4095U || calibration->maximum > 4095U ||
+  if (calibration == NULL || calibration->zero < 5U || calibration->zero > 4090U ||
+      calibration->minimum != calibration->zero ||
       !(calibration->flags & TRIKE_CAL_ZERO_VALID)) return HAL_ERROR;
+  if (calibration->flags & TRIKE_CAL_RANGE_VALID) {
+    if (calibration->maximum > 4090U ||
+        calibration->maximum <= (uint32_t)calibration->zero + 500U) return HAL_ERROR;
+  } else if (calibration->maximum != 4095U) {
+    return HAL_ERROR;
+  }
 
   TrikeConfigRecord latest;
   uint8_t haveLatest = trikeConfigGetLatest(&latest);

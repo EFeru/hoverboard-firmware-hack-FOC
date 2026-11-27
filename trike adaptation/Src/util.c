@@ -27,6 +27,10 @@
 #include "config.h"
 #include "eeprom.h"
 #include "util.h"
+
+#ifdef VARIANT_TRIKE
+extern uint8_t trikeThrottleRangeValid;
+#endif
 #include "BLDC_controller.h"
 #include "rtwtypes.h"
 #include "comms.h"
@@ -300,7 +304,7 @@ void Input_Init(void) {
     UART_DisableRxErrors(&huart3);
   #endif
 
-  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_TRIKE)
     uint16_t writeCheck, readVal;
     HAL_FLASH_Unlock();
     EE_Init();            /* EEPROM Init */
@@ -1565,7 +1569,7 @@ void saveConfig() {
       HAL_FLASH_Lock();
     }
   #endif
-  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER) && !defined(VARIANT_TRIKE)
     if (inp_cal_valid || cur_spd_valid) {
       #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
         printf("Saving configuration to EEprom\r\n");
@@ -1628,14 +1632,19 @@ void poweroffPressCheck(void) {
             uint32_t sum = 0U;
             for (uint8_t i = 0U; i < 64U; i++) {
               uint16_t v = (uint16_t)adc_buffer.l_rx2;
+              if (v < 5U || v > 4090U) {
+                lo = 4095U;
+                hi = 4095U;
+                break;
+              }
               if (v < lo) lo = v;
               if (v > hi) hi = v;
               sum += v;
               HAL_Delay(10);
             }
             uint16_t full = (uint16_t)(sum / 64U);
-            if ((hi - lo) <= 32U && full > cal.zero &&
-                (uint16_t)(full - cal.zero) >= 500U) {
+            if (lo <= 4090U && hi <= 4090U && (hi - lo) <= 32U &&
+                full > cal.zero && (uint16_t)(full - cal.zero) >= 500U) {
               cal.maximum = full;
               calibrationChord = 1U;
               beepLong(8);
@@ -1655,19 +1664,26 @@ void poweroffPressCheck(void) {
           uint32_t sum = 0U;
           for (uint8_t i = 0U; i < 64U; i++) {
             uint16_t v = (uint16_t)adc_buffer.l_rx2;
+            if (v < 5U || v > 4090U) {
+              lo = 4095U;
+              hi = 4095U;
+              break;
+            }
             if (v < lo) lo = v;
             if (v > hi) hi = v;
             sum += v;
             HAL_Delay(10);
           }
           uint16_t released = (uint16_t)(sum / 64U);
-          if ((HAL_GetTick() - waitStart) < 10000U && (hi - lo) <= 32U &&
+          if ((HAL_GetTick() - waitStart) < 10000U &&
+              lo <= 4090U && hi <= 4090U && (hi - lo) <= 32U &&
               abs((int)released - (int)cal.zero) <= 64 &&
               cal.maximum > released && (uint16_t)(cal.maximum - released) >= 500U) {
             cal.zero = released;
             cal.minimum = released;
             cal.flags |= (TRIKE_CAL_ZERO_VALID | TRIKE_CAL_RANGE_VALID);
             if (trikeConfigSaveThrottle(&cal) == HAL_OK) {
+              trikeThrottleRangeValid = 1U;
               input2[0].typ = 1U;
               input2[0].min = released;
               input2[0].max = cal.maximum;

@@ -617,6 +617,10 @@
 
   // Передний тормоз: контакт между UART_R_RXD (PB11) и GND, активный LOW.
   // UART3 в этом варианте не запускается; PB11 используется как обычный GPIO.
+  // Inhibit regenerative braking near full charge; voltage is centivolts.
+  // For the configured 10S pack, 4150 = 41.50 V. Recheck for another pack.
+  #define TRIKE_REGEN_OVERVOLTAGE_CV (BAT_CELLS * 415)
+
   #define TRIKE_BRAKE_PORT          GPIOB
   #define TRIKE_BRAKE_PIN           GPIO_PIN_11
   #define TRIKE_BRAKE_ACTIVE_LEVEL  GPIO_PIN_RESET
