@@ -11,9 +11,8 @@
  *  5 throttle_zero, 6 throttle_min, 7 throttle_max, 8 reserved,
  *  9..10 sequence, 11 CRC16/CCITT-FALSE, 12 commit marker.
  *
- * Throttle fields are reserved for the separately specified calibration
- * workflow. They are preserved across mode changes and are not interpreted
- * by the current firmware.
+ * Throttle fields store the validated Hall-throttle zero and range.
+ * They are preserved across drive-mode changes.
  */
 
 #define TRIKE_CFG_MAGIC_LO   0x5254U
@@ -146,6 +145,79 @@ HAL_StatusTypeDef trikeConfigSaveMode(uint8_t mode) {
                                TRIKE_CFG_COMMIT);
   }
 
+  HAL_FLASH_Lock();
+  if (status != HAL_OK) return status;
+
+  TrikeConfigRecord verify;
+  if (!trikeConfigReadPage(target, &verify)) return HAL_ERROR;
+  return HAL_OK;
+}
+#endif /* VARIANT_TRIKE */
+
+#ifdef VARIANT_TRIKE
+uint8_t trikeConfigLoadThrottle(TrikeThrottleCalibration *calibration) {
+  TrikeConfigRecord latest;
+  if (calibration == NULL || !trikeConfigGetLatest(&latest)) return 0U;
+  calibration->flags = latest.words[4];
+  calibration->zero = latest.words[5];
+  calibration->minimum = latest.words[6];
+  calibration->maximum = latest.words[7];
+  return (calibration->flags & TRIKE_CAL_ZERO_VALID) ? 1U : 0U;
+}
+
+HAL_StatusTypeDef trikeConfigSaveThrottle(const TrikeThrottleCalibration *calibration) {
+  if (calibration == NULL || calibration->zero > 4095U ||
+      calibration->minimum > 4095U || calibration->maximum > 4095U ||
+      !(calibration->flags & TRIKE_CAL_ZERO_VALID)) return HAL_ERROR;
+
+  TrikeConfigRecord latest;
+  uint8_t haveLatest = trikeConfigGetLatest(&latest);
+  uint32_t target = haveLatest
+      ? ((latest.address == TRIKE_CONFIG_PAGE_A) ? TRIKE_CONFIG_PAGE_B : TRIKE_CONFIG_PAGE_A)
+      : TRIKE_CONFIG_PAGE_A;
+
+  uint16_t words[TRIKE_CFG_WORDS] = {0};
+  words[0] = TRIKE_CFG_MAGIC_LO;
+  words[1] = TRIKE_CFG_MAGIC_HI;
+  words[2] = TRIKE_CFG_VERSION;
+  words[3] = haveLatest ? latest.words[3] : TRIKE_MODE_M1;
+  words[4] = calibration->flags;
+  words[5] = calibration->zero;
+  words[6] = calibration->minimum;
+  words[7] = calibration->maximum;
+  if (haveLatest) {
+    words[8] = latest.words[8];
+    uint32_t sequence = (((uint32_t)latest.words[10] << 16) | latest.words[9]) + 1U;
+    words[9] = (uint16_t)sequence;
+    words[10] = (uint16_t)(sequence >> 16);
+  } else {
+    words[9] = 1U;
+  }
+
+  words[TRIKE_CFG_CRC_INDEX] = trikeConfigCrc16(words);
+  words[TRIKE_CFG_COMMIT_IDX] = TRIKE_CFG_COMMIT;
+
+  FLASH_EraseInitTypeDef erase;
+  uint32_t pageError = 0U;
+  erase.TypeErase = FLASH_TYPEERASE_PAGES;
+  erase.PageAddress = target;
+  erase.NbPages = 1U;
+
+  HAL_StatusTypeDef status = HAL_FLASH_Unlock();
+  if (status != HAL_OK) return status;
+  status = HAL_FLASHEx_Erase(&erase, &pageError);
+  if (status == HAL_OK) {
+    for (uint8_t i = 0; i < TRIKE_CFG_COMMIT_IDX; i++) {
+      status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,
+                                 target + ((uint32_t)i * 2U), words[i]);
+      if (status != HAL_OK) break;
+    }
+  }
+  if (status == HAL_OK) {
+    status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,
+                               target + ((uint32_t)TRIKE_CFG_COMMIT_IDX * 2U),
+                               TRIKE_CFG_COMMIT);
+  }
   HAL_FLASH_Lock();
   if (status != HAL_OK) return status;
 

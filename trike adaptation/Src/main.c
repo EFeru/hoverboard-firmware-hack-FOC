@@ -414,6 +414,51 @@ static uint8_t motorsReadyForEnable(void) {
 }
 
 
+#ifdef VARIANT_TRIKE
+#define TRIKE_THROTTLE_SAMPLES       64U
+#define TRIKE_THROTTLE_SAMPLE_MS     10U
+#define TRIKE_THROTTLE_STABLE_SPAN   32U
+
+static uint8_t trikeCaptureThrottleZero(uint16_t *zero) {
+  uint16_t minimum = 4095U, maximum = 0U;
+  uint32_t sum = 0U;
+  for (uint16_t i = 0U; i < TRIKE_THROTTLE_SAMPLES; i++) {
+    uint16_t sample = (uint16_t)adc_buffer.l_rx2;
+    if (sample < 5U || sample > 4090U) return 0U;
+    if (sample < minimum) minimum = sample;
+    if (sample > maximum) maximum = sample;
+    sum += sample;
+    HAL_Delay(TRIKE_THROTTLE_SAMPLE_MS);
+  }
+  if ((maximum - minimum) > TRIKE_THROTTLE_STABLE_SPAN) return 0U;
+  *zero = (uint16_t)(sum / TRIKE_THROTTLE_SAMPLES);
+  return 1U;
+}
+
+static void trikeThrottleInitCalibration(void) {
+  TrikeThrottleCalibration calibration = {0};
+  uint16_t zero = 0U;
+  uint8_t valid = trikeConfigLoadThrottle(&calibration);
+  if (!valid) {
+    if (!trikeCaptureThrottleZero(&zero)) trikeStartupAbort();
+    calibration.zero = zero;
+    calibration.minimum = zero;
+    calibration.maximum = 4095U;
+    calibration.flags = TRIKE_CAL_ZERO_VALID;
+    if (trikeConfigSaveThrottle(&calibration) != HAL_OK) trikeStartupAbort();
+  }
+  if (!(calibration.flags & TRIKE_CAL_ZERO_VALID) || calibration.zero > 4090U)
+    trikeStartupAbort();
+  input2[0].typ = 1U;
+  input2[0].min = calibration.zero;
+  input2[0].mid = 0;
+  input2[0].max = ((calibration.flags & TRIKE_CAL_RANGE_VALID) &&
+                   calibration.maximum > calibration.zero)
+                    ? calibration.maximum : 4095U;
+  input2[0].dband = 0;
+}
+#endif
+
 int main(void) {
 
   HAL_Init();
@@ -520,6 +565,7 @@ int main(void) {
 
   #ifdef VARIANT_TRIKE
     trikeApplyDriveMode(trikeStartupSelectMode());
+    trikeThrottleInitCalibration();
     poweronMelody();
   #else
     // Loop until button is released

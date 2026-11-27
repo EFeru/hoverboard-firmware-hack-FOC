@@ -30,6 +30,9 @@
 #include "BLDC_controller.h"
 #include "rtwtypes.h"
 #include "comms.h"
+#ifdef VARIANT_TRIKE
+#include "trike_config.h"
+#endif
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
@@ -1611,15 +1614,72 @@ void poweroffPressCheck(void) {
   #if defined(VARIANT_TRIKE)
     if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
       uint32_t pressStart = HAL_GetTick();
+      TrikeThrottleCalibration cal = {0};
       enable = 0U;
       HAL_Delay(15);
       if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+        (void)trikeConfigLoadThrottle(&cal);
+        uint8_t calibrationChord = 0U;
         while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+          if (!calibrationChord && (HAL_GetTick() - pressStart >= 5000U) &&
+              (cal.flags & TRIKE_CAL_ZERO_VALID) &&
+              adc_buffer.l_rx2 > (uint32_t)cal.zero + 500U) {
+            uint16_t lo = 4095U, hi = 0U;
+            uint32_t sum = 0U;
+            for (uint8_t i = 0U; i < 64U; i++) {
+              uint16_t v = (uint16_t)adc_buffer.l_rx2;
+              if (v < lo) lo = v;
+              if (v > hi) hi = v;
+              sum += v;
+              HAL_Delay(10);
+            }
+            uint16_t full = (uint16_t)(sum / 64U);
+            if ((hi - lo) <= 32U && full > cal.zero &&
+                (uint16_t)(full - cal.zero) >= 500U) {
+              cal.maximum = full;
+              calibrationChord = 1U;
+              beepLong(8);
+            } else {
+              calibrationChord = 2U;
+            }
+          }
           HAL_Delay(10);
         }
-        /* Short/medium press powers off. A 5-second hold is reserved for the
-           future full-throttle calibration chord and must not call EFeru ADC calibration. */
-        if (HAL_GetTick() - pressStart < 5000U) poweroff();
+
+        if (calibrationChord == 1U) {
+          /* After releasing the button, release the throttle and validate its zero. */
+          uint32_t waitStart = HAL_GetTick();
+          while ((HAL_GetTick() - waitStart) < 10000U &&
+                 adc_buffer.l_rx2 > (uint32_t)cal.zero + 100U) HAL_Delay(10);
+          uint16_t lo = 4095U, hi = 0U;
+          uint32_t sum = 0U;
+          for (uint8_t i = 0U; i < 64U; i++) {
+            uint16_t v = (uint16_t)adc_buffer.l_rx2;
+            if (v < lo) lo = v;
+            if (v > hi) hi = v;
+            sum += v;
+            HAL_Delay(10);
+          }
+          uint16_t released = (uint16_t)(sum / 64U);
+          if ((HAL_GetTick() - waitStart) < 10000U && (hi - lo) <= 32U &&
+              abs((int)released - (int)cal.zero) <= 64 &&
+              cal.maximum > released && (uint16_t)(cal.maximum - released) >= 500U) {
+            cal.zero = released;
+            cal.minimum = released;
+            cal.flags |= (TRIKE_CAL_ZERO_VALID | TRIKE_CAL_RANGE_VALID);
+            if (trikeConfigSaveThrottle(&cal) == HAL_OK) {
+              input2[0].typ = 1U;
+              input2[0].min = released;
+              input2[0].max = cal.maximum;
+              input2[0].mid = 0;
+              input2[0].dband = 0;
+              beepShort(5);
+            }
+          }
+        } else if (HAL_GetTick() - pressStart < 5000U) {
+          poweroff();
+        }
+        /* Long button hold without full throttle is ignored; EFeru adcCalibLim is never called. */
       }
     }
   #elif !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
