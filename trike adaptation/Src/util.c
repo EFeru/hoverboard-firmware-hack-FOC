@@ -1599,14 +1599,30 @@ void poweroff(void) {
     buzzerFreq = (uint8_t)i;
     HAL_Delay(100);
   }
-  saveConfig();
+  #ifndef VARIANT_TRIKE
+    saveConfig();
+  #endif
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_RESET);
   while(1) {}
 }
 
 
 void poweroffPressCheck(void) {
-  #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+  #if defined(VARIANT_TRIKE)
+    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+      uint32_t pressStart = HAL_GetTick();
+      enable = 0U;
+      HAL_Delay(15);
+      if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+        while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+          HAL_Delay(10);
+        }
+        /* Short/medium press powers off. A 5-second hold is reserved for the
+           future full-throttle calibration chord and must not call EFeru ADC calibration. */
+        if (HAL_GetTick() - pressStart < 5000U) poweroff();
+      }
+    }
+  #elif !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
     if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
       uint16_t cnt_press = 0;
       while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {

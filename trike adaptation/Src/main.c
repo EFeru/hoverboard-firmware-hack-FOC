@@ -27,6 +27,9 @@
 #include "setup.h"
 #include "config.h"
 #include "util.h"
+#ifdef VARIANT_TRIKE
+#include "trike_config.h"
+#endif
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 #include "comms.h"
@@ -207,6 +210,140 @@ static void trikeApplyDriveMode(uint8_t mode) {
 #endif
 
 #ifdef VARIANT_TRIKE
+// Стартовое нажатие фиксируется сразу после GPIO_Init, до длительной инициализации.
+static uint32_t trikeBootButtonTick;
+static uint32_t trikeBootButtonReleaseTick;
+static uint8_t trikeBootButtonWasPressed;
+static uint8_t trikeBootButtonReleased;
+
+static void trikeStartupCaptureInit(void) {
+  // HAL_GetTick already includes the 500-ms pre-GPIO startup delay; backdate
+  // the first-button timestamp so both 2-s thresholds use physical startup time.
+  trikeBootButtonTick = HAL_GetTick() - STARTUP_DELAY_MS;
+  trikeBootButtonWasPressed = (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET);
+  trikeBootButtonReleased = 0U;
+  trikeBootButtonReleaseTick = 0U;
+}
+
+static void trikeStartupCapturePoll(void) {
+  if (trikeBootButtonWasPressed && !trikeBootButtonReleased &&
+      HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_RESET) {
+    uint32_t edgeTick = HAL_GetTick();
+    HAL_Delay(TRIKE_BUTTON_DEBOUNCE_MS);
+    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_RESET) {
+      trikeBootButtonReleased = 1U;
+      trikeBootButtonReleaseTick = edgeTick;
+    }
+  }
+}
+
+static void trikeStartupAbort(void) {
+  enable = 0U;
+  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_RESET);
+  while (1) { }
+}
+
+static uint8_t trikeWaitButtonPress(uint32_t timeoutMs, uint32_t *pressTick) {
+  uint32_t started = HAL_GetTick();
+  for (;;) {
+    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+      uint32_t edgeTick = HAL_GetTick();
+      HAL_Delay(TRIKE_BUTTON_DEBOUNCE_MS);
+      if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+        *pressTick = edgeTick;
+        return 1U;
+      }
+    }
+    if (timeoutMs != 0xFFFFFFFFUL && (HAL_GetTick() - started >= timeoutMs)) return 0U;
+    HAL_Delay(1);
+  }
+}
+
+static uint8_t trikeWaitShortTap(uint32_t pressTick) {
+  for (;;) {
+    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_RESET) {
+      uint32_t releaseTick = HAL_GetTick();
+      HAL_Delay(TRIKE_BUTTON_DEBOUNCE_MS);
+      if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_RESET) {
+        uint32_t duration = releaseTick - pressTick;
+        return (duration > TRIKE_BUTTON_TAP_MIN_MS &&
+                duration < TRIKE_BUTTON_TAP_MAX_MS) ? 1U : 0U;
+      }
+    }
+    if (HAL_GetTick() - pressTick >= TRIKE_BUTTON_TAP_MAX_MS) return 0U;
+    HAL_Delay(1);
+  }
+}
+
+static uint8_t trikeStartupSelectMode(void) {
+  uint8_t savedMode = trikeConfigLoadMode();
+
+  // Если включение прошло без нажатия, используется последний сохранённый режим.
+  if (!trikeBootButtonWasPressed) return savedMode;
+
+  // GPIO появляется после защитной STARTUP_DELAY_MS; вычитаем её из порога,
+  // чтобы физическое удержание при включении оценивалось как полные 2 секунды.
+  while (!trikeBootButtonReleased &&
+         (HAL_GetTick() - trikeBootButtonTick) < TRIKE_STARTUP_HOLD_MS) {
+    trikeStartupCapturePoll();
+    HAL_Delay(1);
+  }
+  trikeStartupCapturePoll();
+
+  if (!trikeBootButtonReleased) {
+    // Длинное первое удержание: обычный запуск в сохранённом режиме.
+    while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) HAL_Delay(1);
+    return savedMode;
+  }
+
+  uint32_t firstDuration = trikeBootButtonReleaseTick - trikeBootButtonTick;
+  if (firstDuration >= TRIKE_STARTUP_HOLD_MS) {
+    return savedMode;
+  }
+  if (firstDuration <= TRIKE_BUTTON_TAP_MIN_MS) trikeStartupAbort();
+
+  // Первое включающее нажатие уже является нажатием №1 для M1.
+  uint8_t tapCount = 1U;
+  uint32_t sequenceStart = trikeBootButtonTick;
+  uint32_t deadline = sequenceStart + TRIKE_BUTTON_SEQUENCE_WINDOW_MS;
+
+  while ((int32_t)(deadline - HAL_GetTick()) > 0) {
+    uint32_t pressTick = 0U;
+    uint32_t now = HAL_GetTick();
+    if ((int32_t)(deadline - now) <= 0) break;
+    uint32_t remaining = deadline - now;
+    if (!trikeWaitButtonPress(remaining, &pressTick)) break;
+    if (!trikeWaitShortTap(pressTick)) trikeStartupAbort();
+    if (++tapCount > 3U) trikeStartupAbort();
+    if ((int32_t)(deadline - HAL_GetTick()) <= 0) trikeStartupAbort();
+  }
+
+  // Следующее отдельное нажатие — подтверждение; удержание должно длиться 2 секунды.
+  uint32_t confirmTick = 0U;
+  (void)trikeWaitButtonPress(0xFFFFFFFFUL, &confirmTick);
+  uint8_t confirmed = 0U;
+  while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+    if (HAL_GetTick() - confirmTick >= TRIKE_STARTUP_HOLD_MS) {
+      confirmed = 1U;
+      break;
+    }
+    HAL_Delay(1);
+  }
+  if (!confirmed && (HAL_GetTick() - confirmTick >= TRIKE_STARTUP_HOLD_MS)) {
+    confirmed = 1U;
+  }
+  if (!confirmed) trikeStartupAbort();
+
+  uint8_t selectedMode = tapCount;
+  if (trikeConfigSaveMode(selectedMode) != HAL_OK) trikeStartupAbort();
+
+  // Не оставлять кнопку нажатой при переходе в рабочий цикл.
+  while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) HAL_Delay(1);
+  return selectedMode;
+}
+#endif
+
+#ifdef VARIANT_TRIKE
 // Состояние рекуперативного тормоза в формате Q16.
 static uint32_t trikeBrakeLevelFixdt;
 static uint32_t trikeBrakeLastTick;
@@ -304,14 +441,38 @@ int main(void) {
 
   __HAL_RCC_DMA1_CLK_DISABLE();
   MX_GPIO_Init();
+  #ifdef VARIANT_TRIKE
+    // STARTUP_DELAY уже выдержана; защёлку питания включаем сразу после GPIO,
+    // чтобы отпускание кнопки во время инициализации не оборвало запуск.
+    HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);
+    trikeStartupCaptureInit();
+  #endif
   MX_TIM_Init();
+  #ifdef VARIANT_TRIKE
+    trikeStartupCapturePoll();
+  #endif
   MX_ADC1_Init();
+  #ifdef VARIANT_TRIKE
+    trikeStartupCapturePoll();
+  #endif
   MX_ADC2_Init();
+  #ifdef VARIANT_TRIKE
+    trikeStartupCapturePoll();
+  #endif
   BLDC_Init();        // BLDC Controller Init
-
-  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);   // Activate Latch
+  #ifdef VARIANT_TRIKE
+    trikeStartupCapturePoll();
+  #else
+    HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);   // Activate Latch
+  #endif
   Input_Lim_Init();   // Input Limitations Init
+  #ifdef VARIANT_TRIKE
+    trikeStartupCapturePoll();
+  #endif
   Input_Init();       // Input Init
+  #ifdef VARIANT_TRIKE
+    trikeStartupCapturePoll();
+  #endif
   #ifdef VARIANT_TRIKE
   trikeBrakeLevelFixdt = 0;
   trikeBrakeRaw =
@@ -325,7 +486,9 @@ int main(void) {
   HAL_ADC_Start(&hadc1);
   HAL_ADC_Start(&hadc2);
 
-  poweronMelody();
+  #ifndef VARIANT_TRIKE
+    poweronMelody();
+  #endif
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
   
   int32_t board_temp_adcFixdt = adc_buffer.temp << 16;  // Fixed-point filter output initialized with current ADC converted to fixed-point
@@ -356,11 +519,12 @@ int main(void) {
   #endif
 
   #ifdef VARIANT_TRIKE
-    trikeApplyDriveMode(TRIKE_MODE_DEFAULT);
+    trikeApplyDriveMode(trikeStartupSelectMode());
+    poweronMelody();
+  #else
+    // Loop until button is released
+    while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
   #endif
-
-  // Loop until button is released
-  while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
 
   #ifdef MULTI_MODE_DRIVE
     // Wait until triggers are released. Exit if timeout elapses (to unblock if the inputs are not calibrated)

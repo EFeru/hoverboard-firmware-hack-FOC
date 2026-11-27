@@ -570,6 +570,13 @@
 
 // ############################ VARIANT_TRIKE SETTINGS ############################
 #ifdef VARIANT_TRIKE
+  // Стартовый выбор режима. Первое включающее нажатие имеет отдельный порог 2 с.
+  #define TRIKE_STARTUP_HOLD_MS             2000U
+  #define TRIKE_BUTTON_DEBOUNCE_MS          15U
+  #define TRIKE_BUTTON_TAP_MIN_MS           15U
+  #define TRIKE_BUTTON_TAP_MAX_MS           150U
+  #define TRIKE_BUTTON_SEQUENCE_WINDOW_MS   2000U
+
   // Отдельный ключ: старые калибровки HOVERCAR не должны приниматься как калибровки TRIKE.
   #define FLASH_WRITE_KEY         0x7A31
 
@@ -577,9 +584,8 @@
   #undef  CTRL_MOD_REQ
   #define CTRL_MOD_REQ            TRQ_MODE
 
-  // Базовые RATE/команда/ток наследуются из HOVERCAR M2/M3; RPM-лимиты TRIKE заданы отдельно.
-  // M3 не получает искусственный скоростной отсекатель: n_max выставляется
-  // в максимальное представимое значение Q4 (2047.9 rpm), а не в 0.
+  // Профили M1/M2/M3 имеют отдельные RPM-ограничения; M3 сохраняет предел 1174 rpm
+  // (расчётно около 45 км/ч для номинального колеса 8 дюймов).
   #define TRIKE_MODE_DEFAULT          1
   #define TRIKE_MODE_M1_CMD_MAX       500
   #define TRIKE_MODE_M1_RATE           300
