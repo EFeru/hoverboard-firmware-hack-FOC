@@ -254,6 +254,8 @@ static uint8_t trikeWaitButtonPress(uint32_t timeoutMs, uint32_t *pressTick) {
       uint32_t edgeTick = HAL_GetTick();
       HAL_Delay(TRIKE_BUTTON_DEBOUNCE_MS);
       if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
+        if (timeoutMs != 0xFFFFFFFFUL &&
+            (uint32_t)(edgeTick - started) >= timeoutMs) return 0U;
         *pressTick = edgeTick;
         return 1U;
       }
@@ -324,7 +326,9 @@ static uint8_t trikeStartupSelectMode(void) {
 
   // Следующее отдельное нажатие — подтверждение; удержание должно длиться 2 секунды.
   uint32_t confirmTick = 0U;
-  (void)trikeWaitButtonPress(0xFFFFFFFFUL, &confirmTick);
+  if (!trikeWaitButtonPress(TRIKE_BUTTON_SEQUENCE_WINDOW_MS, &confirmTick)) {
+    trikeStartupAbort();
+  }
   uint8_t confirmed = 0U;
   while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET) {
     if (HAL_GetTick() - confirmTick >= TRIKE_STARTUP_HOLD_MS) {
